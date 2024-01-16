@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+if ! ./gradlew spotlessCheck -q > /dev/null 2>&1; then
+    echo "Format check failed. Reformatting code and aborting commit..."
+    ./gradlew -q spotlessApply
+    echo "Reformat complete. Please retry your commit."
+    git reset
+    exit 1
+fi
+

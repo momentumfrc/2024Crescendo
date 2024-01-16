@@ -130,3 +130,9 @@ spotless {
         endWithNewline()
     }
 }
+
+tasks.register('registerHooks', Copy) {
+    from layout.projectDirectory.dir("hooks")
+    include "*"
+    into layout.projectDirectory.dir(".git/hooks")
+}
