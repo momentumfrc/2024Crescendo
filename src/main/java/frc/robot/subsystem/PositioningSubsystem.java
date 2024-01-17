@@ -34,7 +34,7 @@ public class PositioningSubsystem extends SubsystemBase {
      * The size of the field, in meters. Used to transform alliance-relative coordinates into
      * field-relative coordinates.
      */
-    private static final Translation2d fieldSize = new Translation2d(16.54175, 8.0137);
+    private static final Translation2d fieldSize = new Translation2d(16.579342, 8.2042);
 
     /** The limelight. Should be used by auto scoring commands for fine targeting. */
     public final Limelight limelight = new Limelight();
