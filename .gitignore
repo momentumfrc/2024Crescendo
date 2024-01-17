@@ -179,5 +179,7 @@ ctre_sim/
 
 # Simulation configuration files
 networktables.json
+networktables.json.bck
 simgui-ds.json
 simgui.json
+pid_constants.ini

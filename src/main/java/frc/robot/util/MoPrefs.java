@@ -17,8 +17,8 @@ import java.util.function.Function;
 
 /** Robot preferences, accessible through Shuffleboard */
 public class MoPrefs {
-    public static final Pref<Double> maxDriveSpeed = doublePref("Drive Max Speed m/s", 6000.0);
-    public static final Pref<Double> maxTurnSpeed = doublePref("Turn Max Speed m/s", 6000.0);
+    public static final Pref<Double> maxDriveSpeed = doublePref("Drive Max Speed", 6000.0);
+    public static final Pref<Double> maxTurnSpeed = doublePref("Turn Max Speed", 6000.0);
     public static final Pref<Double> driveDeadzone = doublePref("Drive Deadzone", 0.05);
     public static final Pref<Double> driveCurve = doublePref("Drive Curve", 1);
     public static Pref<Double> driveSlowSpeed = doublePref("Drive Slow Speed", 0.5);
@@ -57,6 +57,10 @@ public class MoPrefs {
                 T defaultValue,
                 Function<NetworkTableValue, T> getter,
                 BiFunction<NetworkTableEntry, T, Boolean> setter) {
+            if (key.contains("/")) {
+                throw new IllegalArgumentException("Pref keys must not contain '/'");
+            }
+
             this.key = key;
             this.getter = getter;
             this.setter = setter;
