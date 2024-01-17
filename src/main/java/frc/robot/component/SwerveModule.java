@@ -4,8 +4,6 @@
 
 package frc.robot.component;
 
-import java.util.Map;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -13,26 +11,23 @@ import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkAnalogSensor;
 import com.revrobotics.SparkAnalogSensor.Mode;
 import com.revrobotics.SparkMaxAnalogSensor;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import frc.robot.util.MoPrefs;
+import frc.robot.util.MoPrefs.Pref;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoTalonFxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
-import frc.robot.util.MoPrefs.Pref;
-import frc.robot.util.MoSparkMaxPID.Type;
+import java.util.Map;
 
 public class SwerveModule {
-    private static final double ABSOLUTE_ENCODER_SCALE = 1/3.3;
+    private static final double ABSOLUTE_ENCODER_SCALE = 1 / 3.3;
     private static final double MOTOR_UNPOWERED_SPEED = 0.05;
 
     private final String key;
@@ -55,7 +50,13 @@ public class SwerveModule {
     private final Pref<Double> encoderScale;
     private final Pref<Double> driveMtrScale;
 
-    public SwerveModule(String key, CANSparkMax turnMotor, WPI_TalonFX driveMotor, Pref<Double> encoderZero, Pref<Double> encoderScale, Pref<Double> driveMtrScale) {
+    public SwerveModule(
+            String key,
+            CANSparkMax turnMotor,
+            WPI_TalonFX driveMotor,
+            Pref<Double> encoderZero,
+            Pref<Double> encoderScale,
+            Pref<Double> driveMtrScale) {
         this.key = key;
         this.turnMotor = turnMotor;
         this.driveMotor = driveMotor;
@@ -82,20 +83,29 @@ public class SwerveModule {
 
         relativeEncoder = turnMotor.getEncoder();
 
-        encoderZero.subscribe(zero -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), zero, encoderScale.get()), false);
-        encoderScale.subscribe(scale -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), encoderZero.get(), scale), false);
+        encoderZero.subscribe(
+                zero ->
+                        this.setupRelativeEncoder(
+                                absoluteEncoder.getPosition(), zero, encoderScale.get()),
+                false);
+        encoderScale.subscribe(
+                scale ->
+                        this.setupRelativeEncoder(
+                                absoluteEncoder.getPosition(), encoderZero.get(), scale),
+                false);
         setupRelativeEncoder();
 
-        var layout = Shuffleboard.getTab("match").getLayout(key, BuiltInLayouts.kList)
-            .withSize(2, 1)
-            .withProperties(Map.of("Label position", "LEFT"));
+        var layout =
+                Shuffleboard.getTab("match")
+                        .getLayout(key, BuiltInLayouts.kList)
+                        .withSize(2, 1)
+                        .withProperties(Map.of("Label position", "LEFT"));
         layout.addDouble("Relative", () -> (MoUtils.radToRot(relativeEncoder.getPosition())));
         layout.addDouble("Absolute", absoluteEncoder::getPosition);
     }
 
     private boolean areMotorsPowered() {
-        return driveMotor.get() > MOTOR_UNPOWERED_SPEED
-            && turnMotor.get() > MOTOR_UNPOWERED_SPEED;
+        return driveMotor.get() > MOTOR_UNPOWERED_SPEED && turnMotor.get() > MOTOR_UNPOWERED_SPEED;
     }
 
     public void setupRelativeEncoder() {
@@ -103,7 +113,7 @@ public class SwerveModule {
     }
 
     public void setRelativePosition() {
-        if(!areMotorsPowered())
+        if (!areMotorsPowered())
             setRelativePosition(absoluteEncoder.getPosition(), encoderZero.get());
     }
 
@@ -121,7 +131,9 @@ public class SwerveModule {
     }
 
     public void drive(SwerveModuleState state) {
-        var optimized = SwerveModuleState.optimize(state, Rotation2d.fromRadians(relativeEncoder.getPosition()));
+        var optimized =
+                SwerveModuleState.optimize(
+                        state, Rotation2d.fromRadians(relativeEncoder.getPosition()));
         turnPID.setReference(MathUtil.angleModulus(optimized.angle.getRadians()));
         drivePID.setReference(optimized.speedMetersPerSecond * driveMtrScale.get());
     }
@@ -132,7 +144,9 @@ public class SwerveModule {
     }
 
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(driveMotor.getSelectedSensorPosition() / driveMtrScale.get(), Rotation2d.fromRadians(relativeEncoder.getPosition()));
+        return new SwerveModulePosition(
+                driveMotor.getSelectedSensorPosition() / driveMtrScale.get(),
+                Rotation2d.fromRadians(relativeEncoder.getPosition()));
     }
 
     @Override

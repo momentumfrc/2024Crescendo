@@ -13,7 +13,7 @@ public class MoShuffleboard {
     private static MoShuffleboard instance;
 
     public static MoShuffleboard getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MoShuffleboard();
         }
         return instance;
@@ -36,8 +36,8 @@ public class MoShuffleboard {
     public static <T extends Enum<?>> SendableChooser<T> enumToChooser(Class<T> toConvert) {
         boolean setDefault = true;
         var chooser = new SendableChooser<T>();
-        for(T entry : toConvert.getEnumConstants()) {
-            if(setDefault) {
+        for (T entry : toConvert.getEnumConstants()) {
+            if (setDefault) {
                 chooser.setDefaultOption(entry.name(), entry);
                 setDefault = false;
             } else {

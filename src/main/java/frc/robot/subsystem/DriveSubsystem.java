@@ -7,9 +7,8 @@ package frc.robot.subsystem;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.momentum4999.motune.PIDTuner;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -36,9 +35,7 @@ public class DriveSubsystem extends SubsystemBase {
      */
     private static final double TURN_RATE_CUTOFF = 0.001;
 
-    /**
-     * The maximum rate of movement that the drive will consider as equivalent to zero.
-     */
+    /** The maximum rate of movement that the drive will consider as equivalent to zero. */
     private static final double MOVE_RATE_CUTOFF = 0.05;
 
     private static final double RESET_ENCODER_INTERVAL = 0.5;
@@ -47,15 +44,19 @@ public class DriveSubsystem extends SubsystemBase {
         TURNING,
         HOLD_HEADING
     };
+
     private TurnState turnState = TurnState.HOLD_HEADING;
     private Rotation2d maintainHeading;
 
     private final MoPIDF headingController = new MoPIDF();
     private final PIDTuner headingTuner = TunerUtils.forMoPIDF(headingController, "Drive Heading");
 
-    private GenericSubscriber shouldHeadingPID = MoShuffleboard.getInstance().settingsTab
-        .add("Keep Heading", false)
-        .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
+    private GenericSubscriber shouldHeadingPID =
+            MoShuffleboard.getInstance()
+                    .settingsTab
+                    .add("Keep Heading", false)
+                    .withWidget(BuiltInWidgets.kToggleSwitch)
+                    .getEntry();
 
     public final SwerveModule frontLeft;
     public final SwerveModule frontRight;
@@ -84,46 +85,54 @@ public class DriveSubsystem extends SubsystemBase {
 
         headingController.enableContinuousInput(-Math.PI, Math.PI);
 
-        this.frontLeft = new SwerveModule(
-            "FL",
-            new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
-            new WPI_TalonFX(Constants.DRIVE_LEFT_FRONT.address),
-            MoPrefs.flZero,
-            MoPrefs.flScale,
-            MoPrefs.flDriveMtrScale
-        );
+        this.frontLeft =
+                new SwerveModule(
+                        "FL",
+                        new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
+                        new WPI_TalonFX(Constants.DRIVE_LEFT_FRONT.address),
+                        MoPrefs.flZero,
+                        MoPrefs.flScale,
+                        MoPrefs.flDriveMtrScale);
 
-        this.frontRight = new SwerveModule(
-            "FR",
-            new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
-            new WPI_TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
-            MoPrefs.frZero,
-            MoPrefs.frScale,
-            MoPrefs.frDriveMtrScale
-        );
+        this.frontRight =
+                new SwerveModule(
+                        "FR",
+                        new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
+                        new WPI_TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
+                        MoPrefs.frZero,
+                        MoPrefs.frScale,
+                        MoPrefs.frDriveMtrScale);
 
-        this.rearLeft = new SwerveModule(
-            "RL",
-            new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
-            new WPI_TalonFX(Constants.DRIVE_LEFT_REAR.address),
-            MoPrefs.rlZero,
-            MoPrefs.rlScale,
-            MoPrefs.rlDriveMtrScale
-        );
+        this.rearLeft =
+                new SwerveModule(
+                        "RL",
+                        new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
+                        new WPI_TalonFX(Constants.DRIVE_LEFT_REAR.address),
+                        MoPrefs.rlZero,
+                        MoPrefs.rlScale,
+                        MoPrefs.rlDriveMtrScale);
 
-        this.rearRight = new SwerveModule(
-            "RR",
-            new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
-            new WPI_TalonFX(Constants.DRIVE_RIGHT_REAR.address),
-            MoPrefs.rrZero,
-            MoPrefs.rrScale,
-            MoPrefs.rrDriveMtrScale
-        );
+        this.rearRight =
+                new SwerveModule(
+                        "RR",
+                        new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
+                        new WPI_TalonFX(Constants.DRIVE_RIGHT_REAR.address),
+                        MoPrefs.rrZero,
+                        MoPrefs.rrScale,
+                        MoPrefs.rrDriveMtrScale);
 
         resetEncoderTimer.start();
 
-        MoShuffleboard.getInstance().matchTab.addDouble("FL_POS", frontLeft.driveMotor::getSelectedSensorPosition);
-        MoShuffleboard.getInstance().matchTab.addDouble("FL_POS_m", () -> frontLeft.driveMotor.getSelectedSensorPosition() / MoPrefs.flDriveMtrScale.get());
+        MoShuffleboard.getInstance()
+                .matchTab
+                .addDouble("FL_POS", frontLeft.driveMotor::getSelectedSensorPosition);
+        MoShuffleboard.getInstance()
+                .matchTab
+                .addDouble(
+                        "FL_POS_m",
+                        () ->
+                                frontLeft.driveMotor.getSelectedSensorPosition()
+                                        / MoPrefs.flDriveMtrScale.get());
 
         double xoff = MoPrefs.chassisSizeX.get() / 2;
         double yoff = MoPrefs.chassisSizeY.get() / 2;
@@ -132,7 +141,6 @@ public class DriveSubsystem extends SubsystemBase {
         Translation2d fr = new Translation2d(xoff, -yoff);
         Translation2d rl = new Translation2d(-xoff, yoff);
         Translation2d rr = new Translation2d(-xoff, -yoff);
-
 
         this.kinematics = new SwerveDriveKinematics(fl, fr, rl, rr);
     }
@@ -148,6 +156,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     /**
      * Gets the current heading, within the range (-PI, PI]
+     *
      * @return the current heading
      */
     private Rotation2d getCurrHeading() {
@@ -156,30 +165,32 @@ public class DriveSubsystem extends SubsystemBase {
 
     /**
      * Calculate how much the robot should turn. We want to use PID to prevent any turning, except
-     * for these situations: (1) if the driver has requested a turn, or (2) if the robot is
-     * slowing down after a requested turn (to prevent an unexpected 'snap-back' behavior).
+     * for these situations: (1) if the driver has requested a turn, or (2) if the robot is slowing
+     * down after a requested turn (to prevent an unexpected 'snap-back' behavior).
+     *
      * @param turnRequest The turn requested by the driver
      * @param currentHeading The robot's current heading, as reported by the gyro
      * @return How much the robot should turn
      */
     private double calculateTurn(double turnRequest, Rotation2d currentHeading) {
-        switch(turnState) {
+        switch (turnState) {
             case HOLD_HEADING:
-                if(turnRequest != 0) {
+                if (turnRequest != 0) {
                     turnState = TurnState.TURNING;
                 }
                 break;
             case TURNING:
-                if(turnRequest == 0 && Math.abs(gyro.getRate()) < TURN_RATE_CUTOFF) {
+                if (turnRequest == 0 && Math.abs(gyro.getRate()) < TURN_RATE_CUTOFF) {
                     maintainHeading = currentHeading;
                     turnState = TurnState.HOLD_HEADING;
                 }
                 break;
         }
-        switch(turnState) {
+        switch (turnState) {
             case HOLD_HEADING:
-                if(shouldHeadingPID.getBoolean(true)) {
-                    return headingController.calculate(currentHeading.getRadians(), maintainHeading.getRadians());
+                if (shouldHeadingPID.getBoolean(true)) {
+                    return headingController.calculate(
+                            currentHeading.getRadians(), maintainHeading.getRadians());
                 }
             case TURNING:
             default:
@@ -191,18 +202,22 @@ public class DriveSubsystem extends SubsystemBase {
         this.driveCartesian(fwdRequest, leftRequest, turnRequest, new Rotation2d());
     }
 
-    public void driveCartesian(double fwdRequest, double leftRequest, double turnRequest, Rotation2d fieldOrientedDriveAngle) {
+    public void driveCartesian(
+            double fwdRequest,
+            double leftRequest,
+            double turnRequest,
+            Rotation2d fieldOrientedDriveAngle) {
         turnRequest = calculateTurn(turnRequest, getCurrHeading());
 
         double maxLinearSpeed = MoPrefs.maxDriveSpeed.get();
         double maxAngularSpeed = MoPrefs.maxTurnSpeed.get();
 
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            -fwdRequest * maxLinearSpeed,
-            leftRequest * maxLinearSpeed,
-            turnRequest * maxAngularSpeed,
-            fieldOrientedDriveAngle
-        );
+        ChassisSpeeds speeds =
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        -fwdRequest * maxLinearSpeed,
+                        leftRequest * maxLinearSpeed,
+                        turnRequest * maxAngularSpeed,
+                        fieldOrientedDriveAngle);
 
         driveSwerveStates(kinematics.toSwerveModuleStates(speeds));
     }
@@ -224,16 +239,20 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public boolean isMoving() {
-        return (frontLeft.driveMotor.getSelectedSensorVelocity() /  MoPrefs.flDriveMtrScale.get()) > MOVE_RATE_CUTOFF
-            || (frontRight.driveMotor.getSelectedSensorVelocity() /  MoPrefs.frDriveMtrScale.get()) > MOVE_RATE_CUTOFF
-            || (rearLeft.driveMotor.getSelectedSensorVelocity() /  MoPrefs.rlDriveMtrScale.get()) > MOVE_RATE_CUTOFF
-            || (rearRight.driveMotor.getSelectedSensorVelocity() /  MoPrefs.rrDriveMtrScale.get()) > MOVE_RATE_CUTOFF;
+        return (frontLeft.driveMotor.getSelectedSensorVelocity() / MoPrefs.flDriveMtrScale.get())
+                        > MOVE_RATE_CUTOFF
+                || (frontRight.driveMotor.getSelectedSensorVelocity()
+                                / MoPrefs.frDriveMtrScale.get())
+                        > MOVE_RATE_CUTOFF
+                || (rearLeft.driveMotor.getSelectedSensorVelocity() / MoPrefs.rlDriveMtrScale.get())
+                        > MOVE_RATE_CUTOFF
+                || (rearRight.driveMotor.getSelectedSensorVelocity()
+                                / MoPrefs.rrDriveMtrScale.get())
+                        > MOVE_RATE_CUTOFF;
     }
 
-
     public void resetRelativeEncoders() {
-        if(!doResetEncoders)
-            return;
+        if (!doResetEncoders) return;
         frontLeft.setRelativePosition();
         frontRight.setRelativePosition();
         rearLeft.setRelativePosition();
@@ -242,11 +261,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if(resetEncoderTimer.advanceIfElapsed(RESET_ENCODER_INTERVAL)) {
+        if (resetEncoderTimer.advanceIfElapsed(RESET_ENCODER_INTERVAL)) {
             resetRelativeEncoders();
         }
 
-        if(DriverStation.isDisabled()) {
+        if (DriverStation.isDisabled()) {
             this.stop();
         }
     }

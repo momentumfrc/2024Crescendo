@@ -89,6 +89,7 @@ public class MoSparkMaxPID {
         SMARTVELOCITY(CANSparkMax.ControlType.kSmartVelocity);
 
         public final CANSparkMax.ControlType innerType;
+
         private Type(CANSparkMax.ControlType innerType) {
             this.innerType = innerType;
         }

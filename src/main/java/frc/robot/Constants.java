@@ -10,11 +10,12 @@ import java.io.File;
 public class Constants {
     /**
      * A wrapper class holding a single integer value representing a CAN Address. The point of this
-     * class is to indicate that the wrapped value is a CAN Address in a more robust way than
-     * just adding "CAN_ADDR" to the constant's name.
-    */
+     * class is to indicate that the wrapped value is a CAN Address in a more robust way than just
+     * adding "CAN_ADDR" to the constant's name.
+     */
     public static class CANAddress {
         public final int address;
+
         public CANAddress(int address) {
             this.address = address;
         }
@@ -22,11 +23,12 @@ public class Constants {
 
     /**
      * A wrapper class holding a single integer value representing a HID Port. The point of this
-     * class is to indicate that the wrapped value is a HID Port in a more robust way than
-     * just adding "PORT" to the constant's name.
-    */
+     * class is to indicate that the wrapped value is a HID Port in a more robust way than just
+     * adding "PORT" to the constant's name.
+     */
     public static class HIDPort {
         public final int port;
+
         public HIDPort(int port) {
             this.port = port;
         }
@@ -47,7 +49,7 @@ public class Constants {
     public static File DATA_STORE_FILE;
 
     static {
-        if(RobotBase.isReal()) {
+        if (RobotBase.isReal()) {
             DATA_STORE_FILE = new File("/home/lvuser/pid_constants.ini");
         } else {
             DATA_STORE_FILE = new File("./pid_constants.ini");

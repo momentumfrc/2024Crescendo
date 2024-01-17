@@ -4,14 +4,13 @@
 
 package frc.robot.command;
 
-import java.util.ArrayList;
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoUtils;
+import java.util.ArrayList;
+import java.util.function.DoubleSupplier;
 
 public class CalibrateSwerveDriveCommand extends Command {
     private static class Calibrator {
@@ -75,33 +74,32 @@ public class CalibrateSwerveDriveCommand extends Command {
 
         public void recordDataPoint() {
             DataPoint datum = new DataPoint(getAbsRad(), getRelRad());
-            if(datum.abs > CALIBRATE_END || datum.abs < CALIBRATE_START) {
+            if (datum.abs > CALIBRATE_END || datum.abs < CALIBRATE_START) {
                 return;
             }
             data.add(datum);
         }
 
         /**
-         * Uses least-squares regression to calculate the factor the current relative encoder
-         * scale should be adjusted by to minimize the error between the relative and absolute
-         * encoders.
-         * <p>
-         * Let R be the relative encoder count, and A be the absolute position in radians (as given
-         * by the absolute encoder). Also let B be the current encoder scale (in units of radians
-         * per encoder count) and let F be the error factor such that R*B*F = A. It follows that
-         * F = A / R*B.
-         * Find the line of best fit where x = A and y = R*B. The slope of this line, m, estimates
-         * R*B / A. Thus, F = 1/m, and so the correction factor is the reciprocal of the slope of
-         * the line of best fit where the absolute position is the x-axis and the current estimated
-         * position is the y-axis.
+         * Uses least-squares regression to calculate the factor the current relative encoder scale
+         * should be adjusted by to minimize the error between the relative and absolute encoders.
+         *
+         * <p>Let R be the relative encoder count, and A be the absolute position in radians (as
+         * given by the absolute encoder). Also let B be the current encoder scale (in units of
+         * radians per encoder count) and let F be the error factor such that R*B*F = A. It follows
+         * that F = A / R*B. Find the line of best fit where x = A and y = R*B. The slope of this
+         * line, m, estimates R*B / A. Thus, F = 1/m, and so the correction factor is the reciprocal
+         * of the slope of the line of best fit where the absolute position is the x-axis and the
+         * current estimated position is the y-axis.
          *
          * @return The factor the current relative encoder scale should be adjusted by to minimize
-         * the error between the relative and absolute encoders.
+         *     the error between the relative and absolute encoders.
          */
         public double calculateCorrectionFactor() {
             double n = data.size();
-            if(n < MIN_DATAPOINTS) {
-                DriverStation.reportWarning("Cannot complete calibration: insufficient data", false);
+            if (n < MIN_DATAPOINTS) {
+                DriverStation.reportWarning(
+                        "Cannot complete calibration: insufficient data", false);
                 return 1;
             }
 
@@ -110,17 +108,16 @@ public class CalibrateSwerveDriveCommand extends Command {
             double sumx2 = 0;
             double sumxy = 0;
 
-            for(DataPoint point : data) {
+            for (DataPoint point : data) {
                 sumx += point.abs;
                 sumy += point.rel;
                 sumx2 += point.abs * point.abs;
                 sumxy += point.abs * point.rel;
             }
 
-            double lsrl_slope = ( (n * sumxy) - (sumx * sumy) ) / ( (n * sumx2) - (sumx * sumx) );
+            double lsrl_slope = ((n * sumxy) - (sumx * sumy)) / ((n * sumx2) - (sumx * sumx));
 
-
-            if(lsrl_slope < 0) {
+            if (lsrl_slope < 0) {
                 DriverStation.reportError("Negative correction factor!", false);
                 return 1;
             }
@@ -141,10 +138,22 @@ public class CalibrateSwerveDriveCommand extends Command {
         addRequirements(drive);
         this.drive = drive;
 
-        frontLeft = new Calibrator(drive.frontLeft.absoluteEncoder::getPosition, drive.frontLeft.relativeEncoder::getPosition);
-        frontRight = new Calibrator(drive.frontRight.absoluteEncoder::getPosition, drive.frontRight.relativeEncoder::getPosition);
-        rearLeft = new Calibrator(drive.rearLeft.absoluteEncoder::getPosition, drive.rearLeft.relativeEncoder::getPosition);
-        rearRight = new Calibrator(drive.rearRight.absoluteEncoder::getPosition, drive.rearRight.relativeEncoder::getPosition);
+        frontLeft =
+                new Calibrator(
+                        drive.frontLeft.absoluteEncoder::getPosition,
+                        drive.frontLeft.relativeEncoder::getPosition);
+        frontRight =
+                new Calibrator(
+                        drive.frontRight.absoluteEncoder::getPosition,
+                        drive.frontRight.relativeEncoder::getPosition);
+        rearLeft =
+                new Calibrator(
+                        drive.rearLeft.absoluteEncoder::getPosition,
+                        drive.rearLeft.relativeEncoder::getPosition);
+        rearRight =
+                new Calibrator(
+                        drive.rearRight.absoluteEncoder::getPosition,
+                        drive.rearRight.relativeEncoder::getPosition);
     }
 
     @Override
@@ -159,28 +168,28 @@ public class CalibrateSwerveDriveCommand extends Command {
 
     @Override
     public void execute() {
-        if(!frontLeft.isFinished()) {
+        if (!frontLeft.isFinished()) {
             drive.frontLeft.directDrive(CALIBRATE_SPEED, 0);
             frontLeft.recordDataPoint();
         } else {
             drive.frontLeft.directDrive(0, 0);
         }
 
-        if(!frontRight.isFinished()) {
+        if (!frontRight.isFinished()) {
             drive.frontRight.directDrive(CALIBRATE_SPEED, 0);
             frontRight.recordDataPoint();
         } else {
             drive.frontRight.directDrive(0, 0);
         }
 
-        if(!rearLeft.isFinished()) {
+        if (!rearLeft.isFinished()) {
             drive.rearLeft.directDrive(CALIBRATE_SPEED, 0);
             rearLeft.recordDataPoint();
         } else {
             drive.frontRight.directDrive(0, 0);
         }
 
-        if(!rearRight.isFinished()) {
+        if (!rearRight.isFinished()) {
             drive.rearRight.directDrive(CALIBRATE_SPEED, 0);
             rearRight.recordDataPoint();
         } else {
@@ -190,36 +199,57 @@ public class CalibrateSwerveDriveCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return frontLeft.isFinished() && frontRight.isFinished() && rearLeft.isFinished() && rearRight.isFinished();
+        return frontLeft.isFinished()
+                && frontRight.isFinished()
+                && rearLeft.isFinished()
+                && rearRight.isFinished();
     }
 
     @Override
     public void end(boolean interrupted) {
-        new Thread(() -> {
-            if(frontLeft.isFinished()) {
-                double factor = frontLeft.calculateCorrectionFactor();
-                System.out.format("frontLeft: factor=%.2f old=%.2f new=%.2f\n", factor, MoPrefs.flScale.get(), MoPrefs.flScale.get() * factor);
-                MoPrefs.flScale.set(MoPrefs.flScale.get() * factor);
-            }
+        new Thread(
+                        () -> {
+                            if (frontLeft.isFinished()) {
+                                double factor = frontLeft.calculateCorrectionFactor();
+                                System.out.format(
+                                        "frontLeft: factor=%.2f old=%.2f new=%.2f\n",
+                                        factor,
+                                        MoPrefs.flScale.get(),
+                                        MoPrefs.flScale.get() * factor);
+                                MoPrefs.flScale.set(MoPrefs.flScale.get() * factor);
+                            }
 
-            if(frontRight.isFinished()) {
-                double factor = frontRight.calculateCorrectionFactor();
-                System.out.format("frontRight: factor=%.2f old=%.2f new=%.2f\n", factor, MoPrefs.frScale.get(), MoPrefs.frScale.get() * factor);
-                MoPrefs.frScale.set(MoPrefs.frScale.get() * factor);
-            }
+                            if (frontRight.isFinished()) {
+                                double factor = frontRight.calculateCorrectionFactor();
+                                System.out.format(
+                                        "frontRight: factor=%.2f old=%.2f new=%.2f\n",
+                                        factor,
+                                        MoPrefs.frScale.get(),
+                                        MoPrefs.frScale.get() * factor);
+                                MoPrefs.frScale.set(MoPrefs.frScale.get() * factor);
+                            }
 
-            if(rearLeft.isFinished()) {
-                double factor = rearLeft.calculateCorrectionFactor();
-                System.out.format("rearLeft: factor=%.2f old=%.2f new=%.2f\n", factor, MoPrefs.rlScale.get(), MoPrefs.rlScale.get() * factor);
-                MoPrefs.rlScale.set(MoPrefs.rlScale.get() * factor);
-            }
+                            if (rearLeft.isFinished()) {
+                                double factor = rearLeft.calculateCorrectionFactor();
+                                System.out.format(
+                                        "rearLeft: factor=%.2f old=%.2f new=%.2f\n",
+                                        factor,
+                                        MoPrefs.rlScale.get(),
+                                        MoPrefs.rlScale.get() * factor);
+                                MoPrefs.rlScale.set(MoPrefs.rlScale.get() * factor);
+                            }
 
-            if(rearRight.isFinished()) {
-                double factor = rearRight.calculateCorrectionFactor();
-                System.out.format("rearRight: factor=%.2f old=%.2f new=%.2f\n", factor, MoPrefs.rrScale.get(), MoPrefs.rrScale.get() * factor);
-                MoPrefs.rrScale.set(MoPrefs.rrScale.get() * factor);
-            }
-        }).start();
+                            if (rearRight.isFinished()) {
+                                double factor = rearRight.calculateCorrectionFactor();
+                                System.out.format(
+                                        "rearRight: factor=%.2f old=%.2f new=%.2f\n",
+                                        factor,
+                                        MoPrefs.rrScale.get(),
+                                        MoPrefs.rrScale.get() * factor);
+                                MoPrefs.rrScale.set(MoPrefs.rrScale.get() * factor);
+                            }
+                        })
+                .start();
 
         drive.doResetEncoders = true;
     }

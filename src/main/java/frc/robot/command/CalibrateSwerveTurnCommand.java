@@ -4,14 +4,13 @@
 
 package frc.robot.command;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.input.MoInput;
 import frc.robot.subsystem.DriveSubsystem;
+import java.util.function.Supplier;
 
 public class CalibrateSwerveTurnCommand extends Command {
 
@@ -38,7 +37,8 @@ public class CalibrateSwerveTurnCommand extends Command {
         double fwdRequest = mvRequest.y();
         double leftRequest = mvRequest.x();
 
-        SwerveModuleState state = new SwerveModuleState(0, new Rotation2d(-leftRequest, -fwdRequest));
+        SwerveModuleState state =
+                new SwerveModuleState(0, new Rotation2d(-leftRequest, -fwdRequest));
 
         drive.frontLeft.drive(state);
         drive.frontRight.drive(state);
@@ -52,5 +52,4 @@ public class CalibrateSwerveTurnCommand extends Command {
 
         drive.doResetEncoders = true;
     }
-
 }

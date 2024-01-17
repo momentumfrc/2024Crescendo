@@ -4,18 +4,14 @@
 
 package frc.robot.math;
 
-import java.util.function.DoubleUnaryOperator;
-
-import org.ejml.simple.SimpleMatrix;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
+import java.util.function.DoubleUnaryOperator;
+import org.ejml.simple.SimpleMatrix;
 
-/**
- * Vector in 2 dimensions
- */
+/** Vector in 2 dimensions */
 public class Vec2 extends Vector<N2> {
     public Vec2(Matrix<N2, N1> mat) {
         super(mat);
@@ -51,9 +47,7 @@ public class Vec2 extends Vector<N2> {
         set(0, 1, y);
     }
 
-    /**
-     * Alias for {@code norm()}
-     */
+    /** Alias for {@code norm()} */
     public double len() {
         return norm();
     }

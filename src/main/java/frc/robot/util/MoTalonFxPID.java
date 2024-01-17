@@ -9,10 +9,10 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 public class MoTalonFxPID {
     /**
-     * The talon expects speed measurements in m/100ms, but all our calculations are in m/s.
-     * So we just multiply by this conversion factor to adjust.
+     * The talon expects speed measurements in m/100ms, but all our calculations are in m/s. So we
+     * just multiply by this conversion factor to adjust.
      */
-    private static final double VELOCITY_CONVERSION_FACTOR = 1/10.0;
+    private static final double VELOCITY_CONVERSION_FACTOR = 1 / 10.0;
 
     private final Type type;
     private final TalonFX motorController;
@@ -26,7 +26,6 @@ public class MoTalonFxPID {
     public Type getType() {
         return type;
     }
-
 
     public void setP(double kP) {
         motorController.config_kP(0, kP);
@@ -69,7 +68,7 @@ public class MoTalonFxPID {
     }
 
     public void setReference(double value) {
-        if(this.type == Type.VELOCITY) {
+        if (this.type == Type.VELOCITY) {
             value *= VELOCITY_CONVERSION_FACTOR;
         }
         this.motorController.set(this.type.innerType, value);
@@ -82,6 +81,7 @@ public class MoTalonFxPID {
         VELOCITY(TalonFXControlMode.Velocity);
 
         public final TalonFXControlMode innerType;
+
         private Type(TalonFXControlMode innerType) {
             this.innerType = innerType;
         }

@@ -4,17 +4,16 @@
 
 package frc.robot.util;
 
-import java.util.EnumSet;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
+import java.util.EnumSet;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /** Robot preferences, accessible through Shuffleboard */
 public class MoPrefs {
@@ -53,7 +52,11 @@ public class MoPrefs {
 
         private Consumer<T> subscriber = null;
 
-        public Pref(String key, T defaultValue, Function<NetworkTableValue, T> getter, BiFunction<NetworkTableEntry, T, Boolean> setter) {
+        public Pref(
+                String key,
+                T defaultValue,
+                Function<NetworkTableValue, T> getter,
+                BiFunction<NetworkTableEntry, T, Boolean> setter) {
             this.key = key;
             this.getter = getter;
             this.setter = setter;
@@ -76,18 +79,18 @@ public class MoPrefs {
         }
 
         public void subscribe(Consumer<T> consumer, boolean notifyImmediately) {
-            if(subscriber != null) {
+            if (subscriber != null) {
                 subscriber = subscriber.andThen(consumer);
             } else {
                 subscriber = consumer;
-                entry.getInstance().addListener(
-                    entry,
-                    EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-                    (e) -> consumer.accept(getter.apply(e.valueData.value))
-                );
+                entry.getInstance()
+                        .addListener(
+                                entry,
+                                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                                (e) -> consumer.accept(getter.apply(e.valueData.value)));
             }
 
-            if(notifyImmediately) {
+            if (notifyImmediately) {
                 consumer.accept(this.get());
             }
         }
@@ -98,7 +101,7 @@ public class MoPrefs {
     private StringPublisher typePublisher;
 
     private static MoPrefs getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MoPrefs();
         }
         return instance;
@@ -111,6 +114,7 @@ public class MoPrefs {
     }
 
     private static Pref<Double> doublePref(String key, double defaultValue) {
-        return getInstance().new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
+        return getInstance()
+        .new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
     }
 }

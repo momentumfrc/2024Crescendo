@@ -4,13 +4,12 @@
 
 package frc.robot.input;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
 import frc.robot.math.Vec2;
 import frc.robot.util.MoPrefs;
-import frc.robot.util.MoUtils;
 import frc.robot.util.MoPrefs.Pref;
+import frc.robot.util.MoUtils;
 
 public class SingleControllerInput implements MoInput {
     private final XboxController controller;
@@ -29,7 +28,7 @@ public class SingleControllerInput implements MoInput {
     @Override
     public Vec2 getMoveRequest() {
         return new Vec2(controller.getLeftX(), controller.getLeftY())
-            .scalarOp(this::applyDriveInputTransforms);
+                .scalarOp(this::applyDriveInputTransforms);
     }
 
     @Override

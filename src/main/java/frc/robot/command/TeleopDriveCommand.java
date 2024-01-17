@@ -4,8 +4,6 @@
 
 package frc.robot.command;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.input.MoInput;
@@ -13,6 +11,7 @@ import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoPrefs.Pref;
+import java.util.function.Supplier;
 
 public class TeleopDriveCommand extends Command {
     private final DriveSubsystem drive;
@@ -25,25 +24,29 @@ public class TeleopDriveCommand extends Command {
     private SlewRateLimiter leftLimiter;
     private SlewRateLimiter turnLimiter;
 
-    public TeleopDriveCommand(DriveSubsystem drive, PositioningSubsystem positioning, Supplier<MoInput> inputSupplier) {
+    public TeleopDriveCommand(
+            DriveSubsystem drive,
+            PositioningSubsystem positioning,
+            Supplier<MoInput> inputSupplier) {
         this.drive = drive;
         this.positioning = positioning;
         this.inputSupplier = inputSupplier;
 
-        rampTime.subscribe(rampTime -> {
-            double slewRate = 1.0 / rampTime;
+        rampTime.subscribe(
+                rampTime -> {
+                    double slewRate = 1.0 / rampTime;
 
-            fwdLimiter = new SlewRateLimiter(slewRate);
-            leftLimiter = new SlewRateLimiter(slewRate);
-            turnLimiter = new SlewRateLimiter(slewRate);
-        }, true);
+                    fwdLimiter = new SlewRateLimiter(slewRate);
+                    leftLimiter = new SlewRateLimiter(slewRate);
+                    turnLimiter = new SlewRateLimiter(slewRate);
+                },
+                true);
 
         addRequirements(drive);
     }
 
     @Override
-    public void initialize() {
-    }
+    public void initialize() {}
 
     @Override
     public void execute() {
@@ -54,7 +57,7 @@ public class TeleopDriveCommand extends Command {
 
         double turnRequest = input.getTurnRequest();
 
-        if(input.getShouldUseSlowSpeed()) {
+        if (input.getShouldUseSlowSpeed()) {
             double slowSpeed = MoPrefs.driveSlowSpeed.get();
             double turnSlowSpeed = MoPrefs.turnSlowSpeed.get();
             fwdRequest *= slowSpeed;

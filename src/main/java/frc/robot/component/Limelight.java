@@ -4,8 +4,6 @@
 
 package frc.robot.component;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -18,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.PoseFilter;
+import java.util.Optional;
 
 public class Limelight {
     /**
@@ -32,27 +31,29 @@ public class Limelight {
      */
     private static final double STDDEV_CUTOFF = 0.01;
 
-    /**
-     * The maximum z-score of any saved pose before it is considered invalid.
-     */
+    /** The maximum z-score of any saved pose before it is considered invalid. */
     private static final double ZSCORE_CUTOFF = 3;
-
 
     private static final double DEGS_TO_RADS = Math.PI / 180;
 
-    private PoseFilter poseFilter = new PoseFilter(LIMELIGHT_DATAPOINTS, STDDEV_CUTOFF, ZSCORE_CUTOFF);
+    private PoseFilter poseFilter =
+            new PoseFilter(LIMELIGHT_DATAPOINTS, STDDEV_CUTOFF, ZSCORE_CUTOFF);
     private Optional<Pose3d> lastReportedPose = Optional.empty();
     private Optional<Translation2d> lastReportedCrosshair = Optional.empty();
 
-    private final NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    private final DoublePublisher pipelinePublisher = limelightTable.getDoubleTopic("pipeline").publish();
+    private final NetworkTable limelightTable =
+            NetworkTableInstance.getDefault().getTable("limelight");
+    private final DoublePublisher pipelinePublisher =
+            limelightTable.getDoubleTopic("pipeline").publish();
     private final DoublePublisher ledPublisher = limelightTable.getDoubleTopic("ledMode").publish();
     private final DoubleSubscriber tvSubscriber = limelightTable.getDoubleTopic("tv").subscribe(0);
     private final DoubleSubscriber txSubscriber = limelightTable.getDoubleTopic("tx").subscribe(0);
     private final DoubleSubscriber tySubscriber = limelightTable.getDoubleTopic("ty").subscribe(0);
 
-    private final DoubleArraySubscriber botposeBlueSubscriber = limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
-    private final DoubleArraySubscriber botposeRedSubscriber = limelightTable.getDoubleArrayTopic("botpose_wpired").subscribe(new double[6]);
+    private final DoubleArraySubscriber botposeBlueSubscriber =
+            limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
+    private final DoubleArraySubscriber botposeRedSubscriber =
+            limelightTable.getDoubleArrayTopic("botpose_wpired").subscribe(new double[6]);
 
     public Optional<Pose3d> getRobotPose() {
         return lastReportedPose;
@@ -64,17 +65,16 @@ public class Limelight {
 
     /**
      * Pose data is considered valid if it satisfies the following conditions:
+     *
      * <ol>
-     * <li>It has a length of exactly 6
-     * <li>At least one value is nonzero
+     *   <li>It has a length of exactly 6
+     *   <li>At least one value is nonzero
      * </ol>
      */
     private boolean isPoseDataValid(double[] rawPoseData) {
-        if(rawPoseData.length != 6)
-            return false;
-        for(double data : rawPoseData) {
-            if(data != 0)
-                return true;
+        if (rawPoseData.length != 6) return false;
+        for (double data : rawPoseData) {
+            if (data != 0) return true;
         }
         return false;
     }
@@ -104,14 +104,13 @@ public class Limelight {
             this.lastReportedCrosshair = Optional.of(crosshairs);
 
             if (isPoseDataValid(rawPoseData)) {
-                Pose3d pose = new Pose3d(
-                    new Translation3d(rawPoseData[0], rawPoseData[1], rawPoseData[2]),
-                    new Rotation3d(
-                        rawPoseData[3] * DEGS_TO_RADS,
-                        rawPoseData[4] * DEGS_TO_RADS,
-                        rawPoseData[5] * DEGS_TO_RADS
-                    )
-                );
+                Pose3d pose =
+                        new Pose3d(
+                                new Translation3d(rawPoseData[0], rawPoseData[1], rawPoseData[2]),
+                                new Rotation3d(
+                                        rawPoseData[3] * DEGS_TO_RADS,
+                                        rawPoseData[4] * DEGS_TO_RADS,
+                                        rawPoseData[5] * DEGS_TO_RADS));
                 this.lastReportedPose = poseFilter.accept(pose);
             } else {
                 this.lastReportedPose = Optional.empty();
@@ -119,5 +118,4 @@ public class Limelight {
             }
         }
     }
-
 }
