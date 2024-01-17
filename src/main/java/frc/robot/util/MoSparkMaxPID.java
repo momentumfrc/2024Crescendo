@@ -6,12 +6,12 @@ package frc.robot.util;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkPIDController;
 
 public class MoSparkMaxPID {
     private final Type type;
     private final CANSparkMax motorController;
-    private final SparkMaxPIDController pidController;
+    private final SparkPIDController pidController;
     private final RelativeEncoder encoder;
     private final int pidSlot;
     private double lastReference;
@@ -24,7 +24,7 @@ public class MoSparkMaxPID {
         this.pidSlot = pidSlot;
     }
 
-    public SparkMaxPIDController getPID() {
+    public SparkPIDController getPID() {
         return pidController;
     }
 

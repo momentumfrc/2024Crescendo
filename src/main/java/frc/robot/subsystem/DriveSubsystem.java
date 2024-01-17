@@ -4,7 +4,7 @@
 
 package frc.robot.subsystem;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -89,7 +89,7 @@ public class DriveSubsystem extends SubsystemBase {
                 new SwerveModule(
                         "FL",
                         new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
-                        new WPI_TalonFX(Constants.DRIVE_LEFT_FRONT.address),
+                        new TalonFX(Constants.DRIVE_LEFT_FRONT.address),
                         MoPrefs.flZero,
                         MoPrefs.flScale,
                         MoPrefs.flDriveMtrScale);
@@ -98,7 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
                 new SwerveModule(
                         "FR",
                         new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
-                        new WPI_TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
+                        new TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
                         MoPrefs.frZero,
                         MoPrefs.frScale,
                         MoPrefs.frDriveMtrScale);
@@ -107,7 +107,7 @@ public class DriveSubsystem extends SubsystemBase {
                 new SwerveModule(
                         "RL",
                         new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
-                        new WPI_TalonFX(Constants.DRIVE_LEFT_REAR.address),
+                        new TalonFX(Constants.DRIVE_LEFT_REAR.address),
                         MoPrefs.rlZero,
                         MoPrefs.rlScale,
                         MoPrefs.rlDriveMtrScale);
@@ -116,7 +116,7 @@ public class DriveSubsystem extends SubsystemBase {
                 new SwerveModule(
                         "RR",
                         new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
-                        new WPI_TalonFX(Constants.DRIVE_RIGHT_REAR.address),
+                        new TalonFX(Constants.DRIVE_RIGHT_REAR.address),
                         MoPrefs.rrZero,
                         MoPrefs.rrScale,
                         MoPrefs.rrDriveMtrScale);
@@ -125,13 +125,14 @@ public class DriveSubsystem extends SubsystemBase {
 
         MoShuffleboard.getInstance()
                 .matchTab
-                .addDouble("FL_POS", frontLeft.driveMotor::getSelectedSensorPosition);
+                .addDouble(
+                        "FL_POS", () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble());
         MoShuffleboard.getInstance()
                 .matchTab
                 .addDouble(
                         "FL_POS_m",
                         () ->
-                                frontLeft.driveMotor.getSelectedSensorPosition()
+                                frontLeft.driveMotor.getRotorPosition().getValueAsDouble()
                                         / MoPrefs.flDriveMtrScale.get());
 
         double xoff = MoPrefs.chassisSizeX.get() / 2;
@@ -239,14 +240,16 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public boolean isMoving() {
-        return (frontLeft.driveMotor.getSelectedSensorVelocity() / MoPrefs.flDriveMtrScale.get())
+        return (frontLeft.driveMotor.getRotorVelocity().getValueAsDouble()
+                                / MoPrefs.flDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (frontRight.driveMotor.getSelectedSensorVelocity()
+                || (frontRight.driveMotor.getRotorVelocity().getValueAsDouble()
                                 / MoPrefs.frDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (rearLeft.driveMotor.getSelectedSensorVelocity() / MoPrefs.rlDriveMtrScale.get())
+                || (rearLeft.driveMotor.getRotorVelocity().getValueAsDouble()
+                                / MoPrefs.rlDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (rearRight.driveMotor.getSelectedSensorVelocity()
+                || (rearRight.driveMotor.getRotorVelocity().getValueAsDouble()
                                 / MoPrefs.rrDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF;
     }

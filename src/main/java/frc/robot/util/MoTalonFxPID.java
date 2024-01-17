@@ -4,8 +4,13 @@
 
 package frc.robot.util;
 
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import java.util.function.Function;
 
 public class MoTalonFxPID {
     /**
@@ -16,39 +21,55 @@ public class MoTalonFxPID {
 
     private final Type type;
     private final TalonFX motorController;
+    private final Slot0Configs slotPIDConfigs = new Slot0Configs();
     private double lastReference;
 
     public MoTalonFxPID(Type type, TalonFX controller) {
         this.type = type;
         this.motorController = controller;
+
+        // Load the motor controller's Slot 0 PID values into slotPIDConfigs
+        this.motorController.getConfigurator().refresh(slotPIDConfigs);
     }
 
     public Type getType() {
         return type;
     }
 
+    public Slot0Configs getConfigs() {
+        return slotPIDConfigs;
+    }
+
+    public void applyConfigs() {
+        motorController.getConfigurator().apply(slotPIDConfigs);
+    }
+
     public void setP(double kP) {
-        motorController.config_kP(0, kP);
+        slotPIDConfigs.kP = kP;
+        applyConfigs();
     }
 
     public void setI(double kI) {
-        motorController.config_kI(0, kI);
+        slotPIDConfigs.kI = kI;
+        applyConfigs();
     }
 
     public void setD(double kD) {
-        motorController.config_kD(0, kD);
+        slotPIDConfigs.kD = kD;
+        applyConfigs();
     }
 
     public void setFF(double kFF) {
-        motorController.config_kF(0, kFF);
+        slotPIDConfigs.kV = kFF;
+        applyConfigs();
     }
 
     public void setIZone(double iZone) {
-        motorController.config_IntegralZone(0, iZone);
+        // TODO: This appears to no longer be supported by Phoenix v6
     }
 
     public double getLastOutput() {
-        return this.motorController.getMotorOutputPercent();
+        return this.motorController.getBridgeOutput().getValueAsDouble();
     }
 
     public double getSetpoint() {
@@ -59,9 +80,9 @@ public class MoTalonFxPID {
         switch (this.type) {
             case POSITION:
             case SMARTMOTION:
-                return this.motorController.getSelectedSensorPosition();
+                return this.motorController.getRotorPosition().getValueAsDouble();
             case VELOCITY:
-                return this.motorController.getSelectedSensorVelocity();
+                return this.motorController.getRotorVelocity().getValueAsDouble();
         }
 
         return 0;
@@ -71,19 +92,19 @@ public class MoTalonFxPID {
         if (this.type == Type.VELOCITY) {
             value *= VELOCITY_CONVERSION_FACTOR;
         }
-        this.motorController.set(this.type.innerType, value);
+        this.motorController.setControl(this.type.control.apply(value));
         this.lastReference = value;
     }
 
     public enum Type {
-        POSITION(TalonFXControlMode.Position),
-        SMARTMOTION(TalonFXControlMode.MotionMagic),
-        VELOCITY(TalonFXControlMode.Velocity);
+        POSITION(v -> new PositionVoltage(v)),
+        SMARTMOTION(v -> new MotionMagicVoltage(v)),
+        VELOCITY(v -> new VelocityVoltage(v));
 
-        public final TalonFXControlMode innerType;
+        public final Function<Double, ControlRequest> control;
 
-        private Type(TalonFXControlMode innerType) {
-            this.innerType = innerType;
+        private Type(Function<Double, ControlRequest> control) {
+            this.control = control;
         }
     }
 }

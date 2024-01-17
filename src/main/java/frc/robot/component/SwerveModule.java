@@ -4,15 +4,15 @@
 
 package frc.robot.component;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkAnalogSensor;
 import com.revrobotics.SparkAnalogSensor.Mode;
-import com.revrobotics.SparkMaxAnalogSensor;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -32,10 +32,10 @@ public class SwerveModule {
 
     private final String key;
     public final CANSparkMax turnMotor;
-    public final WPI_TalonFX driveMotor;
+    public final TalonFX driveMotor;
 
     // Note: the absolute encoder returns rotations, in the range [0, 1)
-    public final SparkMaxAnalogSensor absoluteEncoder;
+    public final SparkAnalogSensor absoluteEncoder;
 
     private final MoSparkMaxPID turnPID;
     private final MoTalonFxPID drivePID;
@@ -53,7 +53,7 @@ public class SwerveModule {
     public SwerveModule(
             String key,
             CANSparkMax turnMotor,
-            WPI_TalonFX driveMotor,
+            TalonFX driveMotor,
             Pref<Double> encoderZero,
             Pref<Double> encoderScale,
             Pref<Double> driveMtrScale) {
@@ -64,7 +64,7 @@ public class SwerveModule {
         this.encoderScale = encoderScale;
         this.driveMtrScale = driveMtrScale;
 
-        this.driveMotor.setNeutralMode(NeutralMode.Brake);
+        this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
         this.turnMotor.setIdleMode(IdleMode.kBrake);
 
         this.absoluteEncoder = turnMotor.getAnalog(Mode.kAbsolute);
@@ -140,12 +140,12 @@ public class SwerveModule {
 
     public void directDrive(double turnSpeed, double driveSpeed) {
         turnMotor.set(turnSpeed);
-        driveMotor.set(ControlMode.PercentOutput, driveSpeed);
+        driveMotor.setControl(new DutyCycleOut(driveSpeed));
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveMotor.getSelectedSensorPosition() / driveMtrScale.get(),
+                driveMotor.getRotorPosition().getValueAsDouble() / driveMtrScale.get(),
                 Rotation2d.fromRadians(relativeEncoder.getPosition()));
     }
 
