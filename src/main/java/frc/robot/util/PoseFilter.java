@@ -111,8 +111,7 @@ public class PoseFilter {
             z += pose.getRotation().getZ();
         }
         averageTranslation = averageTranslation.div(goodData.size());
-        Rotation3d averageRotation =
-                new Rotation3d(x / goodData.size(), y / goodData.size(), z / goodData.size());
+        Rotation3d averageRotation = new Rotation3d(x / goodData.size(), y / goodData.size(), z / goodData.size());
 
         return Optional.of(new Pose3d(averageTranslation, averageRotation));
     }

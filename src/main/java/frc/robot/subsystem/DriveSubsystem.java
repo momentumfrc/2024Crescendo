@@ -51,12 +51,11 @@ public class DriveSubsystem extends SubsystemBase {
     private final MoPIDF headingController = new MoPIDF();
     private final PIDTuner headingTuner = TunerUtils.forMoPIDF(headingController, "Drive Heading");
 
-    private GenericSubscriber shouldHeadingPID =
-            MoShuffleboard.getInstance()
-                    .settingsTab
-                    .add("Keep Heading", false)
-                    .withWidget(BuiltInWidgets.kToggleSwitch)
-                    .getEntry();
+    private GenericSubscriber shouldHeadingPID = MoShuffleboard.getInstance()
+            .settingsTab
+            .add("Keep Heading", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .getEntry();
 
     public final SwerveModule frontLeft;
     public final SwerveModule frontRight;
@@ -85,41 +84,37 @@ public class DriveSubsystem extends SubsystemBase {
 
         headingController.enableContinuousInput(-Math.PI, Math.PI);
 
-        this.frontLeft =
-                new SwerveModule(
-                        "FL",
-                        new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
-                        new TalonFX(Constants.DRIVE_LEFT_FRONT.address),
-                        MoPrefs.flZero,
-                        MoPrefs.flScale,
-                        MoPrefs.flDriveMtrScale);
+        this.frontLeft = new SwerveModule(
+                "FL",
+                new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_LEFT_FRONT.address),
+                MoPrefs.flZero,
+                MoPrefs.flScale,
+                MoPrefs.flDriveMtrScale);
 
-        this.frontRight =
-                new SwerveModule(
-                        "FR",
-                        new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
-                        new TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
-                        MoPrefs.frZero,
-                        MoPrefs.frScale,
-                        MoPrefs.frDriveMtrScale);
+        this.frontRight = new SwerveModule(
+                "FR",
+                new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
+                MoPrefs.frZero,
+                MoPrefs.frScale,
+                MoPrefs.frDriveMtrScale);
 
-        this.rearLeft =
-                new SwerveModule(
-                        "RL",
-                        new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
-                        new TalonFX(Constants.DRIVE_LEFT_REAR.address),
-                        MoPrefs.rlZero,
-                        MoPrefs.rlScale,
-                        MoPrefs.rlDriveMtrScale);
+        this.rearLeft = new SwerveModule(
+                "RL",
+                new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_LEFT_REAR.address),
+                MoPrefs.rlZero,
+                MoPrefs.rlScale,
+                MoPrefs.rlDriveMtrScale);
 
-        this.rearRight =
-                new SwerveModule(
-                        "RR",
-                        new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
-                        new TalonFX(Constants.DRIVE_RIGHT_REAR.address),
-                        MoPrefs.rrZero,
-                        MoPrefs.rrScale,
-                        MoPrefs.rrDriveMtrScale);
+        this.rearRight = new SwerveModule(
+                "RR",
+                new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_RIGHT_REAR.address),
+                MoPrefs.rrZero,
+                MoPrefs.rrScale,
+                MoPrefs.rrDriveMtrScale);
 
         resetEncoderTimer.start();
 
@@ -131,9 +126,8 @@ public class DriveSubsystem extends SubsystemBase {
                 .matchTab
                 .addDouble(
                         "FL_POS_m",
-                        () ->
-                                frontLeft.driveMotor.getRotorPosition().getValueAsDouble()
-                                        / MoPrefs.flDriveMtrScale.get());
+                        () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble()
+                                / MoPrefs.flDriveMtrScale.get());
 
         double xoff = MoPrefs.chassisSizeX.get() / 2;
         double yoff = MoPrefs.chassisSizeY.get() / 2;
@@ -148,10 +142,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     public SwerveModulePosition[] getWheelPositions() {
         return new SwerveModulePosition[] {
-            frontLeft.getPosition(),
-            frontRight.getPosition(),
-            rearLeft.getPosition(),
-            rearRight.getPosition()
+            frontLeft.getPosition(), frontRight.getPosition(), rearLeft.getPosition(), rearRight.getPosition()
         };
     }
 
@@ -190,8 +181,7 @@ public class DriveSubsystem extends SubsystemBase {
         switch (turnState) {
             case HOLD_HEADING:
                 if (shouldHeadingPID.getBoolean(true)) {
-                    return headingController.calculate(
-                            currentHeading.getRadians(), maintainHeading.getRadians());
+                    return headingController.calculate(currentHeading.getRadians(), maintainHeading.getRadians());
                 }
             case TURNING:
             default:
@@ -204,21 +194,17 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void driveCartesian(
-            double fwdRequest,
-            double leftRequest,
-            double turnRequest,
-            Rotation2d fieldOrientedDriveAngle) {
+            double fwdRequest, double leftRequest, double turnRequest, Rotation2d fieldOrientedDriveAngle) {
         turnRequest = calculateTurn(turnRequest, getCurrHeading());
 
         double maxLinearSpeed = MoPrefs.maxDriveSpeed.get();
         double maxAngularSpeed = MoPrefs.maxTurnSpeed.get();
 
-        ChassisSpeeds speeds =
-                ChassisSpeeds.fromFieldRelativeSpeeds(
-                        -fwdRequest * maxLinearSpeed,
-                        leftRequest * maxLinearSpeed,
-                        turnRequest * maxAngularSpeed,
-                        fieldOrientedDriveAngle);
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                -fwdRequest * maxLinearSpeed,
+                leftRequest * maxLinearSpeed,
+                turnRequest * maxAngularSpeed,
+                fieldOrientedDriveAngle);
 
         driveSwerveStates(kinematics.toSwerveModuleStates(speeds));
     }
@@ -240,17 +226,13 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public boolean isMoving() {
-        return (frontLeft.driveMotor.getRotorVelocity().getValueAsDouble()
-                                / MoPrefs.flDriveMtrScale.get())
+        return (frontLeft.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.flDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (frontRight.driveMotor.getRotorVelocity().getValueAsDouble()
-                                / MoPrefs.frDriveMtrScale.get())
+                || (frontRight.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.frDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (rearLeft.driveMotor.getRotorVelocity().getValueAsDouble()
-                                / MoPrefs.rlDriveMtrScale.get())
+                || (rearLeft.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.rlDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF
-                || (rearRight.driveMotor.getRotorVelocity().getValueAsDouble()
-                                / MoPrefs.rrDriveMtrScale.get())
+                || (rearRight.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.rrDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF;
     }
 

@@ -9,8 +9,7 @@ import com.revrobotics.RelativeEncoder;
 public class MoUtils {
     private static final double ENCODER_ZERO_ZONE = 0.2;
 
-    public static void setupRelativeEncoder(
-            RelativeEncoder relEncoder, double absPos, double absZero, double ratio) {
+    public static void setupRelativeEncoder(RelativeEncoder relEncoder, double absPos, double absZero, double ratio) {
         relEncoder.setPositionConversionFactor(1 / ratio);
         relEncoder.setVelocityConversionFactor(1 / ratio);
 

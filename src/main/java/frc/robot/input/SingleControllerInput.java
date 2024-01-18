@@ -27,8 +27,7 @@ public class SingleControllerInput implements MoInput {
 
     @Override
     public Vec2 getMoveRequest() {
-        return new Vec2(controller.getLeftX(), controller.getLeftY())
-                .scalarOp(this::applyDriveInputTransforms);
+        return new Vec2(controller.getLeftX(), controller.getLeftY()).scalarOp(this::applyDriveInputTransforms);
     }
 
     @Override

@@ -98,8 +98,7 @@ public class CalibrateSwerveDriveCommand extends Command {
         public double calculateCorrectionFactor() {
             double n = data.size();
             if (n < MIN_DATAPOINTS) {
-                DriverStation.reportWarning(
-                        "Cannot complete calibration: insufficient data", false);
+                DriverStation.reportWarning("Cannot complete calibration: insufficient data", false);
                 return 1;
             }
 
@@ -138,22 +137,14 @@ public class CalibrateSwerveDriveCommand extends Command {
         addRequirements(drive);
         this.drive = drive;
 
-        frontLeft =
-                new Calibrator(
-                        drive.frontLeft.absoluteEncoder::getPosition,
-                        drive.frontLeft.relativeEncoder::getPosition);
-        frontRight =
-                new Calibrator(
-                        drive.frontRight.absoluteEncoder::getPosition,
-                        drive.frontRight.relativeEncoder::getPosition);
-        rearLeft =
-                new Calibrator(
-                        drive.rearLeft.absoluteEncoder::getPosition,
-                        drive.rearLeft.relativeEncoder::getPosition);
-        rearRight =
-                new Calibrator(
-                        drive.rearRight.absoluteEncoder::getPosition,
-                        drive.rearRight.relativeEncoder::getPosition);
+        frontLeft = new Calibrator(
+                drive.frontLeft.absoluteEncoder::getPosition, drive.frontLeft.relativeEncoder::getPosition);
+        frontRight = new Calibrator(
+                drive.frontRight.absoluteEncoder::getPosition, drive.frontRight.relativeEncoder::getPosition);
+        rearLeft = new Calibrator(
+                drive.rearLeft.absoluteEncoder::getPosition, drive.rearLeft.relativeEncoder::getPosition);
+        rearRight = new Calibrator(
+                drive.rearRight.absoluteEncoder::getPosition, drive.rearRight.relativeEncoder::getPosition);
     }
 
     @Override
@@ -199,56 +190,44 @@ public class CalibrateSwerveDriveCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return frontLeft.isFinished()
-                && frontRight.isFinished()
-                && rearLeft.isFinished()
-                && rearRight.isFinished();
+        return frontLeft.isFinished() && frontRight.isFinished() && rearLeft.isFinished() && rearRight.isFinished();
     }
 
     @Override
     public void end(boolean interrupted) {
-        new Thread(
-                        () -> {
-                            if (frontLeft.isFinished()) {
-                                double factor = frontLeft.calculateCorrectionFactor();
-                                System.out.format(
-                                        "frontLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                        factor,
-                                        MoPrefs.flScale.get(),
-                                        MoPrefs.flScale.get() * factor);
-                                MoPrefs.flScale.set(MoPrefs.flScale.get() * factor);
-                            }
+        new Thread(() -> {
+                    if (frontLeft.isFinished()) {
+                        double factor = frontLeft.calculateCorrectionFactor();
+                        System.out.format(
+                                "frontLeft: factor=%.2f old=%.2f new=%.2f\n",
+                                factor, MoPrefs.flScale.get(), MoPrefs.flScale.get() * factor);
+                        MoPrefs.flScale.set(MoPrefs.flScale.get() * factor);
+                    }
 
-                            if (frontRight.isFinished()) {
-                                double factor = frontRight.calculateCorrectionFactor();
-                                System.out.format(
-                                        "frontRight: factor=%.2f old=%.2f new=%.2f\n",
-                                        factor,
-                                        MoPrefs.frScale.get(),
-                                        MoPrefs.frScale.get() * factor);
-                                MoPrefs.frScale.set(MoPrefs.frScale.get() * factor);
-                            }
+                    if (frontRight.isFinished()) {
+                        double factor = frontRight.calculateCorrectionFactor();
+                        System.out.format(
+                                "frontRight: factor=%.2f old=%.2f new=%.2f\n",
+                                factor, MoPrefs.frScale.get(), MoPrefs.frScale.get() * factor);
+                        MoPrefs.frScale.set(MoPrefs.frScale.get() * factor);
+                    }
 
-                            if (rearLeft.isFinished()) {
-                                double factor = rearLeft.calculateCorrectionFactor();
-                                System.out.format(
-                                        "rearLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                        factor,
-                                        MoPrefs.rlScale.get(),
-                                        MoPrefs.rlScale.get() * factor);
-                                MoPrefs.rlScale.set(MoPrefs.rlScale.get() * factor);
-                            }
+                    if (rearLeft.isFinished()) {
+                        double factor = rearLeft.calculateCorrectionFactor();
+                        System.out.format(
+                                "rearLeft: factor=%.2f old=%.2f new=%.2f\n",
+                                factor, MoPrefs.rlScale.get(), MoPrefs.rlScale.get() * factor);
+                        MoPrefs.rlScale.set(MoPrefs.rlScale.get() * factor);
+                    }
 
-                            if (rearRight.isFinished()) {
-                                double factor = rearRight.calculateCorrectionFactor();
-                                System.out.format(
-                                        "rearRight: factor=%.2f old=%.2f new=%.2f\n",
-                                        factor,
-                                        MoPrefs.rrScale.get(),
-                                        MoPrefs.rrScale.get() * factor);
-                                MoPrefs.rrScale.set(MoPrefs.rrScale.get() * factor);
-                            }
-                        })
+                    if (rearRight.isFinished()) {
+                        double factor = rearRight.calculateCorrectionFactor();
+                        System.out.format(
+                                "rearRight: factor=%.2f old=%.2f new=%.2f\n",
+                                factor, MoPrefs.rrScale.get(), MoPrefs.rrScale.get() * factor);
+                        MoPrefs.rrScale.set(MoPrefs.rrScale.get() * factor);
+                    }
+                })
                 .start();
 
         drive.doResetEncoders = true;

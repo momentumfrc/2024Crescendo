@@ -43,22 +43,19 @@ public class PositioningSubsystem extends SubsystemBase {
 
     private Field2d field = MoShuffleboard.getInstance().field;
 
-    private GenericEntry didEstablishInitialPosition =
-            MoShuffleboard.getInstance()
-                    .matchTab
-                    .add("Initial Position", false)
-                    .withWidget(BuiltInWidgets.kBooleanBox)
-                    .getEntry();
+    private GenericEntry didEstablishInitialPosition = MoShuffleboard.getInstance()
+            .matchTab
+            .add("Initial Position", false)
+            .withWidget(BuiltInWidgets.kBooleanBox)
+            .getEntry();
 
-    private GenericEntry shouldUseAprilTags =
-            MoShuffleboard.getInstance()
-                    .settingsTab
-                    .add("Detect AprilTags", true)
-                    .withWidget(BuiltInWidgets.kToggleSwitch)
-                    .getEntry();
+    private GenericEntry shouldUseAprilTags = MoShuffleboard.getInstance()
+            .settingsTab
+            .add("Detect AprilTags", true)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .getEntry();
 
-    private Transform2d limelightTransform =
-            new Transform2d(new Translation2d(), Rotation2d.fromRotations(0.5));
+    private Transform2d limelightTransform = new Transform2d(new Translation2d(), Rotation2d.fromRotations(0.5));
 
     private final AHRS gyro;
     private final DriveSubsystem drive;
@@ -82,18 +79,15 @@ public class PositioningSubsystem extends SubsystemBase {
 
         MoShuffleboard.getInstance().settingsTab.add("Field Oriented Mode", fieldOrientedDriveMode);
 
-        odometry =
-                new SwerveDriveOdometry(
-                        drive.kinematics, gyro.getRotation2d(), drive.getWheelPositions());
+        odometry = new SwerveDriveOdometry(drive.kinematics, gyro.getRotation2d(), drive.getWheelPositions());
 
         resetFieldOrientedFwd();
 
-        var posGroup =
-                MoShuffleboard.getInstance()
-                        .matchTab
-                        .getLayout("Relative Pos", BuiltInLayouts.kList)
-                        .withSize(2, 1)
-                        .withProperties(Map.of("Label position", "RIGHT"));
+        var posGroup = MoShuffleboard.getInstance()
+                .matchTab
+                .getLayout("Relative Pos", BuiltInLayouts.kList)
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
         posGroup.addDouble("X", () -> robotPose.getX());
         posGroup.addDouble("Y", () -> robotPose.getY());
         posGroup.addDouble("Rot", () -> robotPose.getRotation().getDegrees());
@@ -150,24 +144,20 @@ public class PositioningSubsystem extends SubsystemBase {
     public void periodic() {
         limelight.periodic();
 
-        limelight
-                .getRobotPose()
-                .ifPresent(
-                        pose -> {
-                            if (!shouldUseAprilTags.getBoolean(true)) {
-                                return;
-                            }
-                            if (drive.isMoving()) {
-                                return;
-                            }
-                            var transformedPose = pose.toPose2d().transformBy(limelightTransform);
-                            this.setRobotPose(transformedPose);
-                        });
+        limelight.getRobotPose().ifPresent(pose -> {
+            if (!shouldUseAprilTags.getBoolean(true)) {
+                return;
+            }
+            if (drive.isMoving()) {
+                return;
+            }
+            var transformedPose = pose.toPose2d().transformBy(limelightTransform);
+            this.setRobotPose(transformedPose);
+        });
 
         robotPose = odometry.update(gyro.getRotation2d(), drive.getWheelPositions());
         field.setRobotPose(getAbsoluteRobotPose());
 
-        if (fieldOrientedDriveMode.getSelected() != FieldOrientedDriveMode.GYRO)
-            resetFieldOrientedFwd();
+        if (fieldOrientedDriveMode.getSelected() != FieldOrientedDriveMode.GYRO) resetFieldOrientedFwd();
     }
 }

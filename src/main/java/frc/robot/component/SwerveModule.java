@@ -84,22 +84,15 @@ public class SwerveModule {
         relativeEncoder = turnMotor.getEncoder();
 
         encoderZero.subscribe(
-                zero ->
-                        this.setupRelativeEncoder(
-                                absoluteEncoder.getPosition(), zero, encoderScale.get()),
-                false);
+                zero -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), zero, encoderScale.get()), false);
         encoderScale.subscribe(
-                scale ->
-                        this.setupRelativeEncoder(
-                                absoluteEncoder.getPosition(), encoderZero.get(), scale),
-                false);
+                scale -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), encoderZero.get(), scale), false);
         setupRelativeEncoder();
 
-        var layout =
-                Shuffleboard.getTab("match")
-                        .getLayout(key, BuiltInLayouts.kList)
-                        .withSize(2, 1)
-                        .withProperties(Map.of("Label position", "LEFT"));
+        var layout = Shuffleboard.getTab("match")
+                .getLayout(key, BuiltInLayouts.kList)
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "LEFT"));
         layout.addDouble("Relative", () -> (MoUtils.radToRot(relativeEncoder.getPosition())));
         layout.addDouble("Absolute", absoluteEncoder::getPosition);
     }
@@ -113,8 +106,7 @@ public class SwerveModule {
     }
 
     public void setRelativePosition() {
-        if (!areMotorsPowered())
-            setRelativePosition(absoluteEncoder.getPosition(), encoderZero.get());
+        if (!areMotorsPowered()) setRelativePosition(absoluteEncoder.getPosition(), encoderZero.get());
     }
 
     private void setupRelativeEncoder(double absPos, double absZero, double scale) {
@@ -131,9 +123,7 @@ public class SwerveModule {
     }
 
     public void drive(SwerveModuleState state) {
-        var optimized =
-                SwerveModuleState.optimize(
-                        state, Rotation2d.fromRadians(relativeEncoder.getPosition()));
+        var optimized = SwerveModuleState.optimize(state, Rotation2d.fromRadians(relativeEncoder.getPosition()));
         turnPID.setReference(MathUtil.angleModulus(optimized.angle.getRadians()));
         drivePID.setReference(optimized.speedMetersPerSecond * driveMtrScale.get());
     }

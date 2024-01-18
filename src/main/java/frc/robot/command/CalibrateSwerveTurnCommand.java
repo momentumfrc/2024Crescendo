@@ -37,8 +37,7 @@ public class CalibrateSwerveTurnCommand extends Command {
         double fwdRequest = mvRequest.y();
         double leftRequest = mvRequest.x();
 
-        SwerveModuleState state =
-                new SwerveModuleState(0, new Rotation2d(-leftRequest, -fwdRequest));
+        SwerveModuleState state = new SwerveModuleState(0, new Rotation2d(-leftRequest, -fwdRequest));
 
         drive.frontLeft.drive(state);
         drive.frontRight.drive(state);

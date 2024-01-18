@@ -118,7 +118,6 @@ public class MoPrefs {
     }
 
     private static Pref<Double> doublePref(String key, double defaultValue) {
-        return getInstance()
-        .new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
+        return getInstance().new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
     }
 }

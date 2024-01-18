@@ -29,8 +29,7 @@ public class RobotContainer {
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
 
     // Commands
-    private TeleopDriveCommand driveCommand =
-            new TeleopDriveCommand(drive, positioning, this::getInput);
+    private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
 
@@ -39,23 +38,20 @@ public class RobotContainer {
 
     public RobotContainer() {
         ;
-        inputChooser.addOption(
-                "Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
+        inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
 
-        BooleanEntry calibrateDriveEntry =
-                NetworkTableInstance.getDefault()
-                        .getTable("Settings")
-                        .getBooleanTopic("Calibrate Drive Encoders")
-                        .getEntry(false);
+        BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getBooleanTopic("Calibrate Drive Encoders")
+                .getEntry(false);
         calibrateDriveEntry.setDefault(false);
         calibrateDriveButton = new NetworkButton(calibrateDriveEntry);
 
-        BooleanEntry calibrateTurnEntry =
-                NetworkTableInstance.getDefault()
-                        .getTable("Settings")
-                        .getBooleanTopic("Calibrate Turn Encoders")
-                        .getEntry(false);
+        BooleanEntry calibrateTurnEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getBooleanTopic("Calibrate Turn Encoders")
+                .getEntry(false);
         calibrateTurnEntry.setDefault(false);
         calibrateTurnButton = new NetworkButton(calibrateTurnEntry);
 

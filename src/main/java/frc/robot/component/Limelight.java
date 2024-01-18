@@ -36,8 +36,7 @@ public class Limelight {
 
     private static final double DEGS_TO_RADS = Math.PI / 180;
 
-    private PoseFilter poseFilter =
-            new PoseFilter(LIMELIGHT_DATAPOINTS, STDDEV_CUTOFF, ZSCORE_CUTOFF);
+    private PoseFilter poseFilter = new PoseFilter(LIMELIGHT_DATAPOINTS, STDDEV_CUTOFF, ZSCORE_CUTOFF);
     private Optional<Pose3d> lastReportedPose = Optional.empty();
     private Optional<Translation2d> lastReportedCrosshair = Optional.empty();
 
@@ -45,10 +44,14 @@ public class Limelight {
             NetworkTableInstance.getDefault().getTable("limelight");
     private final DoublePublisher pipelinePublisher =
             limelightTable.getDoubleTopic("pipeline").publish();
-    private final DoublePublisher ledPublisher = limelightTable.getDoubleTopic("ledMode").publish();
-    private final DoubleSubscriber tvSubscriber = limelightTable.getDoubleTopic("tv").subscribe(0);
-    private final DoubleSubscriber txSubscriber = limelightTable.getDoubleTopic("tx").subscribe(0);
-    private final DoubleSubscriber tySubscriber = limelightTable.getDoubleTopic("ty").subscribe(0);
+    private final DoublePublisher ledPublisher =
+            limelightTable.getDoubleTopic("ledMode").publish();
+    private final DoubleSubscriber tvSubscriber =
+            limelightTable.getDoubleTopic("tv").subscribe(0);
+    private final DoubleSubscriber txSubscriber =
+            limelightTable.getDoubleTopic("tx").subscribe(0);
+    private final DoubleSubscriber tySubscriber =
+            limelightTable.getDoubleTopic("ty").subscribe(0);
 
     private final DoubleArraySubscriber botposeBlueSubscriber =
             limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
@@ -104,13 +107,12 @@ public class Limelight {
             this.lastReportedCrosshair = Optional.of(crosshairs);
 
             if (isPoseDataValid(rawPoseData)) {
-                Pose3d pose =
-                        new Pose3d(
-                                new Translation3d(rawPoseData[0], rawPoseData[1], rawPoseData[2]),
-                                new Rotation3d(
-                                        rawPoseData[3] * DEGS_TO_RADS,
-                                        rawPoseData[4] * DEGS_TO_RADS,
-                                        rawPoseData[5] * DEGS_TO_RADS));
+                Pose3d pose = new Pose3d(
+                        new Translation3d(rawPoseData[0], rawPoseData[1], rawPoseData[2]),
+                        new Rotation3d(
+                                rawPoseData[3] * DEGS_TO_RADS,
+                                rawPoseData[4] * DEGS_TO_RADS,
+                                rawPoseData[5] * DEGS_TO_RADS));
                 this.lastReportedPose = poseFilter.accept(pose);
             } else {
                 this.lastReportedPose = Optional.empty();

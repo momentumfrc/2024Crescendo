@@ -24,10 +24,7 @@ public class TeleopDriveCommand extends Command {
     private SlewRateLimiter leftLimiter;
     private SlewRateLimiter turnLimiter;
 
-    public TeleopDriveCommand(
-            DriveSubsystem drive,
-            PositioningSubsystem positioning,
-            Supplier<MoInput> inputSupplier) {
+    public TeleopDriveCommand(DriveSubsystem drive, PositioningSubsystem positioning, Supplier<MoInput> inputSupplier) {
         this.drive = drive;
         this.positioning = positioning;
         this.inputSupplier = inputSupplier;
