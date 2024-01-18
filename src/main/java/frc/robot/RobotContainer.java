@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.input.DualControllerInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.DriveSubsystem;
@@ -41,6 +42,9 @@ public class RobotContainer {
         ;
         inputChooser.addOption(
                 "Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
+        inputChooser.addOption(
+                "Dual Controller",
+                new DualControllerInput(Constants.DRIVE_F310, Constants.SHOOT_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
 
         BooleanEntry calibrateDriveEntry =

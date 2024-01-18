@@ -44,6 +44,7 @@ public class Constants {
     public static final CANAddress DRIVE_RIGHT_REAR = new CANAddress(2);
 
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
+    public static final HIDPort SHOOT_F310 = new HIDPort(1);
     public static final HIDPort JOYSTICK = new HIDPort(2);
 
     public static File DATA_STORE_FILE;
