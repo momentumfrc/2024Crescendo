@@ -5,6 +5,8 @@
 package frc.robot.subsystem;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -34,7 +36,7 @@ public class PositioningSubsystem extends SubsystemBase {
      * The size of the field, in meters. Used to transform alliance-relative coordinates into
      * field-relative coordinates.
      */
-    private static final Translation2d fieldSize = new Translation2d(16.579342, 8.2042);
+    private static final Translation2d fieldSize;
 
     /** The limelight. Should be used by auto scoring commands for fine targeting. */
     public final Limelight limelight = new Limelight();
@@ -72,6 +74,11 @@ public class PositioningSubsystem extends SubsystemBase {
             MoShuffleboard.enumToChooser(FieldOrientedDriveMode.class);
 
     private Rotation2d fieldOrientedFwd;
+
+    static {
+        AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+        fieldSize = new Translation2d(layout.getFieldLength(), layout.getFieldWidth());
+    }
 
     public PositioningSubsystem(AHRS ahrs, DriveSubsystem drive) {
         this.gyro = ahrs;
