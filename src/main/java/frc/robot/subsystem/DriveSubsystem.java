@@ -40,6 +40,19 @@ public class DriveSubsystem extends SubsystemBase {
 
     private static final double RESET_ENCODER_INTERVAL = 0.5;
 
+    /**
+     * The distance along one axis, in meters, from the center of the robot to the center of a
+     * swerve module wheel. Since the chassis is square, we don't have to keep track of the X and Y
+     * dimensions separately.
+     * <p>
+     * The robot frame has a side length of 29.5". The mounting holes for the serve modules
+     * are 0.5" inset from the edge of the frame. Per the SDS layout diagram of the MK4 swerve
+     * modules, the length between the mounting holes and the center of the swerve wheel is 2.75".
+     * So, the distance from the center of the robot to the center of a swerve wheel is
+     * 29.5"/2 - 0.5" - 2.75" = 11.5".
+     */
+    private static final double SWERVE_WHEEL_OFFSET = 11.5 * 0.0254;
+
     private static enum TurnState {
         TURNING,
         HOLD_HEADING
@@ -129,13 +142,10 @@ public class DriveSubsystem extends SubsystemBase {
                         () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble()
                                 / MoPrefs.flDriveMtrScale.get());
 
-        double xoff = MoPrefs.chassisSizeX.get() / 2;
-        double yoff = MoPrefs.chassisSizeY.get() / 2;
-
-        Translation2d fl = new Translation2d(xoff, yoff);
-        Translation2d fr = new Translation2d(xoff, -yoff);
-        Translation2d rl = new Translation2d(-xoff, yoff);
-        Translation2d rr = new Translation2d(-xoff, -yoff);
+        Translation2d fl = new Translation2d(SWERVE_WHEEL_OFFSET, SWERVE_WHEEL_OFFSET);
+        Translation2d fr = new Translation2d(SWERVE_WHEEL_OFFSET, -SWERVE_WHEEL_OFFSET);
+        Translation2d rl = new Translation2d(-SWERVE_WHEEL_OFFSET, SWERVE_WHEEL_OFFSET);
+        Translation2d rr = new Translation2d(-SWERVE_WHEEL_OFFSET, -SWERVE_WHEEL_OFFSET);
 
         this.kinematics = new SwerveDriveKinematics(fl, fr, rl, rr);
     }

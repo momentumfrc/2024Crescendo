@@ -40,9 +40,6 @@ public class MoPrefs {
     public static Pref<Double> rlDriveMtrScale = doublePref("RL Drive Motor Scale", 1);
     public static Pref<Double> rrDriveMtrScale = doublePref("RR Drive Motor Scale", 1);
 
-    public static Pref<Double> chassisSizeX = doublePref("Chassis Size X", 1);
-    public static Pref<Double> chassisSizeY = doublePref("Chassis Size Y", 1);
-
     public final class Pref<T> {
         public final String key;
         private Function<NetworkTableValue, T> getter;
