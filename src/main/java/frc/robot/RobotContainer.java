@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.Orchestra;
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -21,7 +20,6 @@ import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
-import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
 
 public class RobotContainer {
@@ -31,8 +29,6 @@ public class RobotContainer {
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
 
-    private ShooterSubsystem shooter = new ShooterSubsystem();
-
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
 
@@ -40,8 +36,6 @@ public class RobotContainer {
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
-
-    private final SlewRateLimiter limiter = new SlewRateLimiter(0.5);
 
     private final Orchestra orchestra;
 
@@ -65,11 +59,6 @@ public class RobotContainer {
 
         drive.setDefaultCommand(driveCommand);
 
-        shooter.setDefaultCommand(new RunCommand(
-                () -> {
-                    shooter.setSpeed(limiter.calculate(getInput().getShootSpeed()));
-                },
-                shooter));
         orchestra = new Orchestra();
         orchestra.addInstrument(drive.rearLeft.driveMotor, 0);
         orchestra.addInstrument(drive.rearRight.driveMotor, 0);

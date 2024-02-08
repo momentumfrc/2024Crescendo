@@ -44,8 +44,4 @@ public class SingleControllerInput implements MoInput {
     public boolean getReZeroGyro() {
         return controller.getStartButton();
     }
-
-    public double getShootSpeed() {
-        return controller.getRightY();
-    }
 }

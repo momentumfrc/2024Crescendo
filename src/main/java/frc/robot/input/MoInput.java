@@ -15,6 +15,4 @@ public interface MoInput {
     public boolean getShouldUseSlowSpeed();
 
     public boolean getReZeroGyro();
-
-    public double getShootSpeed();
 }
