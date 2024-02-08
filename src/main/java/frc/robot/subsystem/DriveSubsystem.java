@@ -211,7 +211,7 @@ public class DriveSubsystem extends SubsystemBase {
         double maxAngularSpeed = MoPrefs.maxTurnSpeed.get();
 
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                -fwdRequest * maxLinearSpeed,
+                fwdRequest * maxLinearSpeed,
                 leftRequest * maxLinearSpeed,
                 turnRequest * maxAngularSpeed,
                 fieldOrientedDriveAngle);
