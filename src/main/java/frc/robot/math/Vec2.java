@@ -24,7 +24,7 @@ public class Vec2 extends Vector<N2> {
     public Vec2(double x, double y) {
         this(new Matrix<>(N2.instance, N1.instance));
         set(0, 0, x);
-        set(0, 1, y);
+        set(1, 0, y);
     }
 
     public Vec2(Vector<N2> vec) {
@@ -36,7 +36,7 @@ public class Vec2 extends Vector<N2> {
     }
 
     public double y() {
-        return get(0, 1);
+        return get(1, 0);
     }
 
     public void setX(double x) {
@@ -44,7 +44,7 @@ public class Vec2 extends Vector<N2> {
     }
 
     public void setY(double y) {
-        set(0, 1, y);
+        set(1, 0, y);
     }
 
     /** Alias for {@code norm()} */
@@ -53,7 +53,12 @@ public class Vec2 extends Vector<N2> {
     }
 
     public Vec2 normalized() {
-        return new Vec2(div(len()));
+        double len = len();
+        if (len > 0) {
+            return new Vec2(div(len));
+        }
+
+        return new Vec2(0, 0);
     }
 
     /*
@@ -61,6 +66,11 @@ public class Vec2 extends Vector<N2> {
      */
     public Vec2 scalarOp(DoubleUnaryOperator op) {
         double len = len();
-        return new Vec2(div(len).times(op.applyAsDouble(len)));
+
+        if (len > 0) {
+            return new Vec2(div(len).times(op.applyAsDouble(len)));
+        }
+
+        return new Vec2(0, 0);
     }
 }
