@@ -37,8 +37,7 @@ public class RobotContainer {
     private final NetworkButton calibrateTurnButton;
 
     public RobotContainer() {
-        ;
-        inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
+        inputChooser.setDefaultOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
 
         BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
