@@ -5,7 +5,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Constants {
     /**
@@ -46,13 +47,13 @@ public class Constants {
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
     public static final HIDPort JOYSTICK = new HIDPort(2);
 
-    public static File DATA_STORE_FILE;
+    public static Path DATA_STORE_FILE;
 
     static {
         if (RobotBase.isReal()) {
-            DATA_STORE_FILE = new File("/home/lvuser/pid_constants.ini");
+            DATA_STORE_FILE = Paths.get("/home/lvuser/pid_constants.ini");
         } else {
-            DATA_STORE_FILE = new File("./pid_constants.ini");
+            DATA_STORE_FILE = Paths.get("./pid_constants.ini");
         }
     }
 
