@@ -44,6 +44,8 @@ public class Constants {
     public static final CANAddress DRIVE_RIGHT_FRONT = new CANAddress(1);
     public static final CANAddress DRIVE_RIGHT_REAR = new CANAddress(4);
 
+    public static final CANAddress INTAKE_MTR = new CANAddress(0); // TODO
+
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
     public static final HIDPort JOYSTICK = new HIDPort(2);
 

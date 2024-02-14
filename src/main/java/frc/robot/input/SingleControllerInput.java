@@ -44,4 +44,9 @@ public class SingleControllerInput implements MoInput {
     public boolean getReZeroGyro() {
         return controller.getStartButton();
     }
+
+    @Override
+    public boolean getShouldIntakeNote() {
+        return controller.getAButton();
+    }
 }
