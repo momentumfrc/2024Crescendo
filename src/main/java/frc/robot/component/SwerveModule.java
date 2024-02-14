@@ -165,6 +165,10 @@ public class SwerveModule {
                 getDistance(), Rotation2d.fromRadians(getRelativeRotation().in(Units.Radians)));
     }
 
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(getVelocity(), new Rotation2d(getRelativeRotation()));
+    }
+
     @Override
     public String toString() {
         return String.format("SwerveModule(key=\"%s\")", this.key);

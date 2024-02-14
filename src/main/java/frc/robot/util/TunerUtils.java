@@ -81,4 +81,14 @@ public class TunerUtils {
                 .withMeasurement(talon::getLastMeasurement)
                 .safeBuild();
     }
+
+    public static PIDTuner forPathPlanner(MutablePIDConstants constants, String controllerName) {
+        return PIDTuner.builder(controllerName)
+                .withDataStoreFile(Constants.DATA_STORE_FILE)
+                .withP(v -> constants.kP = v)
+                .withI(v -> constants.kI = v)
+                .withD(v -> constants.kD = v)
+                .withIZone(v -> constants.iZone = v)
+                .safeBuild();
+    }
 }

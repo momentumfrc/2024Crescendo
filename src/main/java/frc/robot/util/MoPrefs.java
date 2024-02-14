@@ -56,6 +56,9 @@ public class MoPrefs {
     public static UnitPref<Per<MoUnits.EncoderAngle, Distance>> rrDistScale =
             encoderTicksPerMeterPref("RR Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
 
+    public static Pref<Double> autoMaxModuleSpeed = unitlessDoublePref("Auto Max Module Speed", 4.5);
+    public static Pref<Double> autoDriveBaseRadius = unitlessDoublePref("Auto Drive Base Radius", 0.4);
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

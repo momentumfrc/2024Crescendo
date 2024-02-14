@@ -27,6 +27,7 @@ import frc.robot.component.SwerveModule;
 import frc.robot.util.MoPIDF;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
+import frc.robot.util.MutablePIDConstants;
 import frc.robot.util.TunerUtils;
 import java.util.function.Consumer;
 
@@ -79,13 +80,12 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final Timer resetEncoderTimer = new Timer();
 
-    public final MoPIDF xPathController = new MoPIDF();
-    public final MoPIDF yPathController = new MoPIDF();
-    public final MoPIDF rotPathController = new MoPIDF();
+    public final MutablePIDConstants translationPathController = new MutablePIDConstants();
+    public final MutablePIDConstants rotationPathController = new MutablePIDConstants();
 
-    private final PIDTuner xPathTuner = TunerUtils.forMoPID(xPathController, "Follow Path X");
-    private final PIDTuner yPathTuner = TunerUtils.forMoPID(xPathController, "Follow Path Y");
-    private final PIDTuner rotPathTuner = TunerUtils.forMoPID(xPathController, "Follow Path Rot");
+    private final PIDTuner translationPathTuner =
+            TunerUtils.forPathPlanner(translationPathController, "Follow Path Pos");
+    private final PIDTuner rotationPathTuner = TunerUtils.forPathPlanner(rotationPathController, "Follow Path Rot");
 
     public final SwerveDriveKinematics kinematics;
 
@@ -215,7 +215,17 @@ public class DriveSubsystem extends SubsystemBase {
                 maxAngularSpeed.times(turnRequest).in(Units.RadiansPerSecond),
                 fieldOrientedDriveAngle);
 
+        driveRobotRelativeSpeeds(speeds);
+    }
+
+    public void driveRobotRelativeSpeeds(ChassisSpeeds speeds) {
         driveSwerveStates(kinematics.toSwerveModuleStates(speeds));
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return kinematics.toChassisSpeeds(
+                frontLeft.getState(), frontRight.getState(),
+                rearLeft.getState(), rearRight.getState());
     }
 
     public void stop() {
@@ -225,7 +235,7 @@ public class DriveSubsystem extends SubsystemBase {
         rearRight.driveMotor.stopMotor();
     }
 
-    public void driveSwerveStates(SwerveModuleState[] states) {
+    private void driveSwerveStates(SwerveModuleState[] states) {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MoPrefs.maxDriveSpeed.get());
 
         frontLeft.drive(states[0]);

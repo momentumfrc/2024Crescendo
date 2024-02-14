@@ -8,11 +8,11 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringEntry;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.command.CalibrateSwerveDriveCommand;
@@ -25,6 +25,7 @@ import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.util.MoShuffleboard;
+import frc.robot.util.PathPlannerCommands;
 
 public class RobotContainer {
     private AHRS gyro = new AHRS(SerialPort.Port.kMXP);
@@ -38,6 +39,8 @@ public class RobotContainer {
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
+    private final StringEntry autoPathEntry;
+    private final BooleanEntry autoAssumeAtStartEntry;
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
@@ -74,6 +77,15 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
+        this.autoPathEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getStringTopic("Autonomous Path")
+                .getEntry("");
+        this.autoAssumeAtStartEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getBooleanTopic("Auto Assume At Start")
+                .getEntry(true);
+
         drive.setDefaultCommand(driveCommand);
 
         configureBindings();
@@ -94,6 +106,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return PathPlannerCommands.getFollowPathCommand(
+                drive, positioning, autoPathEntry.get(), autoAssumeAtStartEntry.get());
     }
 }
