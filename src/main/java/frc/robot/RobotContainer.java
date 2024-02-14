@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.Orchestra;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -13,8 +12,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
+import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
@@ -31,13 +32,12 @@ public class RobotContainer {
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
+    private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
-
-    private final Orchestra orchestra;
 
     public RobotContainer() {
         inputChooser.setDefaultOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
@@ -59,24 +59,14 @@ public class RobotContainer {
 
         drive.setDefaultCommand(driveCommand);
 
-        orchestra = new Orchestra();
-        orchestra.addInstrument(drive.rearLeft.driveMotor, 0);
-        orchestra.addInstrument(drive.rearRight.driveMotor, 0);
-        orchestra.addInstrument(drive.frontLeft.driveMotor, 0);
-        orchestra.addInstrument(drive.frontRight.driveMotor, 0);
-        orchestra.loadMusic("windows-xp.chrp");
-
         configureBindings();
-    }
-
-    public void play() {
-        orchestra.stop();
-        orchestra.play();
     }
 
     private void configureBindings() {
         calibrateDriveButton.onTrue(new CalibrateSwerveDriveCommand(drive));
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
+
+        RobotModeTriggers.teleop().whileTrue(startupOrchestraCommand);
     }
 
     private MoInput getInput() {
