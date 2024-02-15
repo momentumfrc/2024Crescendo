@@ -1,7 +1,6 @@
 package frc.robot.command;
 
 import com.ctre.phoenix6.Orchestra;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.input.MoInput;
@@ -55,11 +54,11 @@ public class OrchestraCommand extends Command {
                 input.getMoveRequest().len() > CANCEL_CUTOFF || Math.abs(input.getTurnRequest()) > CANCEL_CUTOFF;
         boolean newEnd = !orchestra.isPlaying() || hasDriveRequest;
 
-        if(newEnd && !end) {
+        if (newEnd && !end) {
             orchestra.stop();
         }
 
-        if(end) {
+        if (end) {
             drive.frontLeft.driveMotor.set(0);
             drive.frontRight.driveMotor.set(0);
             drive.rearLeft.driveMotor.set(0);
@@ -71,7 +70,7 @@ public class OrchestraCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        if(!end) {
+        if (!end) {
             timer.restart();
         }
 

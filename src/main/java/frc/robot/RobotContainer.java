@@ -6,8 +6,10 @@ package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -39,6 +41,12 @@ public class RobotContainer {
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
 
+    private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
+            .settingsTab
+            .add("Tone on Enable", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .getEntry();
+
     public RobotContainer() {
         inputChooser.setDefaultOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
@@ -66,7 +74,9 @@ public class RobotContainer {
         calibrateDriveButton.onTrue(new CalibrateSwerveDriveCommand(drive));
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
 
-        RobotModeTriggers.teleop().whileTrue(startupOrchestraCommand);
+        RobotModeTriggers.teleop()
+                .and(() -> shouldPlayEnableTone.getBoolean(false))
+                .whileTrue(startupOrchestraCommand);
     }
 
     private MoInput getInput() {
