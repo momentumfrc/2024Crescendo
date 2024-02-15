@@ -75,7 +75,7 @@ public class Limelight {
      * </ol>
      */
     private boolean isPoseDataValid(double[] rawPoseData) {
-        if (rawPoseData.length != 6) return false;
+        if (rawPoseData.length != 7) return false;
         for (double data : rawPoseData) {
             if (data != 0) return true;
         }
