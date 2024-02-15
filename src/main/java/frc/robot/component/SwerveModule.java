@@ -98,7 +98,7 @@ public class SwerveModule {
     }
 
     private boolean areMotorsPowered() {
-        return driveMotor.get() > MOTOR_UNPOWERED_SPEED && turnMotor.get() > MOTOR_UNPOWERED_SPEED;
+        return Math.abs(driveMotor.get()) > MOTOR_UNPOWERED_SPEED && Math.abs(turnMotor.get()) > MOTOR_UNPOWERED_SPEED;
     }
 
     public void setupRelativeEncoder() {
