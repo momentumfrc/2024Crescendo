@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
+import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.input.MoInput;
@@ -40,6 +41,7 @@ public class RobotContainer {
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
+    private final NetworkButton coastSwerveButton;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -65,6 +67,13 @@ public class RobotContainer {
         calibrateTurnEntry.setDefault(false);
         calibrateTurnButton = new NetworkButton(calibrateTurnEntry);
 
+        BooleanEntry coastSwerveEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getBooleanTopic("Coast Swerve Drive")
+                .getEntry(false);
+        coastSwerveEntry.setDefault(false);
+        coastSwerveButton = new NetworkButton(coastSwerveEntry);
+
         drive.setDefaultCommand(driveCommand);
 
         configureBindings();
@@ -73,6 +82,7 @@ public class RobotContainer {
     private void configureBindings() {
         calibrateDriveButton.onTrue(new CalibrateSwerveDriveCommand(drive));
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
+        coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
         RobotModeTriggers.teleop()
                 .and(() -> shouldPlayEnableTone.getBoolean(false))

@@ -27,6 +27,7 @@ import frc.robot.util.MoPIDF;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.TunerUtils;
+import java.util.function.Consumer;
 
 public class DriveSubsystem extends SubsystemBase {
     /**
@@ -244,6 +245,13 @@ public class DriveSubsystem extends SubsystemBase {
                         > MOVE_RATE_CUTOFF
                 || (rearRight.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.rrDriveMtrScale.get())
                         > MOVE_RATE_CUTOFF;
+    }
+
+    public void forEachSwerveModule(Consumer<SwerveModule> forBody) {
+        forBody.accept(frontLeft);
+        forBody.accept(frontRight);
+        forBody.accept(rearLeft);
+        forBody.accept(rearRight);
     }
 
     public void resetRelativeEncoders() {

@@ -37,7 +37,7 @@ public class SwerveModule {
     // Note: the absolute encoder returns rotations, in the range [0, 1)
     public final SparkAnalogSensor absoluteEncoder;
 
-    private final MoSparkMaxPID turnPID;
+    public final MoSparkMaxPID turnPID;
     private final MoTalonFxPID drivePID;
 
     private PIDTuner turnTuner;
