@@ -30,7 +30,7 @@
     "spotlessGradle.format.enable": true,
     "spotlessGradle.diagnostics.enable": false,
     "editor.codeActionsOnSave": {
-        "source.fixAll.spotlessGradle": true
+        "source.fixAll.spotlessGradle": "explicit"
     }
   },
   "editor.tabSize": 4,
@@ -39,7 +39,7 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "java.saveActions.organizeImports": true,
-  "editor.rulers": [100],
+  "editor.rulers": [120],
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000
 }
