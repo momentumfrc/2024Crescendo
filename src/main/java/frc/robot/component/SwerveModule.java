@@ -17,11 +17,19 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Per;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import frc.robot.util.MoPrefs.Pref;
+import frc.robot.util.MoPrefs.UnitPref;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoTalonFxPID;
+import frc.robot.util.MoUnits;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
@@ -46,23 +54,23 @@ public class SwerveModule {
     // Note: the relative encoder is scaled to return radians
     public final RelativeEncoder relativeEncoder;
 
-    private final Pref<Double> encoderZero;
-    private final Pref<Double> encoderScale;
-    private final Pref<Double> driveMtrScale;
+    private final UnitPref<Angle> encoderZero;
+    private final UnitPref<Per<Dimensionless, Angle>> encoderRotScale;
+    private final UnitPref<Per<Dimensionless, Distance>> encoderDistScale;
 
     public SwerveModule(
             String key,
             CANSparkMax turnMotor,
             TalonFX driveMotor,
-            Pref<Double> encoderZero,
-            Pref<Double> encoderScale,
-            Pref<Double> driveMtrScale) {
+            UnitPref<Angle> encoderZero,
+            UnitPref<Per<Dimensionless, Angle>> encoderRotScale,
+            UnitPref<Per<Dimensionless, Distance>> encoderDistScale) {
         this.key = key;
         this.turnMotor = turnMotor;
         this.driveMotor = driveMotor;
         this.encoderZero = encoderZero;
-        this.encoderScale = encoderScale;
-        this.driveMtrScale = driveMtrScale;
+        this.encoderRotScale = encoderRotScale;
+        this.encoderDistScale = encoderDistScale;
 
         this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
         this.turnMotor.setIdleMode(IdleMode.kBrake);
@@ -83,10 +91,8 @@ public class SwerveModule {
 
         relativeEncoder = turnMotor.getEncoder();
 
-        encoderZero.subscribe(
-                zero -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), zero, encoderScale.get()), false);
-        encoderScale.subscribe(
-                scale -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), encoderZero.get(), scale), false);
+        encoderZero.subscribe(zero -> this.setupRelativeEncoder(getAbsoluteRotation(), zero, encoderRotScale.get()));
+        encoderRotScale.subscribe(scale -> this.setupRelativeEncoder(getAbsoluteRotation(), encoderZero.get(), scale));
         setupRelativeEncoder();
 
         var layout = Shuffleboard.getTab("match")
@@ -97,35 +103,58 @@ public class SwerveModule {
         layout.addDouble("Absolute", absoluteEncoder::getPosition);
     }
 
+    public Measure<Angle> getAbsoluteRotation() {
+        return Units.Rotations.of(absoluteEncoder.getPosition());
+    }
+
+    public Measure<Angle> getRelativeRotation() {
+        return Units.Radians.of(relativeEncoder.getPosition());
+    }
+
+    public Measure<Distance> getDistance() {
+        return Units.Meters.of(driveMotor.getRotorPosition().getValueAsDouble()
+                / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
+    }
+
+    public Measure<Velocity<Distance>> getVelocity() {
+        return Units.MetersPerSecond.of(driveMotor.getRotorVelocity().getValueAsDouble()
+                / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
+    }
+
     private boolean areMotorsPowered() {
         return Math.abs(driveMotor.get()) > MOTOR_UNPOWERED_SPEED && Math.abs(turnMotor.get()) > MOTOR_UNPOWERED_SPEED;
     }
 
     public void setupRelativeEncoder() {
-        setupRelativeEncoder(absoluteEncoder.getPosition(), encoderZero.get(), encoderScale.get());
+        setupRelativeEncoder(getAbsoluteRotation(), encoderZero.get(), encoderRotScale.get());
     }
 
     public void setRelativePosition() {
-        if (!areMotorsPowered()) setRelativePosition(absoluteEncoder.getPosition(), encoderZero.get());
+        if (!areMotorsPowered()) {
+            setRelativePosition(getAbsoluteRotation(), encoderZero.get());
+        }
     }
 
-    private void setupRelativeEncoder(double absPos, double absZero, double scale) {
-        relativeEncoder.setPositionConversionFactor(scale);
-        relativeEncoder.setVelocityConversionFactor(scale);
+    private void setupRelativeEncoder(
+            Measure<Angle> absPos, Measure<Angle> absZero, Measure<Per<Dimensionless, Angle>> scale) {
+        relativeEncoder.setPositionConversionFactor(1 / scale.in(MoUnits.EncoderTicksPerRadian));
+        relativeEncoder.setVelocityConversionFactor(1 / scale.in(MoUnits.EncoderTicksPerRadian));
 
         setRelativePosition(absPos, absZero);
     }
 
-    private void setRelativePosition(double absPos, double absZero) {
-        double rots = absPos;
-        rots = (rots + 1 - absZero) % 1;
+    private void setRelativePosition(Measure<Angle> absPos, Measure<Angle> absZero) {
+        double rots = absPos.in(Units.Rotations);
+        rots = (rots + 1 - absZero.in(Units.Rotations)) % 1;
         relativeEncoder.setPosition(MoUtils.rotToRad(rots));
     }
 
     public void drive(SwerveModuleState state) {
-        var optimized = SwerveModuleState.optimize(state, Rotation2d.fromRadians(relativeEncoder.getPosition()));
+        var optimized = SwerveModuleState.optimize(
+                state, Rotation2d.fromRadians(getRelativeRotation().in(Units.Radians)));
         turnPID.setReference(MathUtil.angleModulus(optimized.angle.getRadians()));
-        drivePID.setReference(optimized.speedMetersPerSecond * driveMtrScale.get());
+        drivePID.setReference(
+                optimized.speedMetersPerSecond * encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
     }
 
     public void directDrive(double turnSpeed, double driveSpeed) {
@@ -135,8 +164,7 @@ public class SwerveModule {
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveMotor.getRotorPosition().getValueAsDouble() / driveMtrScale.get(),
-                Rotation2d.fromRadians(relativeEncoder.getPosition()));
+                getDistance(), Rotation2d.fromRadians(getRelativeRotation().in(Units.Radians)));
     }
 
     @Override

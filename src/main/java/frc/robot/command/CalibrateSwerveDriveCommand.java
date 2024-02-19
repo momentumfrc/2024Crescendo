@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.util.MoPrefs;
+import frc.robot.util.MoUnits;
 import frc.robot.util.MoUtils;
 import java.util.ArrayList;
 import java.util.function.DoubleSupplier;
@@ -200,32 +201,40 @@ public class CalibrateSwerveDriveCommand extends Command {
                         double factor = frontLeft.calculateCorrectionFactor();
                         System.out.format(
                                 "frontLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                factor, MoPrefs.flScale.get(), MoPrefs.flScale.get() * factor);
-                        MoPrefs.flScale.set(MoPrefs.flScale.get() * factor);
+                                factor,
+                                MoPrefs.flRotScale.get().in(MoUnits.EncoderTicksPerRotation),
+                                MoPrefs.flRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
+                        MoPrefs.flRotScale.set(MoPrefs.flRotScale.get().times(factor));
                     }
 
                     if (frontRight.isFinished()) {
                         double factor = frontRight.calculateCorrectionFactor();
                         System.out.format(
                                 "frontRight: factor=%.2f old=%.2f new=%.2f\n",
-                                factor, MoPrefs.frScale.get(), MoPrefs.frScale.get() * factor);
-                        MoPrefs.frScale.set(MoPrefs.frScale.get() * factor);
+                                factor,
+                                MoPrefs.frRotScale.get().in(MoUnits.EncoderTicksPerRotation),
+                                MoPrefs.frRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
+                        MoPrefs.frRotScale.set(MoPrefs.frRotScale.get().times(factor));
                     }
 
                     if (rearLeft.isFinished()) {
                         double factor = rearLeft.calculateCorrectionFactor();
                         System.out.format(
                                 "rearLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                factor, MoPrefs.rlScale.get(), MoPrefs.rlScale.get() * factor);
-                        MoPrefs.rlScale.set(MoPrefs.rlScale.get() * factor);
+                                factor,
+                                MoPrefs.rlRotScale.get().in(MoUnits.EncoderTicksPerRotation),
+                                MoPrefs.rlRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
+                        MoPrefs.rlRotScale.set(MoPrefs.rlRotScale.get().times(factor));
                     }
 
                     if (rearRight.isFinished()) {
                         double factor = rearRight.calculateCorrectionFactor();
                         System.out.format(
                                 "rearRight: factor=%.2f old=%.2f new=%.2f\n",
-                                factor, MoPrefs.rrScale.get(), MoPrefs.rrScale.get() * factor);
-                        MoPrefs.rrScale.set(MoPrefs.rrScale.get() * factor);
+                                factor,
+                                MoPrefs.rrRotScale.get().in(MoUnits.EncoderTicksPerRotation),
+                                MoPrefs.rrRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
+                        MoPrefs.rrRotScale.set(MoPrefs.rrRotScale.get().times(factor));
                     }
                 })
                 .start();

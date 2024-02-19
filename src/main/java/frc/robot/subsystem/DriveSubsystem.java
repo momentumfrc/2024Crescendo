@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericSubscriber;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -103,32 +104,32 @@ public class DriveSubsystem extends SubsystemBase {
                 new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
                 new TalonFX(Constants.DRIVE_LEFT_FRONT.address),
                 MoPrefs.flZero,
-                MoPrefs.flScale,
-                MoPrefs.flDriveMtrScale);
+                MoPrefs.flRotScale,
+                MoPrefs.flDistScale);
 
         this.frontRight = new SwerveModule(
                 "FR",
                 new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
                 new TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
                 MoPrefs.frZero,
-                MoPrefs.frScale,
-                MoPrefs.frDriveMtrScale);
+                MoPrefs.frRotScale,
+                MoPrefs.frDistScale);
 
         this.rearLeft = new SwerveModule(
                 "RL",
                 new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
                 new TalonFX(Constants.DRIVE_LEFT_REAR.address),
                 MoPrefs.rlZero,
-                MoPrefs.rlScale,
-                MoPrefs.rlDriveMtrScale);
+                MoPrefs.rlRotScale,
+                MoPrefs.rlDistScale);
 
         this.rearRight = new SwerveModule(
                 "RR",
                 new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
                 new TalonFX(Constants.DRIVE_RIGHT_REAR.address),
                 MoPrefs.rrZero,
-                MoPrefs.rrScale,
-                MoPrefs.rrDriveMtrScale);
+                MoPrefs.rrRotScale,
+                MoPrefs.rrDistScale);
 
         resetEncoderTimer.start();
 
@@ -138,10 +139,7 @@ public class DriveSubsystem extends SubsystemBase {
                         "FL_POS", () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble());
         MoShuffleboard.getInstance()
                 .matchTab
-                .addDouble(
-                        "FL_POS_m",
-                        () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble()
-                                / MoPrefs.flDriveMtrScale.get());
+                .addDouble("FL_POS_m", () -> frontLeft.getDistance().in(Units.Meters));
 
         Translation2d fl = new Translation2d(SWERVE_WHEEL_OFFSET, SWERVE_WHEEL_OFFSET);
         Translation2d fr = new Translation2d(SWERVE_WHEEL_OFFSET, -SWERVE_WHEEL_OFFSET);
@@ -208,13 +206,13 @@ public class DriveSubsystem extends SubsystemBase {
             double fwdRequest, double leftRequest, double turnRequest, Rotation2d fieldOrientedDriveAngle) {
         turnRequest = calculateTurn(turnRequest, getCurrHeading());
 
-        double maxLinearSpeed = MoPrefs.maxDriveSpeed.get();
-        double maxAngularSpeed = MoPrefs.maxTurnSpeed.get();
+        var maxLinearSpeed = MoPrefs.maxDriveSpeed.get();
+        var maxAngularSpeed = MoPrefs.maxTurnSpeed.get();
 
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                fwdRequest * maxLinearSpeed,
-                leftRequest * maxLinearSpeed,
-                turnRequest * maxAngularSpeed,
+                maxLinearSpeed.times(fwdRequest).in(Units.MetersPerSecond),
+                maxLinearSpeed.times(fwdRequest).in(Units.MetersPerSecond),
+                maxAngularSpeed.times(turnRequest).in(Units.RadiansPerSecond),
                 fieldOrientedDriveAngle);
 
         driveSwerveStates(kinematics.toSwerveModuleStates(speeds));
@@ -237,14 +235,10 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public boolean isMoving() {
-        return (frontLeft.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.flDriveMtrScale.get())
-                        > MOVE_RATE_CUTOFF
-                || (frontRight.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.frDriveMtrScale.get())
-                        > MOVE_RATE_CUTOFF
-                || (rearLeft.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.rlDriveMtrScale.get())
-                        > MOVE_RATE_CUTOFF
-                || (rearRight.driveMotor.getRotorVelocity().getValueAsDouble() / MoPrefs.rrDriveMtrScale.get())
-                        > MOVE_RATE_CUTOFF;
+        return Math.abs(frontLeft.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(frontRight.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(rearLeft.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(rearRight.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF;
     }
 
     public void forEachSwerveModule(Consumer<SwerveModule> forBody) {

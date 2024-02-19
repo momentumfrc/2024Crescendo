@@ -11,8 +11,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -23,40 +25,53 @@ import java.util.function.Function;
 
 /** Robot preferences, accessible through Shuffleboard */
 public class MoPrefs {
-    public static final Pref<Double> maxDriveSpeed = unitlessDoublePref("Drive Max Speed", 6000.0);
-    public static final Pref<Double> maxTurnSpeed = unitlessDoublePref("Turn Max Speed", 6000.0);
+    public static final UnitPref<Velocity<Distance>> maxDriveSpeed =
+            metersPerSecPref("Drive Max Speed", Units.MetersPerSecond.of(6));
+    public static final UnitPref<Velocity<Angle>> maxTurnSpeed =
+            rotationsPerSecPref("Turn Max Speed", Units.RotationsPerSecond.of(3));
     public static final Pref<Double> driveDeadzone = unitlessDoublePref("Drive Deadzone", 0.05);
     public static final Pref<Double> driveCurve = unitlessDoublePref("Drive Curve", 1);
     public static Pref<Double> driveSlowSpeed = unitlessDoublePref("Drive Slow Speed", 0.5);
     public static Pref<Double> turnSlowSpeed = unitlessDoublePref("Turn Slow Speed", 0.25);
     public static Pref<Double> driveRampTime = unitlessDoublePref("Drive Ramp Time", 0.25);
 
-    public static Pref<Double> flZero = unitlessDoublePref("FL Drive Zero", 0);
-    public static Pref<Double> flScale = unitlessDoublePref("FL Drive Scale", 1);
-    public static Pref<Double> frZero = unitlessDoublePref("FR Drive Zero", 0);
-    public static Pref<Double> frScale = unitlessDoublePref("FR Drive Scale", 1);
-    public static Pref<Double> rlZero = unitlessDoublePref("RL Drive Zero", 0);
-    public static Pref<Double> rlScale = unitlessDoublePref("RL Drive Scale", 1);
-    public static Pref<Double> rrZero = unitlessDoublePref("RR Drive Zero", 0);
-    public static Pref<Double> rrScale = unitlessDoublePref("RR Drive Scale", 1);
+    public static UnitPref<Angle> flZero = rotationsPref("FL Drive Zero", Units.Rotations.of(0));
+    public static UnitPref<Per<Dimensionless, Angle>> flRotScale =
+            encoderTicksPerRevolutionPref("FL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Angle> frZero = rotationsPref("FR Drive Zero", Units.Rotations.of(0));
+    public static UnitPref<Per<Dimensionless, Angle>> frRotScale =
+            encoderTicksPerRevolutionPref("FR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Angle> rlZero = rotationsPref("RL Drive Zero", Units.Rotations.of(0));
+    public static UnitPref<Per<Dimensionless, Angle>> rlRotScale =
+            encoderTicksPerRevolutionPref("RL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Angle> rrZero = rotationsPref("RR Drive Zero", Units.Rotations.of(0));
+    public static UnitPref<Per<Dimensionless, Angle>> rrRotScale =
+            encoderTicksPerRevolutionPref("RR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
 
-    // Motor Scale: units of ticks per meter
-    public static Pref<Double> flDriveMtrScale = unitlessDoublePref("FL Drive Motor Scale", 1);
-    public static Pref<Double> frDriveMtrScale = unitlessDoublePref("FR Drive Motor Scale", 1);
-    public static Pref<Double> rlDriveMtrScale = unitlessDoublePref("RL Drive Motor Scale", 1);
-    public static Pref<Double> rrDriveMtrScale = unitlessDoublePref("RR Drive Motor Scale", 1);
+    public static UnitPref<Per<Dimensionless, Distance>> flDistScale =
+            encoderTicksPerMeterPref("FL Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
+    public static UnitPref<Per<Dimensionless, Distance>> frDistScale =
+            encoderTicksPerMeterPref("FR Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
+    public static UnitPref<Per<Dimensionless, Distance>> rlDistScale =
+            encoderTicksPerMeterPref("RL Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
+    public static UnitPref<Per<Dimensionless, Distance>> rrDistScale =
+            encoderTicksPerMeterPref("RR Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
 
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
-        private U storeUnits;
+        private final U storeUnits;
 
         public UnitPref(String key, U storeUnits, Measure<U> defaultValue) {
+            String symbol = storeUnits.symbol().replaceAll("/", "_");
+
             this.basePref = MoPrefs.this
             .new Pref<>(
-                    String.format("%s (%s)", key, storeUnits.symbol()),
+                    String.format("%s (%s)", key, symbol),
                     defaultValue.in(storeUnits),
                     NetworkTableValue::getDouble,
                     NetworkTableEntry::setDouble);
+
+            this.storeUnits = storeUnits;
         }
 
         public Measure<U> get() {
@@ -172,5 +187,15 @@ public class MoPrefs {
 
     private static UnitPref<Velocity<Angle>> rotationsPerSecPref(String key, Measure<Velocity<Angle>> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.RotationsPerSecond, defaultValue);
+    }
+
+    private static UnitPref<Per<Dimensionless, Distance>> encoderTicksPerMeterPref(
+            String key, Measure<Per<Dimensionless, Distance>> defaultValue) {
+        return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerMeter, defaultValue);
+    }
+
+    private static UnitPref<Per<Dimensionless, Angle>> encoderTicksPerRevolutionPref(
+            String key, Measure<Per<Dimensionless, Angle>> defaultValue) {
+        return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerRotation, defaultValue);
     }
 }
