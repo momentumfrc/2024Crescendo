@@ -65,8 +65,6 @@ public class MoUtils {
 
     public static double curve(double val, double curve) {
         if (curve == 0) return val;
-        double powed = Math.pow(Math.abs(val), curve);
-        if (val * powed > 0) return powed;
-        else return -powed;
+        return Math.signum(val) * Math.pow(Math.abs(val), curve);
     }
 }
