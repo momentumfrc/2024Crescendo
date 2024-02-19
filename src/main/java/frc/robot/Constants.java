@@ -40,6 +40,7 @@ public class Constants {
     public static final CANAddress WRIST_MTR = new CANAddress(0);
 
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
+    public static final HIDPort ARM_F310 = new HIDPort(1);
     public static final HIDPort JOYSTICK = new HIDPort(2);
 
     public static Path DATA_STORE_FILE;

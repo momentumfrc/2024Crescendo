@@ -20,6 +20,7 @@ import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.input.DualControllerInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
@@ -55,7 +56,9 @@ public class RobotContainer {
             .getEntry();
 
     public RobotContainer() {
-        inputChooser.setDefaultOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
+        inputChooser.setDefaultOption(
+                "Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
+        inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
 
         BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
