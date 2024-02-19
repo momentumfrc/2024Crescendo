@@ -19,6 +19,7 @@ import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
+import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.MoInput;
@@ -39,6 +40,7 @@ public class RobotContainer {
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
+    private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
@@ -92,6 +94,7 @@ public class RobotContainer {
                 .getEntry(true);
 
         drive.setDefaultCommand(driveCommand);
+        arm.setDefaultCommand(armCommand);
 
         configureBindings();
     }
