@@ -77,6 +77,8 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Angle>> wristMaxRps =
             rotationsPerSecPref("Wrist Max Speed", Units.RotationsPerSecond.of(0.5));
 
+    public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

@@ -23,6 +23,8 @@ public class Constants {
      */
     public static record HIDPort(int port) {}
 
+    public static final double FLOAT_EPSILON = 1e-6;
+
     public static final CANAddress TURN_LEFT_FRONT = new CANAddress(11);
     public static final CANAddress TURN_LEFT_REAR = new CANAddress(13);
     public static final CANAddress TURN_RIGHT_FRONT = new CANAddress(5);

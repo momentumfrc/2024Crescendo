@@ -6,10 +6,13 @@ package frc.robot.input;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
+import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.math.Vec2;
+import frc.robot.subsystem.ArmSubsystem.ArmMovementRequest;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoPrefs.Pref;
 import frc.robot.util.MoUtils;
+import java.util.Optional;
 
 public class SingleControllerInput implements MoInput {
     private final XboxController controller;
@@ -43,5 +46,25 @@ public class SingleControllerInput implements MoInput {
     @Override
     public boolean getReZeroGyro() {
         return controller.getStartButton();
+    }
+
+    @Override
+    public ArmMovementRequest getArmMovementRequest() {
+        // Speed overrides not supported in single-controller mode
+        return new ArmMovementRequest(0, 0);
+    }
+
+    @Override
+    public Optional<ArmSetpoint> getArmSetpoint() {
+        if (controller.getBButton()) {
+            return Optional.of(ArmSetpoint.STOW);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean getSaveArmSetpoint() {
+        // Overwriting setpoints is not supported in single-controller mode
+        return false;
     }
 }

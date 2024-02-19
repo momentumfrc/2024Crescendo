@@ -12,9 +12,12 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.MoPrefs;
+import frc.robot.util.MoShuffleboard;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
@@ -22,6 +25,12 @@ import frc.robot.util.TunerUtils;
 public class ArmSubsystem extends SubsystemBase {
     private static final Measure<Current> SHOULDER_CURRENT_LIMIT = Units.Amps.of(50);
     private static final Measure<Current> WRIST_CURRENT_LIMIT = Units.Amps.of(50);
+
+    public static enum ArmControlMode {
+        SMARTMOTION,
+        DIRECT_VELOCITY,
+        FALLBACK_DIRECT_POWER
+    };
 
     private final CANSparkMax shoulderLeftMtr;
     private final CANSparkMax shoulderRightMtr;
@@ -39,6 +48,8 @@ public class ArmSubsystem extends SubsystemBase {
     private final MoSparkMaxPID shoulderSmartMotionPid;
     private final MoSparkMaxPID wristSmartMotionPid;
 
+    public final SendableChooser<ArmControlMode> controlMode;
+
     private final MutableMeasure<Angle> mut_shoulderAbsPosition = MutableMeasure.zero(Units.Rotations);
     private final MutableMeasure<Angle> mut_wristAbsPosition = MutableMeasure.zero(Units.Rotations);
     private final MutableMeasure<Angle> mut_shoulderRelPosition = MutableMeasure.zero(Units.Rotations);
@@ -50,6 +61,10 @@ public class ArmSubsystem extends SubsystemBase {
         public ArmMovementRequest(double shoulderPower, double wristPower) {
             this.shoulderPower = MoUtils.clamp(shoulderPower, -1, 1);
             this.wristPower = MoUtils.clamp(wristPower, -1, 1);
+        }
+
+        public boolean isZero() {
+            return Math.abs(shoulderPower) < Constants.FLOAT_EPSILON && Math.abs(wristPower) < Constants.FLOAT_EPSILON;
         }
     }
 
@@ -108,6 +123,22 @@ public class ArmSubsystem extends SubsystemBase {
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
         TunerUtils.forMoSparkMax(shoulderSmartMotionPid, "Shoulder Pos.");
         TunerUtils.forMoSparkMax(wristSmartMotionPid, "Wrist Pos.");
+
+        var shoulderGroup = MoShuffleboard.getInstance()
+                .matchTab
+                .getLayout("Shoulder Position", BuiltInLayouts.kList)
+                .withSize(2, 1);
+        shoulderGroup.addDouble("Relative", () -> getShoulderRelPosition().in(Units.Rotations));
+        shoulderGroup.addDouble("Absolute", () -> getShoulderAbsPosition().in(Units.Rotations));
+
+        var wristGroup = MoShuffleboard.getInstance()
+                .matchTab
+                .getLayout("Wrist Position", BuiltInLayouts.kList)
+                .withSize(2, 1);
+        wristGroup.addDouble("Relative", () -> getWristRelPosition().in(Units.Rotations));
+        wristGroup.addDouble("Absolute", () -> getWristAbsPosition().in(Units.Rotations));
+
+        controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
     }
 
     private Measure<Angle> getShoulderAbsPosition() {
