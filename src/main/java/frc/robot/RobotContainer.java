@@ -22,6 +22,7 @@ import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
+import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.util.MoShuffleboard;
@@ -33,6 +34,7 @@ public class RobotContainer {
     // Subsystems
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
+    private ArmSubsystem arm = new ArmSubsystem();
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);

@@ -8,6 +8,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 
 public class MoUtils {
@@ -39,6 +40,17 @@ public class MoUtils {
 
     public static double clamp(double value, double min, double max) {
         return Math.min(Math.max(value, min), max);
+    }
+
+    public static <U extends Unit<U>> Measure<U> clampUnit(
+            Measure<U> value, Measure<U> lowerBound, Measure<U> upperBound) {
+        if (value.lt(lowerBound)) {
+            return lowerBound;
+        }
+        if (value.gt(upperBound)) {
+            return upperBound;
+        }
+        return value;
     }
 
     public static double map(double val, double inmin, double inmax, double outmin, double outmax) {
