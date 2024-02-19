@@ -37,8 +37,9 @@ public class ArmSetpointManager {
         private DoubleEntry getEntry(String key, double defaultValue) {
             if (!entries.containsKey(key)) {
                 DoubleTopic topic = table.getDoubleTopic(key);
-                topic.setPersistent(true);
                 DoubleEntry entry = topic.getEntry(defaultValue);
+                entry.setDefault(defaultValue);
+                topic.setPersistent(true);
                 entries.put(key, entry);
                 return entry;
             } else {
