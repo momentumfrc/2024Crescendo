@@ -6,7 +6,6 @@ package frc.robot.util;
 
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Units;
@@ -18,7 +17,7 @@ public class MoUtils {
             RelativeEncoder relEncoder,
             Measure<Angle> absPos,
             Measure<Angle> absZero,
-            Measure<Per<Dimensionless, Angle>> ratio) {
+            Measure<Per<MoUnits.EncoderAngle, Angle>> ratio) {
         relEncoder.setPositionConversionFactor(1 / ratio.in(MoUnits.EncoderTicksPerRotation));
         relEncoder.setVelocityConversionFactor(1 / ratio.in(MoUnits.EncoderTicksPerRotation));
 

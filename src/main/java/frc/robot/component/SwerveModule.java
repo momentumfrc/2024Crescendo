@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
@@ -55,16 +54,16 @@ public class SwerveModule {
     public final RelativeEncoder relativeEncoder;
 
     private final UnitPref<Angle> encoderZero;
-    private final UnitPref<Per<Dimensionless, Angle>> encoderRotScale;
-    private final UnitPref<Per<Dimensionless, Distance>> encoderDistScale;
+    private final UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderRotScale;
+    private final UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderDistScale;
 
     public SwerveModule(
             String key,
             CANSparkMax turnMotor,
             TalonFX driveMotor,
             UnitPref<Angle> encoderZero,
-            UnitPref<Per<Dimensionless, Angle>> encoderRotScale,
-            UnitPref<Per<Dimensionless, Distance>> encoderDistScale) {
+            UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderRotScale,
+            UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderDistScale) {
         this.key = key;
         this.turnMotor = turnMotor;
         this.driveMotor = driveMotor;
@@ -136,7 +135,7 @@ public class SwerveModule {
     }
 
     private void setupRelativeEncoder(
-            Measure<Angle> absPos, Measure<Angle> absZero, Measure<Per<Dimensionless, Angle>> scale) {
+            Measure<Angle> absPos, Measure<Angle> absZero, Measure<Per<MoUnits.EncoderAngle, Angle>> scale) {
         relativeEncoder.setPositionConversionFactor(1 / scale.in(MoUnits.EncoderTicksPerRadian));
         relativeEncoder.setVelocityConversionFactor(1 / scale.in(MoUnits.EncoderTicksPerRadian));
 

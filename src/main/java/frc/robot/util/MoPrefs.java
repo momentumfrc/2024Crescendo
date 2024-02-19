@@ -11,7 +11,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
@@ -36,25 +35,25 @@ public class MoPrefs {
     public static Pref<Double> driveRampTime = unitlessDoublePref("Drive Ramp Time", 0.25);
 
     public static UnitPref<Angle> flZero = rotationsPref("FL Drive Zero", Units.Rotations.of(0));
-    public static UnitPref<Per<Dimensionless, Angle>> flRotScale =
-            encoderTicksPerRevolutionPref("FL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Per<MoUnits.EncoderAngle, Angle>> flRotScale =
+            encoderTicksPerRotationPref("FL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
     public static UnitPref<Angle> frZero = rotationsPref("FR Drive Zero", Units.Rotations.of(0));
-    public static UnitPref<Per<Dimensionless, Angle>> frRotScale =
-            encoderTicksPerRevolutionPref("FR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Per<MoUnits.EncoderAngle, Angle>> frRotScale =
+            encoderTicksPerRotationPref("FR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
     public static UnitPref<Angle> rlZero = rotationsPref("RL Drive Zero", Units.Rotations.of(0));
-    public static UnitPref<Per<Dimensionless, Angle>> rlRotScale =
-            encoderTicksPerRevolutionPref("RL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Per<MoUnits.EncoderAngle, Angle>> rlRotScale =
+            encoderTicksPerRotationPref("RL Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
     public static UnitPref<Angle> rrZero = rotationsPref("RR Drive Zero", Units.Rotations.of(0));
-    public static UnitPref<Per<Dimensionless, Angle>> rrRotScale =
-            encoderTicksPerRevolutionPref("RR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
+    public static UnitPref<Per<MoUnits.EncoderAngle, Angle>> rrRotScale =
+            encoderTicksPerRotationPref("RR Drive Rot Scale", MoUnits.EncoderTicksPerRotation.of(0.5));
 
-    public static UnitPref<Per<Dimensionless, Distance>> flDistScale =
+    public static UnitPref<Per<MoUnits.EncoderAngle, Distance>> flDistScale =
             encoderTicksPerMeterPref("FL Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
-    public static UnitPref<Per<Dimensionless, Distance>> frDistScale =
+    public static UnitPref<Per<MoUnits.EncoderAngle, Distance>> frDistScale =
             encoderTicksPerMeterPref("FR Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
-    public static UnitPref<Per<Dimensionless, Distance>> rlDistScale =
+    public static UnitPref<Per<MoUnits.EncoderAngle, Distance>> rlDistScale =
             encoderTicksPerMeterPref("RL Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
-    public static UnitPref<Per<Dimensionless, Distance>> rrDistScale =
+    public static UnitPref<Per<MoUnits.EncoderAngle, Distance>> rrDistScale =
             encoderTicksPerMeterPref("RR Drive Dist Scale", MoUnits.EncoderTicksPerMeter.of(1));
 
     public final class UnitPref<U extends Unit<U>> {
@@ -189,13 +188,13 @@ public class MoPrefs {
         return getInstance().new UnitPref<>(key, Units.RotationsPerSecond, defaultValue);
     }
 
-    private static UnitPref<Per<Dimensionless, Distance>> encoderTicksPerMeterPref(
-            String key, Measure<Per<Dimensionless, Distance>> defaultValue) {
+    private static UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderTicksPerMeterPref(
+            String key, Measure<Per<MoUnits.EncoderAngle, Distance>> defaultValue) {
         return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerMeter, defaultValue);
     }
 
-    private static UnitPref<Per<Dimensionless, Angle>> encoderTicksPerRevolutionPref(
-            String key, Measure<Per<Dimensionless, Angle>> defaultValue) {
+    private static UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderTicksPerRotationPref(
+            String key, Measure<Per<MoUnits.EncoderAngle, Angle>> defaultValue) {
         return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerRotation, defaultValue);
     }
 }
