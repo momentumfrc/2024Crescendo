@@ -149,8 +149,7 @@ public class SwerveModule {
     }
 
     public void drive(SwerveModuleState state) {
-        var optimized = SwerveModuleState.optimize(
-                state, Rotation2d.fromRadians(getRelativeRotation().in(Units.Radians)));
+        var optimized = SwerveModuleState.optimize(state, new Rotation2d(getRelativeRotation()));
         turnPID.setReference(MathUtil.angleModulus(optimized.angle.getRadians()));
         drivePID.setReference(
                 optimized.speedMetersPerSecond * encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
