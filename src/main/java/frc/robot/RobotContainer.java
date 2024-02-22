@@ -20,6 +20,7 @@ import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.input.JoystickInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.DriveSubsystem;
@@ -54,6 +55,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         inputChooser.setDefaultOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
+        inputChooser.addOption("Joystick Drive", new JoystickInput(Constants.JOYSTICK));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
 
         BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
