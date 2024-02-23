@@ -9,6 +9,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,6 +43,8 @@ public class PathPlannerCommands {
 
         Pose2d startPose = path.getPreviewStartingHolonomicPose();
 
+        double driveBaseRadius = DriveSubsystem.SWERVE_WHEEL_OFFSET.in(Units.Meters) * Math.sqrt(2);
+
         FollowPathHolonomic driveControllerCommand = new FollowPathHolonomic(
                 path,
                 positioning::getRobotPose,
@@ -50,8 +53,8 @@ public class PathPlannerCommands {
                 new HolonomicPathFollowerConfig(
                         drive.translationPathController.toImmutable(),
                         drive.rotationPathController.toImmutable(),
-                        MoPrefs.autoMaxModuleSpeed.get(),
-                        MoPrefs.autoDriveBaseRadius.get(),
+                        MoPrefs.autoMaxModuleSpeed.get().in(Units.MetersPerSecond),
+                        driveBaseRadius,
                         replanningConfig),
                 () -> false, // Do not allow PathPlanner to flip the path, we already did manually
                 drive,

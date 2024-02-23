@@ -17,6 +17,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericSubscriber;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -54,7 +56,7 @@ public class DriveSubsystem extends SubsystemBase {
      * So, the distance from the center of the robot to the center of a swerve wheel is
      * 29.5"/2 - 0.5" - 2.75" = 11.5".
      */
-    private static final double SWERVE_WHEEL_OFFSET = 11.5 * 0.0254;
+    public static final Measure<Distance> SWERVE_WHEEL_OFFSET = Units.Inch.of(11.5);
 
     private static enum TurnState {
         TURNING,
@@ -141,10 +143,11 @@ public class DriveSubsystem extends SubsystemBase {
                 .matchTab
                 .addDouble("FL_POS_m", () -> frontLeft.getDistance().in(Units.Meters));
 
-        Translation2d fl = new Translation2d(SWERVE_WHEEL_OFFSET, SWERVE_WHEEL_OFFSET);
-        Translation2d fr = new Translation2d(SWERVE_WHEEL_OFFSET, -SWERVE_WHEEL_OFFSET);
-        Translation2d rl = new Translation2d(-SWERVE_WHEEL_OFFSET, SWERVE_WHEEL_OFFSET);
-        Translation2d rr = new Translation2d(-SWERVE_WHEEL_OFFSET, -SWERVE_WHEEL_OFFSET);
+        double offset_meters = SWERVE_WHEEL_OFFSET.in(Units.Meters);
+        Translation2d fl = new Translation2d(offset_meters, offset_meters);
+        Translation2d fr = new Translation2d(offset_meters, -offset_meters);
+        Translation2d rl = new Translation2d(-offset_meters, offset_meters);
+        Translation2d rr = new Translation2d(-offset_meters, -offset_meters);
 
         this.kinematics = new SwerveDriveKinematics(fl, fr, rl, rr);
     }
