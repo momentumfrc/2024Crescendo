@@ -18,9 +18,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
+import frc.robot.util.MoSparkMaxArmPID;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
+import java.util.function.Supplier;
 
 public class ArmSubsystem extends SubsystemBase {
     private static final Measure<Current> SHOULDER_CURRENT_LIMIT = Units.Amps.of(50);
@@ -42,10 +44,10 @@ public class ArmSubsystem extends SubsystemBase {
     private final RelativeEncoder shoulderRelEncoder;
     private final RelativeEncoder wristRelEncoder;
 
-    private final MoSparkMaxPID shoulderVelocityPid;
+    private final MoSparkMaxArmPID shoulderVelocityPid;
     private final MoSparkMaxPID wristVelocityPid;
 
-    private final MoSparkMaxPID shoulderSmartMotionPid;
+    private final MoSparkMaxArmPID shoulderSmartMotionPid;
     private final MoSparkMaxPID wristSmartMotionPid;
 
     public final SendableChooser<ArmControlMode> controlMode;
@@ -114,9 +116,13 @@ public class ArmSubsystem extends SubsystemBase {
         MoPrefs.wristMaxExtension.subscribe(
                 limit -> wristMtr.setSoftLimit(SoftLimitDirection.kForward, (float) limit.in(Units.Rotations)), true);
 
-        shoulderVelocityPid = new MoSparkMaxPID(MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0);
+        Supplier<Measure<Angle>> shoulderPosFromHorizontal =
+                () -> getShoulderAbsPosition().minus(MoPrefs.shoulderHorizontal.get());
+        shoulderVelocityPid =
+                new MoSparkMaxArmPID(MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0, shoulderPosFromHorizontal);
         wristVelocityPid = new MoSparkMaxPID(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0);
-        shoulderSmartMotionPid = new MoSparkMaxPID(MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1);
+        shoulderSmartMotionPid =
+                new MoSparkMaxArmPID(MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1, shoulderPosFromHorizontal);
         wristSmartMotionPid = new MoSparkMaxPID(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1);
 
         TunerUtils.forMoSparkMax(shoulderVelocityPid, "Shoulder Vel.");
@@ -199,14 +205,14 @@ public class ArmSubsystem extends SubsystemBase {
         Measure<Velocity<Angle>> shoulderVelocity = MoPrefs.shoulderMaxRps.get().times(request.shoulderPower);
         Measure<Velocity<Angle>> wristVelocity = MoPrefs.wristMaxRps.get().times(request.wristPower);
 
-        shoulderVelocityPid.setReference(shoulderVelocity.in(Units.RotationsPerSecond));
+        shoulderVelocityPid.setVelocityReference(shoulderVelocity);
         wristVelocityPid.setReference(wristVelocity.in(Units.RotationsPerSecond));
     }
 
     public void adjustSmartPosition(ArmPosition position) {
         position = limitArmPositionRequest(position);
 
-        shoulderSmartMotionPid.setReference(position.shoulderAngle.in(Units.Rotations));
+        shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
         wristSmartMotionPid.setReference(position.wristAngle.in(Units.Rotations));
     }
 }

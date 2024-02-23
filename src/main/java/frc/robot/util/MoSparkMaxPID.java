@@ -9,12 +9,12 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 public class MoSparkMaxPID {
-    private final Type type;
-    private final CANSparkMax motorController;
-    private final SparkPIDController pidController;
-    private final RelativeEncoder encoder;
-    private final int pidSlot;
-    private double lastReference;
+    protected final Type type;
+    protected final CANSparkMax motorController;
+    protected final SparkPIDController pidController;
+    protected final RelativeEncoder encoder;
+    protected final int pidSlot;
+    protected double lastReference;
 
     public MoSparkMaxPID(Type type, CANSparkMax controller, int pidSlot) {
         this.type = type;

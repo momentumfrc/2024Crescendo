@@ -72,6 +72,9 @@ public class MoPrefs {
             rotationsPref("Shoulder Max Rotations", Units.Degrees.of(165.0));
     public static final UnitPref<Angle> wristMaxExtension = rotationsPref("Wrist Max Rotations", Units.Rotations.of(1));
 
+    public static final UnitPref<Angle> shoulderHorizontal =
+            rotationsPref("Shoulder Horizontal", Units.Rotations.of(0.25));
+
     public static final UnitPref<Velocity<Angle>> shoulderMaxRps =
             rotationsPerSecPref("Shoulder Max Spd", Units.RotationsPerSecond.of(0.5));
     public static final UnitPref<Velocity<Angle>> wristMaxRps =
