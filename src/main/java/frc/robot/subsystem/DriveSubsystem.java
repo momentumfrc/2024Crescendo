@@ -247,6 +247,20 @@ public class DriveSubsystem extends SubsystemBase {
         rearRight.drive(states[3]);
     }
 
+    /**
+     * Turn the robot in-place by the desired rotation.
+     */
+    public void rotateRelative(Rotation2d desiredRotation) {
+        Rotation2d currentHeading = getCurrHeading();
+        Rotation2d desiredHeading = currentHeading.plus(desiredRotation);
+
+        double turnRequest = headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
+        var angularSpeedRequest = MoPrefs.maxTurnSpeed.get().times(MathUtil.clamp(turnRequest, -1, 1));
+
+        ChassisSpeeds speeds = new ChassisSpeeds(0, 0, angularSpeedRequest.in(Units.RadiansPerSecond));
+        driveRobotRelativeSpeeds(speeds);
+    }
+
     public boolean isMoving() {
         return Math.abs(frontLeft.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
                 || Math.abs(frontRight.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
