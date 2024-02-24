@@ -76,4 +76,9 @@ public class DualControllerInput implements MoInput {
     public boolean getSaveArmSetpoint() {
         return armController.getBackButton();
     }
+
+    @Override
+    public boolean getRunSysId() {
+        return armController.getLeftBumper();
+    }
 }

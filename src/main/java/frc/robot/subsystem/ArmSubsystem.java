@@ -12,9 +12,11 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
@@ -71,6 +73,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public ArmSubsystem() {
+        super("Arm");
         shoulderLeftMtr = new CANSparkMax(Constants.SHOULDER_LEFT_MTR.address(), MotorType.kBrushless);
         shoulderRightMtr = new CANSparkMax(Constants.SHOULDER_RIGHT_MTR.address(), MotorType.kBrushless);
         wristMtr = new CANSparkMax(Constants.WRIST_MTR.address(), MotorType.kBrushless);
@@ -215,5 +218,31 @@ public class ArmSubsystem extends SubsystemBase {
 
         shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
         wristSmartMotionPid.setReference(position.wristAngle.in(Units.Rotations));
+    }
+
+    public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
+        if (config == null) {
+            config = new SysIdRoutine.Config();
+        }
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+        final MutableMeasure<Velocity<Angle>> mut_vel = MutableMeasure.zero(Units.RotationsPerSecond);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            shoulderLeftMtr.setVoltage(v.in(Units.Volts));
+                            wristMtr.stopMotor();
+                        },
+                        (log) -> {
+                            log.motor("shoulderLeftMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            shoulderLeftMtr.get() * shoulderLeftMtr.getBusVoltage(), Units.Volts))
+                                    .angularPosition(getShoulderRelPosition())
+                                    .angularVelocity(mut_vel.mut_replace(
+                                            shoulderRelEncoder.getVelocity(), Units.RotationsPerSecond));
+                        },
+                        this));
     }
 }

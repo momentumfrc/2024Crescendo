@@ -24,4 +24,6 @@ public interface MoInput {
     public Optional<ArmSetpoint> getArmSetpoint();
 
     public boolean getSaveArmSetpoint();
+
+    public boolean getRunSysId();
 }

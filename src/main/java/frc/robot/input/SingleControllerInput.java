@@ -67,4 +67,9 @@ public class SingleControllerInput implements MoInput {
         // Overwriting setpoints is not supported in single-controller mode
         return false;
     }
+
+    @Override
+    public boolean getRunSysId() {
+        return controller.getLeftBumper();
+    }
 }
