@@ -80,6 +80,12 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Angle>> wristMaxRps =
             rotationsPerSecPref("Wrist Max Speed", Units.RotationsPerSecond.of(0.5));
 
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> shooterRollerScale =
+            encoderTicksPerCentimeterPref("Shooter Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
+
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shooterFlywheelScale =
+            encoderTicksPerRotationPref("Shooter Flywheel Scale", MoUnits.EncoderTicksPerRotation.of(1));
+
     public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
 
     public final class UnitPref<U extends Unit<U>> {
@@ -219,6 +225,11 @@ public class MoPrefs {
 
     private static UnitPref<Velocity<Angle>> rotationsPerSecPref(String key, Measure<Velocity<Angle>> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.RotationsPerSecond, defaultValue);
+    }
+
+    private static UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderTicksPerCentimeterPref(
+            String key, Measure<Per<MoUnits.EncoderAngle, Distance>> defaultValue) {
+        return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerCentimeter, defaultValue);
     }
 
     private static UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderTicksPerMeterPref(

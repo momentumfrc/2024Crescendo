@@ -32,6 +32,7 @@ import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
+import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.PathPlannerCommands;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class RobotContainer {
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
     private ArmSubsystem arm = new ArmSubsystem();
+    private ShooterSubsystem shooter = new ShooterSubsystem();
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);

@@ -39,6 +39,11 @@ public class Constants {
     public static final CANAddress SHOULDER_RIGHT_MTR = new CANAddress(0);
     public static final CANAddress WRIST_MTR = new CANAddress(0);
 
+    // TODO: Placeholder ids - fill with real values
+    public static final CANAddress SHOOTER_ROLLER_MTR = new CANAddress(0);
+    public static final CANAddress SHOOTER_FLYWHEEL_MTR_LEFT = new CANAddress(0);
+    public static final CANAddress SHOOTER_FLYWHEEL_MTR_RIGHT = new CANAddress(0);
+
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
     public static final HIDPort ARM_F310 = new HIDPort(1);
     public static final HIDPort JOYSTICK = new HIDPort(2);
