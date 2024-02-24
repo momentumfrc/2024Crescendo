@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -56,6 +57,14 @@ public class SwerveModule {
     private final UnitPref<Angle> encoderZero;
     private final UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderRotScale;
     private final UnitPref<Per<MoUnits.EncoderAngle, Distance>> encoderDistScale;
+
+    // Keep references to frequently used measure instances, so that we're not constantly creating/destroying instances.
+    // This reduces the amount of garbage collection that is needed. See:
+    // https://docs.wpilib.org/en/stable/docs/software/basic-programming/java-units.html#mutability-and-object-creation
+    private final MutableMeasure<Angle> absoluteRotation = MutableMeasure.zero(Units.Rotations);
+    private final MutableMeasure<Angle> relativeRotation = MutableMeasure.zero(Units.Radians);
+    private final MutableMeasure<Distance> distance = MutableMeasure.zero(Units.Meters);
+    private final MutableMeasure<Velocity<Distance>> velocity = MutableMeasure.zero(Units.MetersPerSecond);
 
     public SwerveModule(
             String key,
@@ -103,21 +112,25 @@ public class SwerveModule {
     }
 
     public Measure<Angle> getAbsoluteRotation() {
-        return Units.Rotations.of(absoluteEncoder.getPosition());
+        return absoluteRotation.mut_replace(absoluteEncoder.getPosition(), Units.Rotations);
     }
 
     public Measure<Angle> getRelativeRotation() {
-        return Units.Radians.of(relativeEncoder.getPosition());
+        return relativeRotation.mut_replace(relativeEncoder.getPosition(), Units.Radians);
     }
 
     public Measure<Distance> getDistance() {
-        return Units.Meters.of(driveMotor.getRotorPosition().getValueAsDouble()
-                / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
+        return distance.mut_replace(
+                driveMotor.getRotorPosition().getValueAsDouble()
+                        / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter),
+                Units.Meters);
     }
 
     public Measure<Velocity<Distance>> getVelocity() {
-        return Units.MetersPerSecond.of(driveMotor.getRotorVelocity().getValueAsDouble()
-                / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter));
+        return velocity.mut_replace(
+                driveMotor.getRotorVelocity().getValueAsDouble()
+                        / encoderDistScale.get().in(MoUnits.EncoderTicksPerMeter),
+                Units.MetersPerSecond);
     }
 
     private boolean areMotorsPowered() {

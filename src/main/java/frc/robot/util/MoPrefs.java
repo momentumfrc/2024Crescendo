@@ -13,6 +13,7 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
@@ -63,8 +64,15 @@ public class MoPrefs {
         private final Pref<Double> basePref;
         private final U storeUnits;
 
+        // Keep a reference to the frequently used Measure instance, so that we're not constantly creating/destroying
+        // instances. This reduces the amount of garbage collection that is needed. See:
+        // https://docs.wpilib.org/en/stable/docs/software/basic-programming/java-units.html#mutability-and-object-creation
+        private final MutableMeasure<U> currValue;
+
         public UnitPref(String key, U storeUnits, Measure<U> defaultValue) {
             String symbol = storeUnits.symbol().replaceAll("/", "_");
+
+            currValue = MutableMeasure.mutable(defaultValue);
 
             this.basePref = MoPrefs.this
             .new Pref<>(
@@ -77,7 +85,7 @@ public class MoPrefs {
         }
 
         public Measure<U> get() {
-            return storeUnits.of(basePref.get());
+            return currValue.mut_replace(basePref.get(), storeUnits);
         }
 
         public void set(Measure<U> value) {
@@ -89,7 +97,7 @@ public class MoPrefs {
         }
 
         public void subscribe(Consumer<Measure<U>> consumer, boolean notifyImmediately) {
-            basePref.subscribe((value) -> consumer.accept(storeUnits.of(value)), notifyImmediately);
+            basePref.subscribe((value) -> consumer.accept(currValue.mut_replace(value, storeUnits)), notifyImmediately);
         }
     }
 
