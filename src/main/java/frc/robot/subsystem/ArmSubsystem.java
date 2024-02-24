@@ -145,6 +145,7 @@ public class ArmSubsystem extends SubsystemBase {
         wristGroup.addDouble("Absolute", () -> getWristAbsPosition().in(Units.Rotations));
 
         controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
+        MoShuffleboard.getInstance().settingsTab.add(controlMode);
     }
 
     private Measure<Angle> getShoulderAbsPosition() {
