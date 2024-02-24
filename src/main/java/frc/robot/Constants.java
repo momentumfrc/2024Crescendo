@@ -14,26 +14,14 @@ public class Constants {
      * class is to indicate that the wrapped value is a CAN Address in a more robust way than just
      * adding "CAN_ADDR" to the constant's name.
      */
-    public static class CANAddress {
-        public final int address;
-
-        public CANAddress(int address) {
-            this.address = address;
-        }
-    }
+    public static record CANAddress(int address) {}
 
     /**
      * A wrapper class holding a single integer value representing a HID Port. The point of this
      * class is to indicate that the wrapped value is a HID Port in a more robust way than just
      * adding "PORT" to the constant's name.
      */
-    public static class HIDPort {
-        public final int port;
-
-        public HIDPort(int port) {
-            this.port = port;
-        }
-    }
+    public static record HIDPort(int port) {}
 
     public static final CANAddress TURN_LEFT_FRONT = new CANAddress(11);
     public static final CANAddress TURN_LEFT_REAR = new CANAddress(13);

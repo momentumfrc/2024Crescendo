@@ -18,7 +18,7 @@ public class SingleControllerInput implements MoInput {
     private Pref<Double> driveCurve = MoPrefs.driveCurve;
 
     public SingleControllerInput(Constants.HIDPort port) {
-        this.controller = new XboxController(port.port);
+        this.controller = new XboxController(port.port());
     }
 
     private double applyDriveInputTransforms(double value) {

@@ -103,32 +103,32 @@ public class DriveSubsystem extends SubsystemBase {
 
         this.frontLeft = new SwerveModule(
                 "FL",
-                new CANSparkMax(Constants.TURN_LEFT_FRONT.address, MotorType.kBrushless),
-                new TalonFX(Constants.DRIVE_LEFT_FRONT.address),
+                new CANSparkMax(Constants.TURN_LEFT_FRONT.address(), MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_LEFT_FRONT.address()),
                 MoPrefs.flZero,
                 MoPrefs.flRotScale,
                 MoPrefs.flDistScale);
 
         this.frontRight = new SwerveModule(
                 "FR",
-                new CANSparkMax(Constants.TURN_RIGHT_FRONT.address, MotorType.kBrushless),
-                new TalonFX(Constants.DRIVE_RIGHT_FRONT.address),
+                new CANSparkMax(Constants.TURN_RIGHT_FRONT.address(), MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_RIGHT_FRONT.address()),
                 MoPrefs.frZero,
                 MoPrefs.frRotScale,
                 MoPrefs.frDistScale);
 
         this.rearLeft = new SwerveModule(
                 "RL",
-                new CANSparkMax(Constants.TURN_LEFT_REAR.address, MotorType.kBrushless),
-                new TalonFX(Constants.DRIVE_LEFT_REAR.address),
+                new CANSparkMax(Constants.TURN_LEFT_REAR.address(), MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_LEFT_REAR.address()),
                 MoPrefs.rlZero,
                 MoPrefs.rlRotScale,
                 MoPrefs.rlDistScale);
 
         this.rearRight = new SwerveModule(
                 "RR",
-                new CANSparkMax(Constants.TURN_RIGHT_REAR.address, MotorType.kBrushless),
-                new TalonFX(Constants.DRIVE_RIGHT_REAR.address),
+                new CANSparkMax(Constants.TURN_RIGHT_REAR.address(), MotorType.kBrushless),
+                new TalonFX(Constants.DRIVE_RIGHT_REAR.address()),
                 MoPrefs.rrZero,
                 MoPrefs.rrRotScale,
                 MoPrefs.rrDistScale);
