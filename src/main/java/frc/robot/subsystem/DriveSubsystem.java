@@ -141,7 +141,7 @@ public class DriveSubsystem extends SubsystemBase {
                         "FL_POS", () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble());
         MoShuffleboard.getInstance()
                 .matchTab
-                .addDouble("FL_POS_m", () -> frontLeft.getDistance().in(Units.Meters));
+                .addDouble("FL_POS_m", () -> frontLeft.distEncoder.getPosition().in(Units.Meters));
 
         double offset_meters = SWERVE_WHEEL_OFFSET.in(Units.Meters);
         Translation2d fl = new Translation2d(offset_meters, offset_meters);
@@ -262,10 +262,10 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public boolean isMoving() {
-        return Math.abs(frontLeft.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
-                || Math.abs(frontRight.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
-                || Math.abs(rearLeft.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
-                || Math.abs(rearRight.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF;
+        return Math.abs(frontLeft.distEncoder.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(frontRight.distEncoder.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(rearLeft.distEncoder.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF
+                || Math.abs(rearRight.distEncoder.getVelocity().in(Units.MetersPerSecond)) > MOVE_RATE_CUTOFF;
     }
 
     public void forEachSwerveModule(Consumer<SwerveModule> forBody) {
