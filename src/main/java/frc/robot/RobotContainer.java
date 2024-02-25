@@ -25,6 +25,7 @@ import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.MoInput;
@@ -123,6 +124,7 @@ public class RobotContainer {
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
+        shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         configureBindings();
     }

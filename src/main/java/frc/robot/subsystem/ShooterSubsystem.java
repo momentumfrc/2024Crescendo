@@ -28,8 +28,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private final CANSparkFlex flywheelLeft;
     private final CANSparkFlex flywheelRight;
 
-    private final MoEncoder<Distance> rollerEncoder;
-    private final MoEncoder<Angle> flywheelEncoder;
+    public final MoEncoder<Distance> rollerEncoder;
+    public final MoEncoder<Angle> flywheelEncoder;
 
     private final MoSparkMaxPID<Distance> rollerPosPid;
     private final MoSparkMaxPID<Angle> flywheelVelocityPid;

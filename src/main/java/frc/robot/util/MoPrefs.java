@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
@@ -85,6 +86,9 @@ public class MoPrefs {
 
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shooterFlywheelScale =
             encoderTicksPerRotationPref("Shooter Flywheel Scale", MoUnits.EncoderTicksPerRotation.of(1));
+
+    public static final UnitPref<Dimensionless> shooterSetpointVarianceThreshold = getInstance()
+    .new UnitPref<Dimensionless>("Shooter Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
     public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
 
