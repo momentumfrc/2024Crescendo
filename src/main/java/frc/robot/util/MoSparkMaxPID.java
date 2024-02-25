@@ -7,12 +7,12 @@ package frc.robot.util;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Velocity;
 import frc.robot.encoder.RevRelativeEncoder;
 
-public class MoSparkMaxPID {
+public class MoSparkMaxPID<Dim extends Unit<Dim>> {
     protected final Type type;
     protected final CANSparkBase motorController;
     protected final SparkPIDController pidController;
@@ -20,8 +20,8 @@ public class MoSparkMaxPID {
     protected final int pidSlot;
     protected double lastReference;
 
-    protected final Angle internalEncoderUnits;
-    protected final Velocity<Angle> internalEncoderVelocity;
+    protected final Dim internalEncoderUnits;
+    protected final Velocity<Dim> internalEncoderVelocity;
 
     /**
      * Constructs a MoSparkMaxPID
@@ -32,7 +32,7 @@ public class MoSparkMaxPID {
      * @param controller the motor controller
      * @param pidSlot the slot in which to save the PID constants
      */
-    public MoSparkMaxPID(Type type, CANSparkBase controller, int pidSlot, Angle internalEncoderUnits) {
+    public MoSparkMaxPID(Type type, CANSparkBase controller, int pidSlot, Dim internalEncoderUnits) {
         this.type = type;
         this.motorController = controller;
         this.pidController = controller.getPIDController();
@@ -108,7 +108,7 @@ public class MoSparkMaxPID {
         lastReference = value;
     }
 
-    public void setPositionReference(Measure<Angle> position) {
+    public void setPositionReference(Measure<Dim> position) {
         if (this.type != Type.POSITION && this.type != Type.SMARTMOTION) {
             throw new UnsupportedOperationException(
                     String.format("Cannot set position on PID controller of type %s", this.type.name()));
@@ -118,7 +118,7 @@ public class MoSparkMaxPID {
         lastReference = value;
     }
 
-    public void setVelocityReference(Measure<Velocity<Angle>> velocity) {
+    public void setVelocityReference(Measure<Velocity<Dim>> velocity) {
         if (this.type != Type.VELOCITY && this.type != Type.SMARTVELOCITY) {
             throw new UnsupportedOperationException(
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
