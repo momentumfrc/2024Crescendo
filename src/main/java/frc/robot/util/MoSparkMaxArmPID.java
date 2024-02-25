@@ -7,7 +7,6 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -39,8 +38,12 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
      *     horizontal (i.e. if the provided angle is 0, the arm should be parallel with the floor)
      */
     public MoSparkMaxArmPID(
-            Type type, CANSparkMax controller, int pidSlot, Supplier<Measure<Angle>> getAngleFromHorizontal) {
-        super(type, controller, pidSlot);
+            Type type,
+            CANSparkMax controller,
+            int pidSlot,
+            Angle internalEncoderUnits,
+            Supplier<Measure<Angle>> getAngleFromHorizontal) {
+        super(type, controller, pidSlot, internalEncoderUnits);
         this.getAngleFromHorizontal = getAngleFromHorizontal;
     }
 
@@ -73,24 +76,21 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
 
     /**
      * Set the reference of the PID controller. The units of value depend on the current type of the controller.
-     * For position controllers (Type.POSITION or Type.SMARTMOTION), value is measured in rotations.
-     * For velocity controllers (Type.VELOCITY or Type.SMARTVELOCITY), value is measured in rotations per second.
+     * For position controllers (Type.POSITION or Type.SMARTMOTION), value is measured in internalEncoderUnits.
+     * For velocity controllers (Type.VELOCITY or Type.SMARTVELOCITY), value is measured in internalEncoderUnits per minute.
      * <p>
      * @deprecated Use {@link #setPositionReference(Measure)} or {@link #setVelocityReference(Measure)}
      */
     @Deprecated(forRemoval = false)
     @Override
     public void setReference(double value) {
-        DriverStation.reportWarning(
-                "Recommend using setReference(Measure<Angle>, Measure<Velocity<Angle>>) overload", false);
-
         double ff;
         if (this.type == Type.POSITION || this.type == Type.SMARTMOTION) {
             ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
         } else {
             ff = getFF(
                     this.getAngleFromHorizontal.get().in(Units.Radians),
-                    mutVelocity.mut_replace(value, Units.RotationsPerSecond).in(Units.RadiansPerSecond));
+                    mutVelocity.mut_replace(value, internalEncoderVelocity).in(Units.RadiansPerSecond));
         }
 
         this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
@@ -105,7 +105,7 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
         }
 
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
-        double value = desiredPosition.in(Units.Rotations);
+        double value = desiredPosition.in(internalEncoderUnits);
 
         this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
         this.lastReference = value;
@@ -118,11 +118,12 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
         }
 
-        double value = desiredVelocity.in(Units.RadiansPerSecond);
-        double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value);
+        double value_radians = desiredVelocity.in(Units.RadiansPerSecond);
+        double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value_radians);
 
-        this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
-        this.lastReference = value;
+        double value_internal = desiredVelocity.in(internalEncoderVelocity);
+        this.pidController.setReference(value_internal, this.type.innerType, pidSlot, ff);
+        this.lastReference = value_internal;
         this.lastFF = ff;
     }
 }
