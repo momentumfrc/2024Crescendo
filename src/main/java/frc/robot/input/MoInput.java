@@ -27,5 +27,7 @@ public interface MoInput {
 
     public boolean getShouldShootSpeaker();
 
+    public boolean getShouldShootAmp();
+
     public boolean getRunSysId();
 }

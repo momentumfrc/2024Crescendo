@@ -71,6 +71,7 @@ public class RobotContainer {
 
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
+    private final Trigger shootAmpTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -115,8 +116,10 @@ public class RobotContainer {
                 .getTable("Settings")
                 .getBooleanTopic("Auto Assume At Start")
                 .getEntry(true);
+
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
+        shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -130,7 +133,14 @@ public class RobotContainer {
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
+        // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
+        // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
+        // right before we're about to execute the command.
         shootSpeakerTrigger.whileTrue(Commands.defer(
+                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning),
+                Set.of(arm, drive, shooter)));
+
+        shootAmpTrigger.whileTrue(Commands.defer(
                 () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning),
                 Set.of(arm, drive, shooter)));
 

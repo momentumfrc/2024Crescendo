@@ -216,6 +216,11 @@ public class ArmSubsystem extends SubsystemBase {
         wristSmartMotionPid.setPositionReference(position.wristAngle);
     }
 
+    public boolean atPosition(ArmPosition position, double thresh) {
+        return shoulderRelEncoder.getPosition().isNear(position.shoulderAngle, thresh)
+                && wristRelEncoder.getPosition().isNear(position.wristAngle, thresh);
+    }
+
     public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
         if (config == null) {
             config = new SysIdRoutine.Config();

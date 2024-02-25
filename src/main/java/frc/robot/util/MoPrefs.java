@@ -87,11 +87,14 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shooterFlywheelScale =
             encoderTicksPerRotationPref("Shooter Flywheel Scale", MoUnits.EncoderTicksPerRotation.of(1));
 
-    public static final UnitPref<Dimensionless> shooterSetpointVarianceThreshold = getInstance()
+    public static final UnitPref<Dimensionless> pidSetpointVarianceThreshold = getInstance()
     .new UnitPref<Dimensionless>("Shooter Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
-    public static final UnitPref<Velocity<Angle>> shooterFlywheelSetpoint =
-            rotationsPerSecPref("Shooter Flywheel Setpoint", Units.RotationsPerSecond.of(10));
+    public static final UnitPref<Velocity<Angle>> flywheelSpeakerSetpoint =
+            rotationsPerSecPref("Speaker Flywheel Setpoint", Units.RotationsPerSecond.of(10));
+
+    public static final UnitPref<Velocity<Angle>> flywheelAmpSetpoint =
+            rotationsPerSecPref("Amp Flywheel Setpoint", Units.RotationsPerSecond.of(2));
 
     public static final UnitPref<Distance> shooterRollerSetpoint =
             centimetersPref("Shooter Roller Setpoint", Units.Centimeters.of(50));

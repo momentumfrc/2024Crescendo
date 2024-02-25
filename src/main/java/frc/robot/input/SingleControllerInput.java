@@ -87,4 +87,9 @@ public class SingleControllerInput implements MoInput {
     public boolean getShouldShootSpeaker() {
         return controller.getXButton() && controller.getPOV() == 0;
     }
+
+    @Override
+    public boolean getShouldShootAmp() {
+        return controller.getXButton() && controller.getPOV() == 180;
+    }
 }

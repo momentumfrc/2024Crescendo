@@ -76,9 +76,7 @@ public class AimSpeakerCommand extends Command {
             return false;
         }
 
-        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
-        return headingOffset.isNear(Units.Rotations.zero(), thresh)
-                && arm.shoulderRelEncoder.getPosition().isNear(adjustedPosition.shoulderAngle(), thresh)
-                && arm.wristRelEncoder.getPosition().isNear(adjustedPosition.wristAngle(), thresh);
+        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        return headingOffset.isNear(Units.Rotations.zero(), thresh) && arm.atPosition(adjustedPosition, thresh);
     }
 }

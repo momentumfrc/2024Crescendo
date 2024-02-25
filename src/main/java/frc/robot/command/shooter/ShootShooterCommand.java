@@ -40,7 +40,7 @@ public class ShootShooterCommand extends Command {
     public void execute() {
         shooter.setFlywheelSpeed(flywheelSpeed);
 
-        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
         if (shooter.flywheelEncoder.getVelocity().isNear(flywheelSpeed, thresh)) {
             upToSpeed = true;
         }
@@ -54,7 +54,7 @@ public class ShootShooterCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
         return shooter.rollerEncoder.getPosition().isNear(targetRollerPos, thresh);
     }
 }
