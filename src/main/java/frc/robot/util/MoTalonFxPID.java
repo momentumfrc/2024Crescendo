@@ -10,26 +10,30 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.units.Velocity;
+import frc.robot.encoder.TalonFxEncoder;
 import java.util.function.Function;
 
-public class MoTalonFxPID {
-    /**
-     * The talon expects speed measurements in m/100ms, but all our calculations are in m/s. So we
-     * just multiply by this conversion factor to adjust.
-     */
-    private static final double VELOCITY_CONVERSION_FACTOR = 1 / 10.0;
-
+public class MoTalonFxPID<Dim extends Unit<Dim>> {
     private final Type type;
     private final TalonFX motorController;
     private final Slot0Configs slotPIDConfigs = new Slot0Configs();
     private double lastReference;
 
-    public MoTalonFxPID(Type type, TalonFX controller) {
+    private Dim internalEncoderUnits;
+    protected final Velocity<Dim> internalEncoderVelocity;
+
+    public MoTalonFxPID(Type type, TalonFX controller, Dim internalEncoderUnits) {
         this.type = type;
         this.motorController = controller;
 
         // Load the motor controller's Slot 0 PID values into slotPIDConfigs
         this.motorController.getConfigurator().refresh(slotPIDConfigs);
+
+        this.internalEncoderUnits = internalEncoderUnits;
+        this.internalEncoderVelocity = internalEncoderUnits.per(TalonFxEncoder.VELOCITY_BASE_UNIT);
     }
 
     public Type getType() {
@@ -88,12 +92,38 @@ public class MoTalonFxPID {
         return 0;
     }
 
+    /**
+     * Set the reference of the PID controller. The units of value depend on the current type of the controller.
+     * For position controllers (Type.POSITION or Type.SMARTMOTION), value is measured in internalEncoderUnits.
+     * For velocity controllers (Type.VELOCITY or Type.SMARTVELOCITY), value is measured in internalEncoderUnits per second.
+     * <p>
+     * @deprecated Use {@link #setPositionReference(Measure)} or {@link #setVelocityReference(Measure)}
+     */
+    @Deprecated(forRemoval = false)
     public void setReference(double value) {
-        if (this.type == Type.VELOCITY) {
-            value *= VELOCITY_CONVERSION_FACTOR;
-        }
         this.motorController.setControl(this.type.control.apply(value));
         this.lastReference = value;
+    }
+
+    public void setPositionReference(Measure<Dim> position) {
+        if (this.type != Type.POSITION && this.type != Type.SMARTMOTION) {
+            throw new UnsupportedOperationException(
+                    String.format("Cannot set position on PID controller of type %s", this.type.name()));
+        }
+        double value = position.in(internalEncoderUnits);
+        this.motorController.setControl(this.type.control.apply(value));
+        lastReference = value;
+    }
+
+    public void setVelocityReference(Measure<Velocity<Dim>> velocity) {
+        if (this.type != Type.VELOCITY) {
+            throw new UnsupportedOperationException(
+                    String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
+        }
+
+        double value = velocity.in(internalEncoderVelocity);
+        this.motorController.setControl(this.type.control.apply(value));
+        lastReference = value;
     }
 
     public enum Type {

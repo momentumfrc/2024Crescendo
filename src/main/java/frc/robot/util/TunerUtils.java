@@ -7,6 +7,7 @@ package frc.robot.util;
 import com.momentum4999.motune.PIDTuner;
 import com.momentum4999.motune.PIDTunerBuilder;
 import com.playingwithfusion.CANVenom;
+import edu.wpi.first.units.Unit;
 import frc.robot.Constants;
 
 public class TunerUtils {
@@ -69,7 +70,7 @@ public class TunerUtils {
         return builder.safeBuild();
     }
 
-    public static PIDTuner forMoTalonFx(MoTalonFxPID talon, String controllerName) {
+    public static <Dim extends Unit<Dim>> PIDTuner forMoTalonFx(MoTalonFxPID<Dim> talon, String controllerName) {
         return PIDTuner.builder(controllerName)
                 .withDataStoreFile(Constants.DATA_STORE_FILE)
                 .withP(talon::setP)

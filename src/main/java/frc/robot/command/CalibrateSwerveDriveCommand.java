@@ -4,6 +4,7 @@
 
 package frc.robot.command;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.DriveSubsystem;
@@ -139,13 +140,17 @@ public class CalibrateSwerveDriveCommand extends Command {
         this.drive = drive;
 
         frontLeft = new Calibrator(
-                drive.frontLeft.absoluteEncoder::getPosition, drive.frontLeft.relativeEncoder::getPosition);
+                () -> drive.frontLeft.absoluteEncoder.getPosition().in(Units.Rotations),
+                () -> drive.frontLeft.relativeEncoder.getPosition().in(Units.Rotations));
         frontRight = new Calibrator(
-                drive.frontRight.absoluteEncoder::getPosition, drive.frontRight.relativeEncoder::getPosition);
+                () -> drive.frontRight.absoluteEncoder.getPosition().in(Units.Rotations),
+                () -> drive.frontRight.relativeEncoder.getPosition().in(Units.Rotations));
         rearLeft = new Calibrator(
-                drive.rearLeft.absoluteEncoder::getPosition, drive.rearLeft.relativeEncoder::getPosition);
+                () -> drive.rearLeft.absoluteEncoder.getPosition().in(Units.Rotations),
+                () -> drive.rearLeft.relativeEncoder.getPosition().in(Units.Rotations));
         rearRight = new Calibrator(
-                drive.rearRight.absoluteEncoder::getPosition, drive.rearRight.relativeEncoder::getPosition);
+                () -> drive.rearRight.absoluteEncoder.getPosition().in(Units.Rotations),
+                () -> drive.rearRight.relativeEncoder.getPosition().in(Units.Rotations));
     }
 
     @Override

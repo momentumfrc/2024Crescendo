@@ -4,29 +4,28 @@
 
 package frc.robot.util;
 
-import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Units;
+import frc.robot.encoder.MoEncoder;
 
 public class MoUtils {
     private static final double ENCODER_ZERO_ZONE = 0.2;
 
     public static void setupRelativeEncoder(
-            RelativeEncoder relEncoder,
+            MoEncoder<Angle> encoder,
             Measure<Angle> absPos,
             Measure<Angle> absZero,
             Measure<Per<MoUnits.EncoderAngle, Angle>> ratio) {
-        relEncoder.setPositionConversionFactor(1 / ratio.in(MoUnits.EncoderTicksPerRotation));
-        relEncoder.setVelocityConversionFactor(1 / ratio.in(MoUnits.EncoderTicksPerRotation));
+        encoder.setConversionFactor(ratio);
 
         double pos = absPos.in(Units.Rotations);
         pos = (pos + 1 - absZero.in(Units.Rotations)) % 1;
         if (pos > (1 - ENCODER_ZERO_ZONE)) {
             pos -= 1;
         }
-        relEncoder.setPosition(pos);
+        encoder.setPosition(Units.Rotations.of(pos));
     }
 
     public static double rotToRad(double rot) {
