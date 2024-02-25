@@ -18,6 +18,7 @@ import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
+import frc.robot.util.MoPrefs;
 import frc.robot.util.TargetAngleFinder;
 import java.util.EnumMap;
 
@@ -32,6 +33,9 @@ public class AimSpeakerCommand extends Command {
 
     private MutableMeasure<Distance> mutDist = MutableMeasure.zero(Units.Meters);
     private MutableMeasure<Angle> mutAngle = MutableMeasure.zero(Units.Rotations);
+
+    ArmPosition adjustedPosition;
+    Measure<Angle> headingOffset;
 
     public AimSpeakerCommand(ArmSubsystem arm, DriveSubsystem drive, PositioningSubsystem pos) {
         this.arm = arm;
@@ -58,13 +62,23 @@ public class AimSpeakerCommand extends Command {
 
         Measure<Angle> wristAim = targeting.getWristAngle(
                 mutDist.mut_replace(transform.getTranslation().getNorm(), Units.Meters));
-        Measure<Angle> headingOffset =
-                mutAngle.mut_replace(transform.getRotation().getRadians(), Units.Radians);
+        headingOffset = mutAngle.mut_replace(transform.getRotation().getRadians(), Units.Radians);
 
         ArmPosition aimPosition = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.SPEAKER);
-        ArmPosition adjustedPosition = new ArmPosition(aimPosition.shoulderAngle(), wristAim);
+        adjustedPosition = new ArmPosition(aimPosition.shoulderAngle(), wristAim);
 
         arm.adjustSmartPosition(adjustedPosition);
         drive.rotateRelative(new Rotation2d(headingOffset));
+    }
+
+    public boolean onTarget() {
+        if (headingOffset == null || adjustedPosition == null) {
+            return false;
+        }
+
+        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+        return headingOffset.isNear(Units.Rotations.zero(), thresh)
+                && arm.shoulderRelEncoder.getPosition().isNear(adjustedPosition.shoulderAngle(), thresh)
+                && arm.wristRelEncoder.getPosition().isNear(adjustedPosition.wristAngle(), thresh);
     }
 }

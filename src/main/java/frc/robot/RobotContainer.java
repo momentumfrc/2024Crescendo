@@ -18,15 +18,14 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.command.AimSpeakerCommand;
 import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.CoastSwerveDriveCommand;
+import frc.robot.command.CompositeCommands;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
-import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
@@ -71,7 +70,7 @@ public class RobotContainer {
     private final NetworkButton coastSwerveButton;
 
     private final Trigger runSysidTrigger;
-    private final Trigger aimSpeakerTrigger;
+    private final Trigger shootSpeakerTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -117,10 +116,7 @@ public class RobotContainer {
                 .getBooleanTopic("Auto Assume At Start")
                 .getEntry(true);
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
-        aimSpeakerTrigger = new Trigger(() -> getInput()
-                .getArmSetpoint()
-                .map((setpoint) -> setpoint == ArmSetpoint.SPEAKER)
-                .orElse(false));
+        shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -134,7 +130,9 @@ public class RobotContainer {
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
-        aimSpeakerTrigger.whileTrue(new AimSpeakerCommand(arm, drive, positioning));
+        shootSpeakerTrigger.whileTrue(Commands.defer(
+                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning),
+                Set.of(arm, drive, shooter)));
 
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(

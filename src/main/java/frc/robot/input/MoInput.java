@@ -25,5 +25,7 @@ public interface MoInput {
 
     public boolean getSaveArmSetpoint();
 
+    public boolean getShouldShootSpeaker();
+
     public boolean getRunSysId();
 }

@@ -58,7 +58,17 @@ public class SingleControllerInput implements MoInput {
     public Optional<ArmSetpoint> getArmSetpoint() {
         if (controller.getBButton()) {
             return Optional.of(ArmSetpoint.STOW);
+        } else if (controller.getAButton()) {
+            return Optional.of(ArmSetpoint.HANDOFF);
+        } else if (controller.getXButton()) {
+            double pov = controller.getPOV();
+            if (pov == 180) {
+                return Optional.of(ArmSetpoint.AMP);
+            }
+        } else if (controller.getYButton()) {
+            return Optional.of(ArmSetpoint.SOURCE);
         }
+
         return Optional.empty();
     }
 
@@ -71,5 +81,10 @@ public class SingleControllerInput implements MoInput {
     @Override
     public boolean getRunSysId() {
         return controller.getLeftBumper();
+    }
+
+    @Override
+    public boolean getShouldShootSpeaker() {
+        return controller.getXButton() && controller.getPOV() == 0;
     }
 }

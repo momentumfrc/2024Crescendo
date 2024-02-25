@@ -43,8 +43,8 @@ public class ArmSubsystem extends SubsystemBase {
     private final MoEncoder<Angle> shoulderAbsEncoder;
     private final MoEncoder<Angle> wristAbsEncoder;
 
-    private final MoEncoder<Angle> shoulderRelEncoder;
-    private MoEncoder<Angle> wristRelEncoder;
+    public final MoEncoder<Angle> shoulderRelEncoder;
+    public final MoEncoder<Angle> wristRelEncoder;
 
     private final MoSparkMaxArmPID shoulderVelocityPid;
     private final MoSparkMaxPID<Angle> wristVelocityPid;

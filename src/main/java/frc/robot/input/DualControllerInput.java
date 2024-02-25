@@ -60,9 +60,7 @@ public class DualControllerInput implements MoInput {
             return Optional.of(ArmSetpoint.HANDOFF);
         } else if (armController.getXButton()) {
             double pov = armController.getPOV();
-            if (pov == 0) {
-                return Optional.of(ArmSetpoint.SPEAKER);
-            } else if (pov == 180) {
+            if (pov == 180) {
                 return Optional.of(ArmSetpoint.AMP);
             }
         } else if (armController.getYButton()) {
@@ -80,5 +78,12 @@ public class DualControllerInput implements MoInput {
     @Override
     public boolean getRunSysId() {
         return armController.getLeftBumper();
+    }
+
+    @Override
+    public boolean getShouldShootSpeaker() {
+        // Since shooting involves rotating the chassis and disables driving, we need the consent of both the arm
+        // controller and the drive controller.
+        return driveController.getXButton() && armController.getXButton() && armController.getPOV() == 0;
     }
 }
