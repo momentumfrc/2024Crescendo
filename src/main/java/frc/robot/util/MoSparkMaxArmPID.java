@@ -1,6 +1,6 @@
 package frc.robot.util;
 
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
@@ -39,7 +39,7 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
      */
     public MoSparkMaxArmPID(
             Type type,
-            CANSparkMax controller,
+            CANSparkBase controller,
             int pidSlot,
             Angle internalEncoderUnits,
             Supplier<Measure<Angle>> getAngleFromHorizontal) {

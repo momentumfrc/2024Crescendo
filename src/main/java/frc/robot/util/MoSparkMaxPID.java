@@ -4,7 +4,7 @@
 
 package frc.robot.util;
 
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.units.Angle;
@@ -14,7 +14,7 @@ import frc.robot.encoder.RevRelativeEncoder;
 
 public class MoSparkMaxPID {
     protected final Type type;
-    protected final CANSparkMax motorController;
+    protected final CANSparkBase motorController;
     protected final SparkPIDController pidController;
     protected final RelativeEncoder encoder;
     protected final int pidSlot;
@@ -32,7 +32,7 @@ public class MoSparkMaxPID {
      * @param controller the motor controller
      * @param pidSlot the slot in which to save the PID constants
      */
-    public MoSparkMaxPID(Type type, CANSparkMax controller, int pidSlot, Angle internalEncoderUnits) {
+    public MoSparkMaxPID(Type type, CANSparkBase controller, int pidSlot, Angle internalEncoderUnits) {
         this.type = type;
         this.motorController = controller;
         this.pidController = controller.getPIDController();
@@ -129,14 +129,14 @@ public class MoSparkMaxPID {
     }
 
     public enum Type {
-        POSITION(CANSparkMax.ControlType.kPosition),
-        SMARTMOTION(CANSparkMax.ControlType.kSmartMotion),
-        VELOCITY(CANSparkMax.ControlType.kVelocity),
-        SMARTVELOCITY(CANSparkMax.ControlType.kSmartVelocity);
+        POSITION(CANSparkBase.ControlType.kPosition),
+        SMARTMOTION(CANSparkBase.ControlType.kSmartMotion),
+        VELOCITY(CANSparkBase.ControlType.kVelocity),
+        SMARTVELOCITY(CANSparkBase.ControlType.kSmartVelocity);
 
-        public final CANSparkMax.ControlType innerType;
+        public final CANSparkBase.ControlType innerType;
 
-        private Type(CANSparkMax.ControlType innerType) {
+        private Type(CANSparkBase.ControlType innerType) {
             this.innerType = innerType;
         }
     }
