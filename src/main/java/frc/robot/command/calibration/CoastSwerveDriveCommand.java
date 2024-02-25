@@ -1,4 +1,4 @@
-package frc.robot.command;
+package frc.robot.command.calibration;
 
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
