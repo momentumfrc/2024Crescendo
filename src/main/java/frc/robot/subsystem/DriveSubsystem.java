@@ -214,10 +214,9 @@ public class DriveSubsystem extends SubsystemBase {
 
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 maxLinearSpeed.times(fwdRequest).in(Units.MetersPerSecond),
-                maxLinearSpeed.times(fwdRequest).in(Units.MetersPerSecond),
+                maxLinearSpeed.times(leftRequest).in(Units.MetersPerSecond),
                 maxAngularSpeed.times(turnRequest).in(Units.RadiansPerSecond),
                 fieldOrientedDriveAngle);
-
         driveRobotRelativeSpeeds(speeds);
     }
 
