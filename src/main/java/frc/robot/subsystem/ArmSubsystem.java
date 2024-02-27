@@ -97,6 +97,7 @@ public class ArmSubsystem extends SubsystemBase {
         // values now.
         MoPrefs.shoulderEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
                 shoulderRelEncoder, shoulderAbsEncoder.getPosition(), MoPrefs.shoulderAbsZero.get(), scale));
+        MoPrefs.shoulderAbsEncoderScale.subscribe(shoulderAbsEncoder::setConversionFactor, true);
         MoPrefs.wristEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
                 wristRelEncoder, wristAbsEncoder.getPosition(), MoPrefs.wristAbsZero.get(), scale));
         MoPrefs.shoulderAbsZero.subscribe(

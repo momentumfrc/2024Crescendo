@@ -60,7 +60,9 @@ public class MoPrefs {
     public static UnitPref<Velocity<Distance>> autoMaxModuleSpeed =
             metersPerSecPref("Auto Max Module Speed", Units.MetersPerSecond.of(4.5));
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shoulderEncoderScale =
-            encoderTicksPerRotationPref("Shoulder Encoder Scale", MoUnits.EncoderTicksPerRotation.of(1));
+            encoderTicksPerRotationPref("Shoulder Encoder Scale", MoUnits.EncoderTicksPerRotation.of(144));
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shoulderAbsEncoderScale =
+            encoderTicksPerRotationPref("Shoulder Absolute Encoder Scale", MoUnits.EncoderTicksPerRotation.of(2.4));
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> wristEncoderScale =
             encoderTicksPerRotationPref("Wrist Encoder Scale", MoUnits.EncoderTicksPerRotation.of(1));
 
