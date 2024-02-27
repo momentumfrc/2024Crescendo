@@ -1,0 +1,162 @@
+[
+  {
+    "name": "/Preferences/Drive Max Speed (m_s)",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Max Speed (R_s)",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Deadzone",
+    "type": "double",
+    "value": 0.05,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Curve",
+    "type": "double",
+    "value": 1.4,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Slow Speed",
+    "type": "double",
+    "value": 0.35,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Slow Speed",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Ramp Time",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Zero (R)",
+    "type": "double",
+    "value": 0.186,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Zero (R)",
+    "type": "double",
+    "value": 0.48,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Zero (R)",
+    "type": "double",
+    "value": 0.895,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Zero (R)",
+    "type": "double",
+    "value": 0.968,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Auto Max Module Speed (m_s)",
+    "type": "double",
+    "value": 4.5,
+    "properties": {
+      "persistent": true
+    }
+  }
+]

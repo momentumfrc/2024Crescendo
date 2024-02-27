@@ -27,6 +27,7 @@ import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.DualControllerInput;
+import frc.robot.input.JoystickInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
@@ -80,7 +81,7 @@ public class RobotContainer {
         inputChooser.setDefaultOption(
                 "Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
         inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
-
+        inputChooser.addOption("Joystick Drive", new JoystickInput(Constants.JOYSTICK));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
         MoShuffleboard.getInstance().settingsTab.add("Sysid Mode", sysidMode);
 
