@@ -86,8 +86,7 @@ public class SwerveModule {
         distEncoder = MoEncoder.forTalonFx(driveMotor, Units.Meters);
         encoderDistScale.subscribe(scale -> distEncoder.setConversionFactor(scale), true);
 
-        this.turnPID =
-                new MoSparkMaxPID(MoSparkMaxPID.Type.POSITION, turnMotor, 0, relativeEncoder.getInternalEncoderUnits());
+        this.turnPID = new MoSparkMaxPID(MoSparkMaxPID.Type.POSITION, turnMotor, 0, relativeEncoder);
         this.drivePID = new MoTalonFxPID<Distance>(
                 MoTalonFxPID.Type.VELOCITY, driveMotor, distEncoder.getInternalEncoderUnits());
 

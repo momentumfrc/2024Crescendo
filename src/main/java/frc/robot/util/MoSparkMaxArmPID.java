@@ -8,6 +8,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import frc.robot.encoder.MoEncoder;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -42,9 +43,9 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
             Type type,
             CANSparkMax controller,
             int pidSlot,
-            Angle internalEncoderUnits,
+            MoEncoder<Angle> internalEncoder,
             Supplier<Measure<Angle>> getAngleFromHorizontal) {
-        super(type, controller, pidSlot, internalEncoderUnits);
+        super(type, controller, pidSlot, internalEncoder);
         this.getAngleFromHorizontal = getAngleFromHorizontal;
     }
 
@@ -86,16 +87,25 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
     @Override
     public void setReference(double value) {
         double ff;
-        if (this.type == Type.POSITION || this.type == Type.SMARTMOTION) {
-            ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
-        } else {
-            ff = getFF(
-                    this.getAngleFromHorizontal.get().in(Units.Radians),
-                    mutVelocity.mut_replace(value, internalEncoderVelocity).in(Units.RadiansPerSecond));
+        switch (this.type) {
+            case POSITION:
+            case SMARTMOTION:
+                lastPositionSetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnits());
+                ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
+                break;
+            case VELOCITY:
+            case SMARTVELOCITY:
+                lastVelocitySetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnitsPerSec());
+                ff = getFF(
+                        this.getAngleFromHorizontal.get().in(Units.Radians),
+                        lastVelocitySetpoint.in(Units.RadiansPerSecond));
+                break;
+            default:
+                ff = 0;
+                break;
         }
 
         this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
-        this.lastReference = value;
         this.lastFF = ff;
     }
 
@@ -106,10 +116,10 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
         }
 
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
-        double value = desiredPosition.in(internalEncoderUnits);
+        double value = internalEncoder.positionInEncoderUnits(desiredPosition);
 
         this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
-        this.lastReference = value;
+        this.lastPositionSetpoint.mut_replace(desiredPosition);
         this.lastFF = ff;
     }
 
@@ -122,10 +132,10 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
         double value_radians = desiredVelocity.in(Units.RadiansPerSecond);
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value_radians);
 
-        double value_internal = desiredVelocity.in(internalEncoderVelocity);
+        double value_internal = internalEncoder.velocityInEncoderUnits(desiredVelocity);
         this.pidController.setReference(
                 value_internal, this.type.innerType, pidSlot, ff, SparkPIDController.ArbFFUnits.kVoltage);
-        this.lastReference = value_internal;
+        this.lastVelocitySetpoint.mut_replace(desiredVelocity);
         this.lastFF = ff;
     }
 }

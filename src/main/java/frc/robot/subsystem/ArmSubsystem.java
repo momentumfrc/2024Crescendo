@@ -126,21 +126,11 @@ public class ArmSubsystem extends SubsystemBase {
         Supplier<Measure<Angle>> shoulderPosFromHorizontal =
                 () -> shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
         shoulderVelocityPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.VELOCITY,
-                shoulderLeftMtr,
-                0,
-                shoulderRelEncoder.getInternalEncoderUnits(),
-                shoulderPosFromHorizontal);
-        wristVelocityPid =
-                new MoSparkMaxPID(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder.getInternalEncoderUnits());
+                MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0, shoulderRelEncoder, shoulderPosFromHorizontal);
+        wristVelocityPid = new MoSparkMaxPID(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder);
         shoulderSmartMotionPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.SMARTMOTION,
-                shoulderLeftMtr,
-                1,
-                shoulderRelEncoder.getInternalEncoderUnits(),
-                shoulderPosFromHorizontal);
-        wristSmartMotionPid = new MoSparkMaxPID(
-                MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder.getInternalEncoderUnits());
+                MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1, shoulderRelEncoder, shoulderPosFromHorizontal);
+        wristSmartMotionPid = new MoSparkMaxPID(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder);
 
         TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
