@@ -142,9 +142,9 @@ public class ArmSubsystem extends SubsystemBase {
         wristSmartMotionPid = new MoSparkMaxPID(
                 MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder.getInternalEncoderUnits());
 
-        TunerUtils.forMoSparkMax(shoulderVelocityPid, "Shoulder Vel.");
+        TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
-        TunerUtils.forMoSparkMax(shoulderSmartMotionPid, "Shoulder Pos.");
+        TunerUtils.forSparkMaxArm(shoulderSmartMotionPid, "Shoulder Pos.");
         TunerUtils.forMoSparkMax(wristSmartMotionPid, "Wrist Pos.");
 
         var shoulderGroup = MoShuffleboard.getInstance()
