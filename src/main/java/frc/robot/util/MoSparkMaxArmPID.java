@@ -1,6 +1,7 @@
 package frc.robot.util;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
@@ -122,7 +123,8 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value_radians);
 
         double value_internal = desiredVelocity.in(internalEncoderVelocity);
-        this.pidController.setReference(value_internal, this.type.innerType, pidSlot, ff);
+        this.pidController.setReference(
+                value_internal, this.type.innerType, pidSlot, ff, SparkPIDController.ArbFFUnits.kVoltage);
         this.lastReference = value_internal;
         this.lastFF = ff;
     }
