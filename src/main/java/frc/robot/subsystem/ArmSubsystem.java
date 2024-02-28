@@ -239,8 +239,9 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
+        var voltsPerSec = Units.Volts.per(Units.Second);
         if (config == null) {
-            config = new SysIdRoutine.Config();
+            config = new SysIdRoutine.Config(voltsPerSec.of(0.1), Units.Volts.of(3), Units.Seconds.of(45));
         }
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
