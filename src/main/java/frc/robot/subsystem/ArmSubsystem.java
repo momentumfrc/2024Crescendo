@@ -166,7 +166,7 @@ public class ArmSubsystem extends SubsystemBase {
         wristGroup.addDouble("Absolute", () -> wristAbsEncoder.getPosition().in(Units.Rotations));
 
         controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
-        MoShuffleboard.getInstance().settingsTab.add(controlMode);
+        MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
     }
 
     public void reZeroArm() {
