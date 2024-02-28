@@ -48,17 +48,17 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
     }
 
     public void setKS(double kS) {
-        this.kS = 0;
+        this.kS = kS;
         this.armFF = Optional.empty();
     }
 
     public void setKG(double kG) {
-        this.kG = 0;
+        this.kG = kG;
         this.armFF = Optional.empty();
     }
 
     public void setKV(double kV) {
-        this.kV = 0;
+        this.kV = kV;
         this.armFF = Optional.empty();
     }
 
