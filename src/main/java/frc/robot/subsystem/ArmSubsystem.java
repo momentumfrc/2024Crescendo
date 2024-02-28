@@ -256,7 +256,8 @@ public class ArmSubsystem extends SubsystemBase {
                         (log) -> {
                             log.motor("shoulderLeftMtr")
                                     .voltage(mut_volt.mut_replace(
-                                            shoulderLeftMtr.get() * shoulderLeftMtr.getBusVoltage(), Units.Volts))
+                                            shoulderLeftMtr.getAppliedOutput() * shoulderLeftMtr.getBusVoltage(),
+                                            Units.Volts))
                                     .angularPosition(shoulderRelEncoder.getPosition())
                                     .angularVelocity(shoulderRelEncoder.getVelocity());
                         },
