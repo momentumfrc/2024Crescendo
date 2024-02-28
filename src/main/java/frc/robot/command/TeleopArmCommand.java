@@ -77,6 +77,10 @@ public class TeleopArmCommand extends Command {
         MoInput input = inputSupplier.get();
         var controlMode = arms.controlMode.getSelected();
 
+        if (input.getReZeroArm()) {
+            arms.reZeroArm();
+        }
+
         switch (controlMode) {
             case FALLBACK_DIRECT_POWER:
                 arms.adjustDirectPower(getMovementRequest(input));

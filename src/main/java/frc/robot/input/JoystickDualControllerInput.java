@@ -89,4 +89,9 @@ public class JoystickDualControllerInput implements MoInput {
     public boolean getRunSysId() {
         return armController.getLeftBumper();
     }
+
+    @Override
+    public boolean getReZeroArm() {
+        return armController.getStartButton();
+    }
 }

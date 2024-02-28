@@ -169,6 +169,19 @@ public class ArmSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().settingsTab.add(controlMode);
     }
 
+    public void reZeroArm() {
+        MoUtils.setupRelativeEncoder(
+                shoulderRelEncoder,
+                shoulderAbsEncoder.getPosition(),
+                MoPrefs.shoulderAbsZero.get(),
+                MoPrefs.shoulderEncoderScale.get());
+        MoUtils.setupRelativeEncoder(
+                wristRelEncoder,
+                wristAbsEncoder.getPosition(),
+                MoPrefs.wristAbsZero.get(),
+                MoPrefs.wristEncoderScale.get());
+    }
+
     private ArmMovementRequest limitArmMovementRequest(ArmMovementRequest request) {
         double shoulderPower = request.shoulderPower;
         double wristPower = request.wristPower;

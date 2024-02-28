@@ -72,4 +72,10 @@ public class SingleControllerInput implements MoInput {
     public boolean getRunSysId() {
         return controller.getLeftBumper();
     }
+
+    @Override
+    public boolean getReZeroArm() {
+        // Re-zeroing is not supported in single-controller mode
+        return false;
+    }
 }

@@ -26,4 +26,6 @@ public interface MoInput {
     public boolean getSaveArmSetpoint();
 
     public boolean getRunSysId();
+
+    public boolean getReZeroArm();
 }
