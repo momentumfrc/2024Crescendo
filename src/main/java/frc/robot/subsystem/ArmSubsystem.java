@@ -82,7 +82,7 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderRightMtr.setIdleMode(IdleMode.kBrake);
         wristMtr.setIdleMode(IdleMode.kBrake);
 
-        shoulderLeftMtr.setInverted(false);
+        shoulderLeftMtr.setInverted(true);
         shoulderRightMtr.follow(shoulderLeftMtr, true);
 
         // TODO: Ensure the shoulder abs encoder is wired to the left spark
