@@ -24,6 +24,7 @@ import frc.robot.util.MoSparkMaxArmPID;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -144,7 +145,8 @@ public class ArmSubsystem extends SubsystemBase {
         var shoulderGroup = MoShuffleboard.getInstance()
                 .matchTab
                 .getLayout("Shoulder Position", BuiltInLayouts.kList)
-                .withSize(2, 1);
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
         shoulderGroup.addDouble(
                 "Relative", () -> shoulderRelEncoder.getPosition().in(Units.Rotations));
         shoulderGroup.addDouble(
@@ -153,7 +155,8 @@ public class ArmSubsystem extends SubsystemBase {
         var wristGroup = MoShuffleboard.getInstance()
                 .matchTab
                 .getLayout("Wrist Position", BuiltInLayouts.kList)
-                .withSize(2, 1);
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
         wristGroup.addDouble("Relative", () -> wristRelEncoder.getPosition().in(Units.Rotations));
         wristGroup.addDouble("Absolute", () -> wristAbsEncoder.getPosition().in(Units.Rotations));
 
