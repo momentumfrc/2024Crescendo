@@ -146,6 +146,8 @@ public class ArmSubsystem extends SubsystemBase {
                 "Relative", () -> shoulderRelEncoder.getPosition().in(Units.Rotations));
         shoulderGroup.addDouble(
                 "Absolute", () -> shoulderAbsEncoder.getPosition().in(Units.Rotations));
+        shoulderGroup.addDouble(
+                "Rel Vel.", () -> shoulderRelEncoder.getVelocity().in(Units.RotationsPerSecond));
 
         var wristGroup = MoShuffleboard.getInstance()
                 .matchTab
@@ -154,6 +156,7 @@ public class ArmSubsystem extends SubsystemBase {
                 .withProperties(Map.of("Label position", "RIGHT"));
         wristGroup.addDouble("Relative", () -> wristRelEncoder.getPosition().in(Units.Rotations));
         wristGroup.addDouble("Absolute", () -> wristAbsEncoder.getPosition().in(Units.Rotations));
+        wristGroup.addDouble("Rel Vel.", () -> wristRelEncoder.getVelocity().in(Units.RotationsPerSecond));
 
         controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
