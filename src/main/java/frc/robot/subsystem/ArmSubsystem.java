@@ -118,6 +118,11 @@ public class ArmSubsystem extends SubsystemBase {
         MoPrefs.wristMaxExtension.subscribe(
                 limit -> wristMtr.setSoftLimit(SoftLimitDirection.kForward, (float) limit.in(Units.Rotations)), true);
 
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
+        wristMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        wristMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
+
         Supplier<Measure<Angle>> shoulderPosFromHorizontal =
                 () -> shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
         shoulderVelocityPid = new MoSparkMaxArmPID(
