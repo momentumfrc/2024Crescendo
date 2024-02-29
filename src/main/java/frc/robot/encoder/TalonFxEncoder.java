@@ -11,7 +11,7 @@ public class TalonFxEncoder implements MoEncoder.Encoder {
     private final TalonFX talon;
 
     private double positionFactor = 1;
-    private double velocityFactor = 1;
+    private double velocityTimeFactor = 1;
 
     public TalonFxEncoder(TalonFX talon) {
         talon.getConfigurator()
@@ -21,7 +21,7 @@ public class TalonFxEncoder implements MoEncoder.Encoder {
 
     @Override
     public double getPosition() {
-        return talon.getRotorPosition().getValueAsDouble() * positionFactor;
+        return talon.getPosition().getValueAsDouble();
     }
 
     @Override
@@ -31,17 +31,20 @@ public class TalonFxEncoder implements MoEncoder.Encoder {
 
     @Override
     public double getVelocity() {
-        return talon.getRotorVelocity().getValueAsDouble() * velocityFactor;
+        return talon.getVelocity().getValueAsDouble() * velocityTimeFactor;
     }
 
     @Override
     public void setPositionFactor(double factor) {
-        this.positionFactor = factor;
+        talon.getConfigurator().apply(new FeedbackConfigs().withSensorToMechanismRatio(1 / factor));
+        positionFactor = factor;
     }
 
     @Override
     public void setVelocityFactor(double factor) {
-        this.velocityFactor = factor;
+        // The talon doesn't support setting an separate velocity factor, so instead we save the difference between
+        // the position and velocity factors, then add it on ourselves when returning the velocity.
+        velocityTimeFactor = factor / positionFactor;
     }
 
     @Override

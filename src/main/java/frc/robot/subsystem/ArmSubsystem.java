@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
@@ -24,6 +25,7 @@ import frc.robot.util.MoSparkMaxArmPID;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -54,6 +56,9 @@ public class ArmSubsystem extends SubsystemBase {
 
     public final SendableChooser<ArmControlMode> controlMode;
 
+    private final GenericEntry voltRampEntry;
+    private final GenericEntry voltEntry;
+
     public static record ArmPosition(Measure<Angle> shoulderAngle, Measure<Angle> wristAngle) {}
 
     public static record ArmMovementRequest(double shoulderPower, double wristPower) {
@@ -81,7 +86,7 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderRightMtr.setIdleMode(IdleMode.kBrake);
         wristMtr.setIdleMode(IdleMode.kBrake);
 
-        shoulderLeftMtr.setInverted(false);
+        shoulderLeftMtr.setInverted(true);
         shoulderRightMtr.follow(shoulderLeftMtr, true);
 
         // TODO: Ensure the shoulder abs encoder is wired to the left spark
@@ -97,6 +102,7 @@ public class ArmSubsystem extends SubsystemBase {
         // values now.
         MoPrefs.shoulderEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
                 shoulderRelEncoder, shoulderAbsEncoder.getPosition(), MoPrefs.shoulderAbsZero.get(), scale));
+        MoPrefs.shoulderAbsEncoderScale.subscribe(shoulderAbsEncoder::setConversionFactor, true);
         MoPrefs.wristEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
                 wristRelEncoder, wristAbsEncoder.getPosition(), MoPrefs.wristAbsZero.get(), scale));
         MoPrefs.shoulderAbsZero.subscribe(
@@ -116,48 +122,69 @@ public class ArmSubsystem extends SubsystemBase {
         MoPrefs.wristMaxExtension.subscribe(
                 limit -> wristMtr.setSoftLimit(SoftLimitDirection.kForward, (float) limit.in(Units.Rotations)), true);
 
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
+        wristMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        wristMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
+
         Supplier<Measure<Angle>> shoulderPosFromHorizontal =
                 () -> shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
         shoulderVelocityPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.VELOCITY,
-                shoulderLeftMtr,
-                0,
-                shoulderRelEncoder.getInternalEncoderUnits(),
-                shoulderPosFromHorizontal);
-        wristVelocityPid = new MoSparkMaxPID<Angle>(
-                MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder.getInternalEncoderUnits());
+                MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0, shoulderRelEncoder, shoulderPosFromHorizontal);
+        wristVelocityPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder);
         shoulderSmartMotionPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.SMARTMOTION,
-                shoulderLeftMtr,
-                1,
-                shoulderRelEncoder.getInternalEncoderUnits(),
-                shoulderPosFromHorizontal);
-        wristSmartMotionPid = new MoSparkMaxPID<Angle>(
-                MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder.getInternalEncoderUnits());
+                MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1, shoulderRelEncoder, shoulderPosFromHorizontal);
+        wristSmartMotionPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder);
 
-        TunerUtils.forMoSparkMax(shoulderVelocityPid, "Shoulder Vel.");
+        TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
-        TunerUtils.forMoSparkMax(shoulderSmartMotionPid, "Shoulder Pos.");
+        TunerUtils.forSparkMaxArm(shoulderSmartMotionPid, "Shoulder Pos.");
         TunerUtils.forMoSparkMax(wristSmartMotionPid, "Wrist Pos.");
 
         var shoulderGroup = MoShuffleboard.getInstance()
                 .matchTab
                 .getLayout("Shoulder Position", BuiltInLayouts.kList)
-                .withSize(2, 1);
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
         shoulderGroup.addDouble(
                 "Relative", () -> shoulderRelEncoder.getPosition().in(Units.Rotations));
         shoulderGroup.addDouble(
                 "Absolute", () -> shoulderAbsEncoder.getPosition().in(Units.Rotations));
+        shoulderGroup.addDouble(
+                "Rel Vel.", () -> shoulderRelEncoder.getVelocity().in(Units.RotationsPerSecond));
 
         var wristGroup = MoShuffleboard.getInstance()
                 .matchTab
                 .getLayout("Wrist Position", BuiltInLayouts.kList)
-                .withSize(2, 1);
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
         wristGroup.addDouble("Relative", () -> wristRelEncoder.getPosition().in(Units.Rotations));
         wristGroup.addDouble("Absolute", () -> wristAbsEncoder.getPosition().in(Units.Rotations));
+        wristGroup.addDouble("Rel Vel.", () -> wristRelEncoder.getVelocity().in(Units.RotationsPerSecond));
+
+        var sysidGroup = MoShuffleboard.getInstance()
+                .settingsTab
+                .getLayout("Sysid Settings", BuiltInLayouts.kList)
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
+        voltRampEntry = sysidGroup.add("Volts Ramp", 1.5).getEntry();
+        voltEntry = sysidGroup.add("Volts Step", 2).getEntry();
 
         controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
-        MoShuffleboard.getInstance().settingsTab.add(controlMode);
+        MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
+    }
+
+    public void reZeroArm() {
+        MoUtils.setupRelativeEncoder(
+                shoulderRelEncoder,
+                shoulderAbsEncoder.getPosition(),
+                MoPrefs.shoulderAbsZero.get(),
+                MoPrefs.shoulderEncoderScale.get());
+        MoUtils.setupRelativeEncoder(
+                wristRelEncoder,
+                wristAbsEncoder.getPosition(),
+                MoPrefs.wristAbsZero.get(),
+                MoPrefs.wristEncoderScale.get());
     }
 
     private ArmMovementRequest limitArmMovementRequest(ArmMovementRequest request) {
@@ -222,8 +249,12 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
+        var voltsPerSec = Units.Volts.per(Units.Second);
         if (config == null) {
-            config = new SysIdRoutine.Config();
+            config = new SysIdRoutine.Config(
+                    voltsPerSec.of(voltRampEntry.getDouble(1.5)),
+                    Units.Volts.of(voltEntry.getDouble(3)),
+                    Units.Seconds.of(45));
         }
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
@@ -238,7 +269,8 @@ public class ArmSubsystem extends SubsystemBase {
                         (log) -> {
                             log.motor("shoulderLeftMtr")
                                     .voltage(mut_volt.mut_replace(
-                                            shoulderLeftMtr.get() * shoulderLeftMtr.getBusVoltage(), Units.Volts))
+                                            shoulderLeftMtr.getAppliedOutput() * shoulderLeftMtr.getBusVoltage(),
+                                            Units.Volts))
                                     .angularPosition(shoulderRelEncoder.getPosition())
                                     .angularVelocity(shoulderRelEncoder.getVelocity());
                         },

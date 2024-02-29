@@ -4,11 +4,14 @@
 
 package frc.robot.command.calibration;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.util.MoPrefs;
+import frc.robot.util.MoPrefs.UnitPref;
 import frc.robot.util.MoUnits;
 import frc.robot.util.MoUtils;
 import java.util.ArrayList;
@@ -85,8 +88,10 @@ public class CalibrateSwerveDriveCommand extends Command {
         /**
          * Uses least-squares regression to calculate the factor the current relative encoder scale
          * should be adjusted by to minimize the error between the relative and absolute encoders.
-         *
-         * <p>Let R be the relative encoder count, and A be the absolute position in radians (as
+         * <p>
+         * Note: the encoder scale is measured in radians / encoder_ticks.
+         * <p>
+         * Let R be the relative encoder count, and A be the absolute position in radians (as
          * given by the absolute encoder). Also let B be the current encoder scale (in units of
          * radians per encoder count) and let F be the error factor such that R*B*F = A. It follows
          * that F = A / R*B. Find the line of best fit where x = A and y = R*B. The slope of this
@@ -199,48 +204,26 @@ public class CalibrateSwerveDriveCommand extends Command {
         return frontLeft.isFinished() && frontRight.isFinished() && rearLeft.isFinished() && rearRight.isFinished();
     }
 
+    private void finishCalibration(
+            String key, Calibrator calibrator, UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderScalePref) {
+        if (calibrator.isFinished()) {
+            double factor = calibrator.calculateCorrectionFactor();
+            double oldScale = encoderScalePref.get().in(MoUnits.EncoderTicksPerRadian);
+            // The correction factor assumes the scale is in units of radians per encoder_tick, but the pref
+            // is in units of encoder_tick per radian, so we need to multiply by the reciprocal of the factor (divide).
+            double newScale = oldScale / factor;
+            System.out.format("%s: factor:%.2f, old=%.2f new=%.2f\n", factor, oldScale, newScale);
+            encoderScalePref.set(MoUnits.EncoderTicksPerRadian.of(newScale));
+        }
+    }
+
     @Override
     public void end(boolean interrupted) {
         new Thread(() -> {
-                    if (frontLeft.isFinished()) {
-                        double factor = frontLeft.calculateCorrectionFactor();
-                        System.out.format(
-                                "frontLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                factor,
-                                MoPrefs.flRotScale.get().in(MoUnits.EncoderTicksPerRotation),
-                                MoPrefs.flRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
-                        MoPrefs.flRotScale.set(MoPrefs.flRotScale.get().times(factor));
-                    }
-
-                    if (frontRight.isFinished()) {
-                        double factor = frontRight.calculateCorrectionFactor();
-                        System.out.format(
-                                "frontRight: factor=%.2f old=%.2f new=%.2f\n",
-                                factor,
-                                MoPrefs.frRotScale.get().in(MoUnits.EncoderTicksPerRotation),
-                                MoPrefs.frRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
-                        MoPrefs.frRotScale.set(MoPrefs.frRotScale.get().times(factor));
-                    }
-
-                    if (rearLeft.isFinished()) {
-                        double factor = rearLeft.calculateCorrectionFactor();
-                        System.out.format(
-                                "rearLeft: factor=%.2f old=%.2f new=%.2f\n",
-                                factor,
-                                MoPrefs.rlRotScale.get().in(MoUnits.EncoderTicksPerRotation),
-                                MoPrefs.rlRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
-                        MoPrefs.rlRotScale.set(MoPrefs.rlRotScale.get().times(factor));
-                    }
-
-                    if (rearRight.isFinished()) {
-                        double factor = rearRight.calculateCorrectionFactor();
-                        System.out.format(
-                                "rearRight: factor=%.2f old=%.2f new=%.2f\n",
-                                factor,
-                                MoPrefs.rrRotScale.get().in(MoUnits.EncoderTicksPerRotation),
-                                MoPrefs.rrRotScale.get().times(factor).in(MoUnits.EncoderTicksPerRotation));
-                        MoPrefs.rrRotScale.set(MoPrefs.rrRotScale.get().times(factor));
-                    }
+                    finishCalibration("frontLeft", frontLeft, MoPrefs.flRotScale);
+                    finishCalibration("frontRight", frontRight, MoPrefs.frRotScale);
+                    finishCalibration("rearLeft", rearLeft, MoPrefs.rlRotScale);
+                    finishCalibration("rearRight", rearRight, MoPrefs.rrRotScale);
                 })
                 .start();
 

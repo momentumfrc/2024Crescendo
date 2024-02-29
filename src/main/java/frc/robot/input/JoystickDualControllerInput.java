@@ -1,5 +1,6 @@
 package frc.robot.input;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
@@ -10,40 +11,47 @@ import frc.robot.util.MoPrefs.Pref;
 import frc.robot.util.MoUtils;
 import java.util.Optional;
 
-public class DualControllerInput implements MoInput {
-    private final XboxController driveController;
+public class JoystickDualControllerInput implements MoInput {
+    private final Joystick joystick;
     private final XboxController armController;
 
     private Pref<Double> driveDeadzone = MoPrefs.driveDeadzone;
     private Pref<Double> driveCurve = MoPrefs.driveCurve;
 
-    public DualControllerInput(Constants.HIDPort drivePort, Constants.HIDPort armPort) {
-        this.driveController = new XboxController(drivePort.port());
-        this.armController = new XboxController(armPort.port());
+    public JoystickDualControllerInput(Constants.HIDPort driveStickPort, Constants.HIDPort armControllerPort) {
+        joystick = new Joystick(driveStickPort.port());
+        armController = new XboxController(armControllerPort.port());
     }
 
     private double applyInputTransforms(double value) {
         return MoUtils.curve(MoUtils.deadzone(value, driveDeadzone.get()), driveCurve.get());
     }
 
+    private double getThrottle() {
+        return ((-1 * joystick.getThrottle()) + 1) / 2;
+    }
+
     @Override
     public Vec2 getMoveRequest() {
-        return new Vec2(driveController.getLeftX(), driveController.getLeftY()).scalarOp(this::applyInputTransforms);
+        return new Vec2(joystick.getX(), joystick.getY())
+                .scalarOp((v) -> v *= getThrottle())
+                .scalarOp(this::applyInputTransforms);
     }
 
     @Override
     public double getTurnRequest() {
-        return -1 * applyInputTransforms(driveController.getRightX());
+        return applyInputTransforms(-1 * joystick.getZ() * getThrottle());
     }
 
     @Override
     public boolean getShouldUseSlowSpeed() {
-        return driveController.getLeftBumper();
+        // No explicit slow speed since we have the throttle.
+        return false;
     }
 
     @Override
     public boolean getReZeroGyro() {
-        return driveController.getStartButton();
+        return joystick.getRawButton(7);
     }
 
     @Override
@@ -60,7 +68,9 @@ public class DualControllerInput implements MoInput {
             return Optional.of(ArmSetpoint.HANDOFF);
         } else if (armController.getXButton()) {
             double pov = armController.getPOV();
-            if (pov == 180) {
+            if (pov == 0) {
+                return Optional.of(ArmSetpoint.SPEAKER);
+            } else if (pov == 180) {
                 return Optional.of(ArmSetpoint.AMP);
             }
         } else if (armController.getYButton()) {
@@ -81,10 +91,15 @@ public class DualControllerInput implements MoInput {
     }
 
     @Override
+    public boolean getReZeroArm() {
+        return armController.getStartButton();
+    }
+
+    @Override
     public boolean getShouldShootSpeaker() {
         // Since shooting involves rotating the chassis and disables driving, we need the consent of both the arm
         // controller and the drive controller.
-        return driveController.getXButton() && armController.getXButton() && armController.getPOV() == 0;
+        return joystick.getRawButton(1) && armController.getXButton() && armController.getPOV() == 0;
     }
 
     @Override
@@ -92,10 +107,5 @@ public class DualControllerInput implements MoInput {
         // There is no auto-align implemented for the amp, so it does not disable driving and so it need not
         // require the consent of the drive controller.
         return armController.getXButton() && armController.getPOV() == 180;
-    }
-
-    @Override
-    public boolean getReZeroArm() {
-        return armController.getStartButton();
     }
 }

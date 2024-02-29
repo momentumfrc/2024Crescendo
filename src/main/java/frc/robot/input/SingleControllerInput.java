@@ -92,4 +92,10 @@ public class SingleControllerInput implements MoInput {
     public boolean getShouldShootAmp() {
         return controller.getXButton() && controller.getPOV() == 180;
     }
+
+    @Override
+    public boolean getReZeroArm() {
+        // Re-zeroing is not supported in single-controller mode
+        return false;
+    }
 }

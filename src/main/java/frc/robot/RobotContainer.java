@@ -27,6 +27,7 @@ import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
+import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
@@ -81,9 +82,9 @@ public class RobotContainer {
 
     public RobotContainer() {
         inputChooser.setDefaultOption(
-                "Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
+                "Joystick Drive, F310 Arm", new JoystickDualControllerInput(Constants.JOYSTICK, Constants.ARM_F310));
+        inputChooser.addOption("Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
         inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
-
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
         MoShuffleboard.getInstance().settingsTab.add("Sysid Mode", sysidMode);
 
@@ -137,12 +138,11 @@ public class RobotContainer {
         // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
         // right before we're about to execute the command.
         shootSpeakerTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning),
+                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
                 Set.of(arm, drive, shooter)));
 
         shootAmpTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning),
-                Set.of(arm, drive, shooter)));
+                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning), Set.of(arm, drive, shooter)));
 
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(

@@ -67,12 +67,10 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterGroup.addDouble(
                 "Flywheel Vel. (rps)", () -> flywheelEncoder.getVelocity().in(Units.RotationsPerSecond));
 
-        rollerPosPid =
-                new MoSparkMaxPID<Distance>(Type.SMARTMOTION, roller, 0, rollerEncoder.getInternalEncoderUnits());
+        rollerPosPid = new MoSparkMaxPID<Distance>(Type.SMARTMOTION, roller, 0, rollerEncoder);
         TunerUtils.forMoSparkMax(rollerPosPid, "Shooter Roller Pos.");
 
-        flywheelVelocityPid =
-                new MoSparkMaxPID<Angle>(Type.VELOCITY, flywheelLeft, 0, flywheelEncoder.getInternalEncoderUnits());
+        flywheelVelocityPid = new MoSparkMaxPID<Angle>(Type.VELOCITY, flywheelLeft, 0, flywheelEncoder);
         TunerUtils.forMoSparkMax(flywheelVelocityPid, "Shooter Flywheel Vel.");
     }
 

@@ -1,0 +1,172 @@
+[
+  {
+    "name": "/Preferences/Drive Max Speed",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Max Speed",
+    "type": "double",
+    "value": 6.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Deadzone",
+    "type": "double",
+    "value": 0.08,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Curve",
+    "type": "double",
+    "value": 1.4,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Slow Speed",
+    "type": "double",
+    "value": 0.35,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Slow Speed",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Ramp Time",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Zero",
+    "type": "double",
+    "value": 0.186,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Scale",
+    "type": "double",
+    "value": 0.4975534176452577,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Zero",
+    "type": "double",
+    "value": 0.48,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Scale",
+    "type": "double",
+    "value": 0.49313285870230916,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Zero",
+    "type": "double",
+    "value": 0.895,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Scale",
+    "type": "double",
+    "value": 0.4545909008737342,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Zero",
+    "type": "double",
+    "value": 0.968,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Scale",
+    "type": "double",
+    "value": 0.5180919589526216,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Motor Scale",
+    "type": "double",
+    "value": 22.36,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Motor Scale",
+    "type": "double",
+    "value": 22.36,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Motor Scale",
+    "type": "double",
+    "value": 22.36,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Motor Scale",
+    "type": "double",
+    "value": 22.36,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  }
+]

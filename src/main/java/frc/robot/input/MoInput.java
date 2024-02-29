@@ -30,4 +30,6 @@ public interface MoInput {
     public boolean getShouldShootAmp();
 
     public boolean getRunSysId();
+
+    public boolean getReZeroArm();
 }

@@ -84,9 +84,9 @@ public class MoTalonFxPID<Dim extends Unit<Dim>> {
         switch (this.type) {
             case POSITION:
             case SMARTMOTION:
-                return this.motorController.getRotorPosition().getValueAsDouble();
+                return this.motorController.getPosition().getValueAsDouble();
             case VELOCITY:
-                return this.motorController.getRotorVelocity().getValueAsDouble();
+                return this.motorController.getVelocity().getValueAsDouble();
         }
 
         return 0;

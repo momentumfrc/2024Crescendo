@@ -35,8 +35,8 @@ public class Constants {
     public static final CANAddress DRIVE_RIGHT_REAR = new CANAddress(4);
 
     // TODO: Placeholder ids - fill with real values
-    public static final CANAddress SHOULDER_LEFT_MTR = new CANAddress(0);
-    public static final CANAddress SHOULDER_RIGHT_MTR = new CANAddress(0);
+    public static final CANAddress SHOULDER_LEFT_MTR = new CANAddress(9);
+    public static final CANAddress SHOULDER_RIGHT_MTR = new CANAddress(4);
     public static final CANAddress WRIST_MTR = new CANAddress(0);
 
     // TODO: Placeholder ids - fill with real values

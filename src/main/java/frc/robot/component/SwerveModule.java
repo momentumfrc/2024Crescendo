@@ -7,7 +7,6 @@ package frc.robot.component;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAnalogSensor.Mode;
@@ -54,9 +53,6 @@ public class SwerveModule {
     public final MoSparkMaxPID<Angle> turnPID;
     private final MoTalonFxPID<Distance> drivePID;
 
-    private PIDTuner turnTuner;
-    private PIDTuner driveTuner;
-
     private final UnitPref<Angle> encoderZero;
     private final UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderRotScale;
 
@@ -65,8 +61,6 @@ public class SwerveModule {
     // https://docs.wpilib.org/en/stable/docs/software/basic-programming/java-units.html#mutability-and-object-creation
     private final MutableMeasure<Angle> mut_angleSetpoint = MutableMeasure.zero(Units.Rotations);
     private final MutableMeasure<Velocity<Distance>> mut_velocitySetpoint = MutableMeasure.zero(Units.MetersPerSecond);
-    private final MutableMeasure<Distance> distance = MutableMeasure.zero(Units.Meters);
-    private final MutableMeasure<Velocity<Distance>> velocity = MutableMeasure.zero(Units.MetersPerSecond);
 
     public SwerveModule(
             String key,
@@ -90,10 +84,9 @@ public class SwerveModule {
         relativeEncoder = MoEncoder.forSparkRelative(turnMotor.getEncoder(), Units.Radians);
 
         distEncoder = MoEncoder.forTalonFx(driveMotor, Units.Meters);
-        encoderDistScale.subscribe(scale -> distEncoder.setConversionFactor(scale));
+        encoderDistScale.subscribe(scale -> distEncoder.setConversionFactor(scale), true);
 
-        this.turnPID = new MoSparkMaxPID<Angle>(
-                MoSparkMaxPID.Type.POSITION, turnMotor, 0, relativeEncoder.getInternalEncoderUnits());
+        this.turnPID = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.POSITION, turnMotor, 0, relativeEncoder);
         this.drivePID = new MoTalonFxPID<Distance>(
                 MoTalonFxPID.Type.VELOCITY, driveMotor, distEncoder.getInternalEncoderUnits());
 
@@ -102,8 +95,8 @@ public class SwerveModule {
         turnSparkMaxPID.setPositionPIDWrappingMaxInput(Math.PI);
         turnSparkMaxPID.setPositionPIDWrappingEnabled(true);
 
-        turnTuner = TunerUtils.forMoSparkMax(turnPID, key + "_turn");
-        driveTuner = TunerUtils.forMoTalonFx(drivePID, key + "_drive");
+        TunerUtils.forMoSparkMax(turnPID, key + "_turn");
+        TunerUtils.forMoTalonFx(drivePID, key + "_drive");
 
         encoderZero.subscribe(
                 zero -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), zero, encoderRotScale.get()));
