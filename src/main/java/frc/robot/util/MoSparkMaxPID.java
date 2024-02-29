@@ -5,41 +5,43 @@
 package frc.robot.util;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import frc.robot.encoder.RevRelativeEncoder;
+import frc.robot.encoder.MoEncoder;
 
 public class MoSparkMaxPID {
-    private final Type type;
-    private final CANSparkMax motorController;
-    private final SparkPIDController pidController;
-    private final RelativeEncoder encoder;
-    private final int pidSlot;
-    private double lastReference;
+    protected final Type type;
+    protected final CANSparkMax motorController;
+    protected final SparkPIDController pidController;
+    protected final int pidSlot;
 
-    protected final Angle internalEncoderUnits;
-    protected final Velocity<Angle> internalEncoderVelocity;
+    protected final MoEncoder<Angle> internalEncoder;
+
+    protected MutableMeasure<Angle> lastPositionSetpoint = MutableMeasure.zero(Units.Rotations);
+    protected MutableMeasure<Velocity<Angle>> lastVelocitySetpoint = MutableMeasure.zero(Units.RotationsPerSecond);
 
     /**
      * Constructs a MoSparkMaxPID
      * <p>
      * Note: the controller's internal encoder should be scaled to return the mechanism's position in units of rotation.
+     * <p>
+     * Note: we need the MoEncoder because it is solely responsible for keeping track of the encoder's internal units,
+     * which are needed to calculate the units for the setpoints.
      *
      * @param type the type of PID controller
      * @param controller the motor controller
      * @param pidSlot the slot in which to save the PID constants
      */
-    public MoSparkMaxPID(Type type, CANSparkMax controller, int pidSlot, Angle internalEncoderUnits) {
+    public MoSparkMaxPID(Type type, CANSparkMax controller, int pidSlot, MoEncoder<Angle> internalEncoder) {
         this.type = type;
         this.motorController = controller;
         this.pidController = controller.getPIDController();
-        this.encoder = controller.getEncoder();
         this.pidSlot = pidSlot;
-        this.internalEncoderUnits = internalEncoderUnits;
-        this.internalEncoderVelocity = internalEncoderUnits.per(RevRelativeEncoder.VELOCITY_BASE_UNIT);
+        this.internalEncoder = internalEncoder;
     }
 
     public SparkPIDController getPID() {
@@ -79,17 +81,26 @@ public class MoSparkMaxPID {
     }
 
     public double getSetpoint() {
-        return this.lastReference;
+        switch (this.type) {
+            case POSITION:
+            case SMARTMOTION:
+                return lastPositionSetpoint.in(internalEncoder.getInternalEncoderUnits());
+            case VELOCITY:
+            case SMARTVELOCITY:
+                return lastVelocitySetpoint.in(internalEncoder.getInternalEncoderUnitsPerSec());
+        }
+
+        return 0;
     }
 
     public double getLastMeasurement() {
         switch (this.type) {
             case POSITION:
             case SMARTMOTION:
-                return this.encoder.getPosition();
+                return internalEncoder.getPosition().in(internalEncoder.getInternalEncoderUnits());
             case VELOCITY:
             case SMARTVELOCITY:
-                return this.encoder.getVelocity();
+                return internalEncoder.getVelocity().in(internalEncoder.getInternalEncoderUnitsPerSec());
         }
 
         return 0;
@@ -105,7 +116,16 @@ public class MoSparkMaxPID {
     @Deprecated(forRemoval = false)
     public void setReference(double value) {
         pidController.setReference(value, this.type.innerType, pidSlot);
-        lastReference = value;
+        switch (this.type) {
+            case POSITION:
+            case SMARTMOTION:
+                lastPositionSetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnits());
+                break;
+            case VELOCITY:
+            case SMARTVELOCITY:
+                lastVelocitySetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnitsPerSec());
+                break;
+        }
     }
 
     public void setPositionReference(Measure<Angle> position) {
@@ -113,9 +133,9 @@ public class MoSparkMaxPID {
             throw new UnsupportedOperationException(
                     String.format("Cannot set position on PID controller of type %s", this.type.name()));
         }
-        double value = position.in(internalEncoderUnits);
+        double value = internalEncoder.positionInEncoderUnits(position);
         pidController.setReference(value, this.type.innerType, pidSlot);
-        lastReference = value;
+        lastPositionSetpoint.mut_replace(position);
     }
 
     public void setVelocityReference(Measure<Velocity<Angle>> velocity) {
@@ -123,9 +143,9 @@ public class MoSparkMaxPID {
             throw new UnsupportedOperationException(
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
         }
-        double value = velocity.in(internalEncoderVelocity);
+        double value = internalEncoder.velocityInEncoderUnits(velocity);
         pidController.setReference(value, this.type.innerType, pidSlot);
-        lastReference = value;
+        lastVelocitySetpoint.mut_replace(velocity);
     }
 
     public enum Type {

@@ -70,7 +70,7 @@ public class Limelight {
      * Pose data is considered valid if it satisfies the following conditions:
      *
      * <ol>
-     *   <li>It has a length of exactly 6
+     *   <li>It has a length of exactly 7
      *   <li>At least one value is nonzero
      * </ol>
      */
@@ -91,7 +91,7 @@ public class Limelight {
         boolean hasDetection = tvSubscriber.get() > 0;
         Translation2d crosshairs = new Translation2d(txSubscriber.get(), tySubscriber.get());
         double[] rawPoseData;
-        if (DriverStation.getAlliance().orElse(null) == Alliance.Red) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
             rawPoseData = botposeRedSubscriber.get();
         } else {
             rawPoseData = botposeBlueSubscriber.get();

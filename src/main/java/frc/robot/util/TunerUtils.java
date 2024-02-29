@@ -48,13 +48,12 @@ public class TunerUtils {
                 .safeBuild();
     }
 
-    public static PIDTuner forMoSparkMax(MoSparkMaxPID sparkMax, String controllerName) {
+    private static PIDTunerBuilder moSparkBase(MoSparkMaxPID sparkMax, String controllerName) {
         PIDTunerBuilder builder = PIDTuner.builder(controllerName)
                 .withDataStoreFile(Constants.DATA_STORE_FILE)
                 .withP(sparkMax::setP)
                 .withI(sparkMax::setI)
                 .withD(sparkMax::setD)
-                .withFF(sparkMax::setFF)
                 .withIZone(sparkMax::setIZone)
                 .withSetpoint(sparkMax::getSetpoint)
                 .withMeasurement(sparkMax::getLastMeasurement);
@@ -65,9 +64,28 @@ public class TunerUtils {
                     .withProperty("maxAccel", (a) -> sparkMax.getPID().setSmartMotionMaxAccel(a, sparkMax.getPidSlot()))
                     .withProperty("allowedError", (e) -> sparkMax.getPID()
                             .setSmartMotionAllowedClosedLoopError(e, sparkMax.getPidSlot()));
+        } else if (sparkMax.getType() == MoSparkMaxPID.Type.SMARTVELOCITY) {
+            builder = builder.withProperty(
+                            "maxAccel", (a) -> sparkMax.getPID().setSmartMotionMaxAccel(a, sparkMax.getPidSlot()))
+                    .withProperty("allowedError", (e) -> sparkMax.getPID()
+                            .setSmartMotionAllowedClosedLoopError(e, sparkMax.getPidSlot()));
         }
 
-        return builder.safeBuild();
+        return builder;
+    }
+
+    public static PIDTuner forMoSparkMax(MoSparkMaxPID sparkMax, String controllerName) {
+        return moSparkBase(sparkMax, controllerName).withFF(sparkMax::setFF).safeBuild();
+    }
+
+    public static PIDTuner forSparkMaxArm(MoSparkMaxArmPID armPID, String controllerName) {
+        return moSparkBase(armPID, controllerName)
+                .withProperty("ff_builtin", armPID::setFF)
+                .withProperty("ff_kS", armPID::setKS)
+                .withProperty("ff_kG", armPID::setKG)
+                .withProperty("ff_kV", armPID::setKV)
+                .withStateValue("calculated_ff", armPID::getLastFF)
+                .safeBuild();
     }
 
     public static <Dim extends Unit<Dim>> PIDTuner forMoTalonFx(MoTalonFxPID<Dim> talon, String controllerName) {

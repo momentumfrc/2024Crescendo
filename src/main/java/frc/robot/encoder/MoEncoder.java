@@ -57,6 +57,10 @@ public class MoEncoder<Dim extends Unit<Dim>> {
         return internalEncoderUnits;
     }
 
+    public Velocity<Dim> getInternalEncoderUnitsPerSec() {
+        return interEncoderUnitsPerSecond;
+    }
+
     public Encoder getEncoder() {
         return encoder;
     }
@@ -104,6 +108,18 @@ public class MoEncoder<Dim extends Unit<Dim>> {
 
     public Measure<Velocity<Dim>> getVelocity() {
         return mut_vel.mut_replace(encoder.getVelocity(), interEncoderUnitsPerSecond);
+    }
+
+    public double positionInEncoderUnits(Measure<Dim> position) {
+        return position.in(internalEncoderUnits);
+    }
+
+    public double velocityInEncoderUnits(Measure<Velocity<Dim>> velocity) {
+        // Note: We don't use encoder.getVelocityBaseUnit() because the encoder's velocity conversion factor is
+        // already calculated such that the encoder's internal velocity is measured in encoderUnits per second. If we
+        // were to also use encoder.getVelocityBaseUnit(), we would be accounting for the velocityBaseUnit *twice*,
+        // which would produce incorrect results.
+        return velocity.in(interEncoderUnitsPerSecond);
     }
 
     public static <Dim extends Unit<Dim>> MoEncoder<Dim> forSparkRelative(

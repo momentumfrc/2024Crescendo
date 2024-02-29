@@ -4,7 +4,10 @@
 
 package frc.robot.input;
 
+import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.math.Vec2;
+import frc.robot.subsystem.ArmSubsystem.ArmMovementRequest;
+import java.util.Optional;
 
 /** Accesses the state of robot input */
 public interface MoInput {
@@ -15,4 +18,14 @@ public interface MoInput {
     public boolean getShouldUseSlowSpeed();
 
     public boolean getReZeroGyro();
+
+    public ArmMovementRequest getArmMovementRequest();
+
+    public Optional<ArmSetpoint> getArmSetpoint();
+
+    public boolean getSaveArmSetpoint();
+
+    public boolean getRunSysId();
+
+    public boolean getReZeroArm();
 }

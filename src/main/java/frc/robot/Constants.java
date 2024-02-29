@@ -23,6 +23,8 @@ public class Constants {
      */
     public static record HIDPort(int port) {}
 
+    public static final double FLOAT_EPSILON = 1e-6;
+
     public static final CANAddress TURN_LEFT_FRONT = new CANAddress(11);
     public static final CANAddress TURN_LEFT_REAR = new CANAddress(13);
     public static final CANAddress TURN_RIGHT_FRONT = new CANAddress(5);
@@ -32,7 +34,13 @@ public class Constants {
     public static final CANAddress DRIVE_RIGHT_FRONT = new CANAddress(1);
     public static final CANAddress DRIVE_RIGHT_REAR = new CANAddress(4);
 
+    // TODO: Placeholder ids - fill with real values
+    public static final CANAddress SHOULDER_LEFT_MTR = new CANAddress(9);
+    public static final CANAddress SHOULDER_RIGHT_MTR = new CANAddress(4);
+    public static final CANAddress WRIST_MTR = new CANAddress(0);
+
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
+    public static final HIDPort ARM_F310 = new HIDPort(1);
     public static final HIDPort JOYSTICK = new HIDPort(2);
 
     public static Path DATA_STORE_FILE;
