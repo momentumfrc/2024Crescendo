@@ -45,6 +45,8 @@ public class PositioningSubsystem extends SubsystemBase {
 
     private Field2d field = MoShuffleboard.getInstance().field;
 
+    private DriverStation.Alliance lastAlliance = null;
+
     private GenericEntry didEstablishInitialPosition = MoShuffleboard.getInstance()
             .matchTab
             .add("Initial Position", false)
@@ -150,6 +152,11 @@ public class PositioningSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         limelight.periodic();
+
+        var currAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+        if (currAlliance != lastAlliance) {
+            this.didEstablishInitialPosition.setBoolean(false);
+        }
 
         limelight.getRobotPose().ifPresent(pose -> {
             if (!shouldUseAprilTags.getBoolean(true)) {
