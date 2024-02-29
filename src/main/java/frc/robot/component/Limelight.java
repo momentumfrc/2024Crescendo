@@ -70,7 +70,7 @@ public class Limelight {
      * Pose data is considered valid if it satisfies the following conditions:
      *
      * <ol>
-     *   <li>It has a length of exactly 6
+     *   <li>It has a length of exactly 7
      *   <li>At least one value is nonzero
      * </ol>
      */
