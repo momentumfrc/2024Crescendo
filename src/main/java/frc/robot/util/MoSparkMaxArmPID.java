@@ -1,6 +1,6 @@
 package frc.robot.util;
 
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.Angle;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 /**
  * Subclass of a {@link MoSparkMaxPID} that uses an ArmFeedForward to counteract gravity, linearizing the system response.
  */
-public class MoSparkMaxArmPID extends MoSparkMaxPID {
+public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
     private Optional<ArmFeedforward> armFF = Optional.empty();
 
     private Supplier<Measure<Angle>> getAngleFromHorizontal;
@@ -41,7 +41,7 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
      */
     public MoSparkMaxArmPID(
             Type type,
-            CANSparkMax controller,
+            CANSparkBase controller,
             int pidSlot,
             MoEncoder<Angle> internalEncoder,
             Supplier<Measure<Angle>> getAngleFromHorizontal) {

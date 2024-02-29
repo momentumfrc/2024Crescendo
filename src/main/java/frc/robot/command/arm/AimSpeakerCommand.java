@@ -1,4 +1,4 @@
-package frc.robot.command;
+package frc.robot.command.arm;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -16,6 +16,7 @@ import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
 import frc.robot.subsystem.PositioningSubsystem;
+import frc.robot.util.MoPrefs;
 import frc.robot.util.TargetAngleFinder;
 import java.util.EnumMap;
 
@@ -28,6 +29,8 @@ public class AimSpeakerCommand extends Command {
     private EnumMap<DriverStation.Alliance, Pose2d> speakerPoses = new EnumMap<>(DriverStation.Alliance.class);
 
     private MutableMeasure<Distance> mutDist = MutableMeasure.zero(Units.Meters);
+
+    private ArmPosition adjustedPosition;
 
     public AimSpeakerCommand(ArmSubsystem arm, PositioningSubsystem pos) {
         this.arm = arm;
@@ -55,8 +58,17 @@ public class AimSpeakerCommand extends Command {
                 mutDist.mut_replace(transform.getTranslation().getNorm(), Units.Meters));
 
         ArmPosition aimPosition = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.SPEAKER);
-        ArmPosition adjustedPosition = new ArmPosition(aimPosition.shoulderAngle(), wristAim);
+        adjustedPosition = new ArmPosition(aimPosition.shoulderAngle(), wristAim);
 
         arm.adjustSmartPosition(adjustedPosition);
+    }
+
+    public boolean onTarget() {
+        if (adjustedPosition == null) {
+            return false;
+        }
+
+        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        return arm.atPosition(adjustedPosition, thresh);
     }
 }

@@ -1,4 +1,4 @@
-package frc.robot.command;
+package frc.robot.command.arm;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;

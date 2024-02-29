@@ -48,7 +48,8 @@ public class TunerUtils {
                 .safeBuild();
     }
 
-    private static PIDTunerBuilder moSparkBase(MoSparkMaxPID sparkMax, String controllerName) {
+    private static <Dim extends Unit<Dim>> PIDTunerBuilder moSparkBase(
+            MoSparkMaxPID<Dim> sparkMax, String controllerName) {
         PIDTunerBuilder builder = PIDTuner.builder(controllerName)
                 .withDataStoreFile(Constants.DATA_STORE_FILE)
                 .withP(sparkMax::setP)
@@ -74,7 +75,7 @@ public class TunerUtils {
         return builder;
     }
 
-    public static PIDTuner forMoSparkMax(MoSparkMaxPID sparkMax, String controllerName) {
+    public static <Dim extends Unit<Dim>> PIDTuner forMoSparkMax(MoSparkMaxPID<Dim> sparkMax, String controllerName) {
         return moSparkBase(sparkMax, controllerName).withFF(sparkMax::setFF).safeBuild();
     }
 

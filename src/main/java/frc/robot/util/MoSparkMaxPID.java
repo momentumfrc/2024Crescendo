@@ -4,25 +4,24 @@
 
 package frc.robot.util;
 
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkPIDController;
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Velocity;
 import frc.robot.encoder.MoEncoder;
 
-public class MoSparkMaxPID {
+public class MoSparkMaxPID<Dim extends Unit<Dim>> {
     protected final Type type;
-    protected final CANSparkMax motorController;
+    protected final CANSparkBase motorController;
     protected final SparkPIDController pidController;
     protected final int pidSlot;
 
-    protected final MoEncoder<Angle> internalEncoder;
+    protected final MoEncoder<Dim> internalEncoder;
 
-    protected MutableMeasure<Angle> lastPositionSetpoint = MutableMeasure.zero(Units.Rotations);
-    protected MutableMeasure<Velocity<Angle>> lastVelocitySetpoint = MutableMeasure.zero(Units.RotationsPerSecond);
+    protected MutableMeasure<Dim> lastPositionSetpoint;
+    protected MutableMeasure<Velocity<Dim>> lastVelocitySetpoint;
 
     /**
      * Constructs a MoSparkMaxPID
@@ -36,12 +35,15 @@ public class MoSparkMaxPID {
      * @param controller the motor controller
      * @param pidSlot the slot in which to save the PID constants
      */
-    public MoSparkMaxPID(Type type, CANSparkMax controller, int pidSlot, MoEncoder<Angle> internalEncoder) {
+    public MoSparkMaxPID(Type type, CANSparkBase controller, int pidSlot, MoEncoder<Dim> internalEncoder) {
         this.type = type;
         this.motorController = controller;
         this.pidController = controller.getPIDController();
         this.pidSlot = pidSlot;
         this.internalEncoder = internalEncoder;
+
+        lastPositionSetpoint = MutableMeasure.zero(internalEncoder.getInternalEncoderUnits());
+        lastVelocitySetpoint = MutableMeasure.zero(internalEncoder.getInternalEncoderUnitsPerSec());
     }
 
     public SparkPIDController getPID() {
@@ -128,7 +130,7 @@ public class MoSparkMaxPID {
         }
     }
 
-    public void setPositionReference(Measure<Angle> position) {
+    public void setPositionReference(Measure<Dim> position) {
         if (this.type != Type.POSITION && this.type != Type.SMARTMOTION) {
             throw new UnsupportedOperationException(
                     String.format("Cannot set position on PID controller of type %s", this.type.name()));
@@ -138,7 +140,7 @@ public class MoSparkMaxPID {
         lastPositionSetpoint.mut_replace(position);
     }
 
-    public void setVelocityReference(Measure<Velocity<Angle>> velocity) {
+    public void setVelocityReference(Measure<Velocity<Dim>> velocity) {
         if (this.type != Type.VELOCITY && this.type != Type.SMARTVELOCITY) {
             throw new UnsupportedOperationException(
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
@@ -149,14 +151,14 @@ public class MoSparkMaxPID {
     }
 
     public enum Type {
-        POSITION(CANSparkMax.ControlType.kPosition),
-        SMARTMOTION(CANSparkMax.ControlType.kSmartMotion),
-        VELOCITY(CANSparkMax.ControlType.kVelocity),
-        SMARTVELOCITY(CANSparkMax.ControlType.kSmartVelocity);
+        POSITION(CANSparkBase.ControlType.kPosition),
+        SMARTMOTION(CANSparkBase.ControlType.kSmartMotion),
+        VELOCITY(CANSparkBase.ControlType.kVelocity),
+        SMARTVELOCITY(CANSparkBase.ControlType.kSmartVelocity);
 
-        public final CANSparkMax.ControlType innerType;
+        public final CANSparkBase.ControlType innerType;
 
-        private Type(CANSparkMax.ControlType innerType) {
+        private Type(CANSparkBase.ControlType innerType) {
             this.innerType = innerType;
         }
     }

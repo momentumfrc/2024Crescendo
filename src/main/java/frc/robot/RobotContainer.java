@@ -5,14 +5,10 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringEntry;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -22,14 +18,14 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.command.CalibrateSwerveDriveCommand;
-import frc.robot.command.CalibrateSwerveTurnCommand;
-import frc.robot.command.CoastSwerveDriveCommand;
+import frc.robot.command.CompositeCommands;
 import frc.robot.command.OrchestraCommand;
-import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
-import frc.robot.command.TeleopDriveWithPointAtCommand;
-import frc.robot.component.ArmSetpointManager.ArmSetpoint;
+import frc.robot.command.arm.TeleopArmCommand;
+import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
+import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
+import frc.robot.command.calibration.CoastSwerveDriveCommand;
+import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
@@ -37,6 +33,7 @@ import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
+import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.PathPlannerCommands;
 import java.util.Set;
@@ -56,6 +53,7 @@ public class RobotContainer {
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
     private ArmSubsystem arm = new ArmSubsystem();
+    private ShooterSubsystem shooter = new ShooterSubsystem();
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
@@ -73,7 +71,8 @@ public class RobotContainer {
     private final NetworkButton coastSwerveButton;
 
     private final Trigger runSysidTrigger;
-    private final Trigger aimSpeakerTrigger;
+    private final Trigger shootSpeakerTrigger;
+    private final Trigger shootAmpTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -118,14 +117,14 @@ public class RobotContainer {
                 .getTable("Settings")
                 .getBooleanTopic("Auto Assume At Start")
                 .getEntry(true);
+
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
-        aimSpeakerTrigger = new Trigger(() -> getInput()
-                .getArmSetpoint()
-                .map((setpoint) -> setpoint == ArmSetpoint.SPEAKER)
-                .orElse(false));
+        shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
+        shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
+        shooter.setDefaultCommand(new IdleShooterCommand(shooter));
 
         configureBindings();
     }
@@ -135,21 +134,15 @@ public class RobotContainer {
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
-        aimSpeakerTrigger.whileTrue(Commands.defer(
-                () -> {
-                    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-                    Pose2d targetPose;
+        // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
+        // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
+        // right before we're about to execute the command.
+        shootSpeakerTrigger.whileTrue(Commands.defer(
+                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
+                Set.of(arm, drive, shooter)));
 
-                    var alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-                        targetPose = layout.getTagPose(4).get().toPose2d();
-                    } else {
-                        targetPose = layout.getTagPose(7).get().toPose2d();
-                    }
-
-                    return new TeleopDriveWithPointAtCommand(drive, positioning, this::getInput, targetPose);
-                },
-                Set.of(drive)));
+        shootAmpTrigger.whileTrue(Commands.defer(
+                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning), Set.of(arm, drive, shooter)));
 
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(

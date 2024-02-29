@@ -45,14 +45,14 @@ public class ArmSubsystem extends SubsystemBase {
     private final MoEncoder<Angle> shoulderAbsEncoder;
     private final MoEncoder<Angle> wristAbsEncoder;
 
-    private final MoEncoder<Angle> shoulderRelEncoder;
-    private MoEncoder<Angle> wristRelEncoder;
+    public final MoEncoder<Angle> shoulderRelEncoder;
+    public final MoEncoder<Angle> wristRelEncoder;
 
     private final MoSparkMaxArmPID shoulderVelocityPid;
-    private final MoSparkMaxPID wristVelocityPid;
+    private final MoSparkMaxPID<Angle> wristVelocityPid;
 
     private final MoSparkMaxArmPID shoulderSmartMotionPid;
-    private final MoSparkMaxPID wristSmartMotionPid;
+    private final MoSparkMaxPID<Angle> wristSmartMotionPid;
 
     public final SendableChooser<ArmControlMode> controlMode;
 
@@ -131,10 +131,10 @@ public class ArmSubsystem extends SubsystemBase {
                 () -> shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
         shoulderVelocityPid = new MoSparkMaxArmPID(
                 MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0, shoulderRelEncoder, shoulderPosFromHorizontal);
-        wristVelocityPid = new MoSparkMaxPID(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder);
+        wristVelocityPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder);
         shoulderSmartMotionPid = new MoSparkMaxArmPID(
                 MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1, shoulderRelEncoder, shoulderPosFromHorizontal);
-        wristSmartMotionPid = new MoSparkMaxPID(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder);
+        wristSmartMotionPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder);
 
         TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
@@ -241,6 +241,11 @@ public class ArmSubsystem extends SubsystemBase {
 
         shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
         wristSmartMotionPid.setPositionReference(position.wristAngle);
+    }
+
+    public boolean atPosition(ArmPosition position, double thresh) {
+        return shoulderRelEncoder.getPosition().isNear(position.shoulderAngle, thresh)
+                && wristRelEncoder.getPosition().isNear(position.wristAngle, thresh);
     }
 
     public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
