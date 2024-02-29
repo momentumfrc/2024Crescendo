@@ -3,7 +3,6 @@ package frc.robot.command;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
@@ -16,14 +15,12 @@ import frc.robot.component.ArmSetpointManager;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
-import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.util.TargetAngleFinder;
 import java.util.EnumMap;
 
 public class AimSpeakerCommand extends Command {
     private final ArmSubsystem arm;
-    private final DriveSubsystem drive;
     private final PositioningSubsystem pos;
 
     private final TargetAngleFinder targeting = TargetAngleFinder.getInstance();
@@ -31,18 +28,16 @@ public class AimSpeakerCommand extends Command {
     private EnumMap<DriverStation.Alliance, Pose2d> speakerPoses = new EnumMap<>(DriverStation.Alliance.class);
 
     private MutableMeasure<Distance> mutDist = MutableMeasure.zero(Units.Meters);
-    private MutableMeasure<Angle> mutAngle = MutableMeasure.zero(Units.Rotations);
 
-    public AimSpeakerCommand(ArmSubsystem arm, DriveSubsystem drive, PositioningSubsystem pos) {
+    public AimSpeakerCommand(ArmSubsystem arm, PositioningSubsystem pos) {
         this.arm = arm;
-        this.drive = drive;
         this.pos = pos;
 
         AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
         speakerPoses.put(DriverStation.Alliance.Blue, layout.getTagPose(7).get().toPose2d());
         speakerPoses.put(DriverStation.Alliance.Red, layout.getTagPose(4).get().toPose2d());
 
-        addRequirements(drive, arm);
+        addRequirements(arm);
     }
 
     private final Pose2d getSpeakerPose() {
@@ -58,13 +53,10 @@ public class AimSpeakerCommand extends Command {
 
         Measure<Angle> wristAim = targeting.getWristAngle(
                 mutDist.mut_replace(transform.getTranslation().getNorm(), Units.Meters));
-        Measure<Angle> headingOffset =
-                mutAngle.mut_replace(transform.getRotation().getRadians(), Units.Radians);
 
         ArmPosition aimPosition = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.SPEAKER);
         ArmPosition adjustedPosition = new ArmPosition(aimPosition.shoulderAngle(), wristAim);
 
         arm.adjustSmartPosition(adjustedPosition);
-        drive.rotateRelative(new Rotation2d(headingOffset));
     }
 }

@@ -5,10 +5,14 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -18,13 +22,13 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.command.AimSpeakerCommand;
 import frc.robot.command.CalibrateSwerveDriveCommand;
 import frc.robot.command.CalibrateSwerveTurnCommand;
 import frc.robot.command.CoastSwerveDriveCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopArmCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.command.TeleopDriveWithPointAtCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -131,7 +135,21 @@ public class RobotContainer {
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
-        aimSpeakerTrigger.whileTrue(new AimSpeakerCommand(arm, drive, positioning));
+        aimSpeakerTrigger.whileTrue(Commands.defer(
+                () -> {
+                    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+                    Pose2d targetPose;
+
+                    var alliance = DriverStation.getAlliance();
+                    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+                        targetPose = layout.getTagPose(4).get().toPose2d();
+                    } else {
+                        targetPose = layout.getTagPose(7).get().toPose2d();
+                    }
+
+                    return new TeleopDriveWithPointAtCommand(drive, positioning, this::getInput, targetPose);
+                },
+                Set.of(drive)));
 
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(

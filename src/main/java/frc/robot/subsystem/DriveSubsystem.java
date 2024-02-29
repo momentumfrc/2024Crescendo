@@ -10,6 +10,7 @@ import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -94,6 +95,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final AHRS gyro;
 
     public boolean doResetEncoders = true;
+
+    private LinearFilter desiredOffsetFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
     public DriveSubsystem(AHRS gyro) {
         this.gyro = gyro;
@@ -218,6 +221,19 @@ public class DriveSubsystem extends SubsystemBase {
                 maxAngularSpeed.times(turnRequest).in(Units.RadiansPerSecond),
                 fieldOrientedDriveAngle);
         driveRobotRelativeSpeeds(speeds);
+    }
+
+    public void driveCartesianPointAt(
+            double fwdRequest, double leftRequest, Rotation2d fieldOrientedDriveAngle, Rotation2d desiredOffset) {
+
+        Rotation2d offset = Rotation2d.fromRotations(desiredOffsetFilter.calculate(desiredOffset.getRotations()));
+
+        Rotation2d currentHeading = getCurrHeading();
+        Rotation2d desiredHeading = currentHeading.plus(offset);
+
+        double turnRequest = headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
+
+        driveCartesian(fwdRequest, leftRequest, turnRequest, fieldOrientedDriveAngle);
     }
 
     public void driveRobotRelativeSpeeds(ChassisSpeeds speeds) {
