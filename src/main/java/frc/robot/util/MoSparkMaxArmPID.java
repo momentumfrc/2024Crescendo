@@ -68,12 +68,12 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
         return lastFF;
     }
 
-    private double getFF(double positionRadians, double velocityRadiansPerSec) {
+    private double getFF(double positionRadians, double velocityRotsPerSec) {
         if (armFF.isEmpty()) {
             this.armFF = Optional.of(new ArmFeedforward(kS, kG, kV));
         }
 
-        return this.armFF.get().calculate(positionRadians, velocityRadiansPerSec);
+        return this.armFF.get().calculate(positionRadians, velocityRotsPerSec);
     }
 
     /**
@@ -129,7 +129,7 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID {
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
         }
 
-        double value_radians = desiredVelocity.in(Units.RadiansPerSecond);
+        double value_radians = desiredVelocity.in(Units.RotationsPerSecond);
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value_radians);
 
         double value_internal = internalEncoder.velocityInEncoderUnits(desiredVelocity);
