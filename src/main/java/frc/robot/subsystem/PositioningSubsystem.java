@@ -9,7 +9,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.networktables.GenericEntry;
@@ -58,8 +57,6 @@ public class PositioningSubsystem extends SubsystemBase {
             .add("Detect AprilTags", true)
             .withWidget(BuiltInWidgets.kToggleSwitch)
             .getEntry();
-
-    private Transform2d limelightTransform = new Transform2d(new Translation2d(), Rotation2d.fromRotations(0.5));
 
     private final AHRS gyro;
     private final DriveSubsystem drive;
@@ -165,8 +162,7 @@ public class PositioningSubsystem extends SubsystemBase {
             if (drive.isMoving()) {
                 return;
             }
-            var transformedPose = pose.toPose2d().transformBy(limelightTransform);
-            this.setRobotPose(transformedPose);
+            this.setRobotPose(pose.toPose2d());
         });
 
         robotPose = odometry.update(gyro.getRotation2d(), drive.getWheelPositions());
