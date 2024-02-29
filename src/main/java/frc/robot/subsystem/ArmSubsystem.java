@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
@@ -54,6 +55,9 @@ public class ArmSubsystem extends SubsystemBase {
     private final MoSparkMaxPID wristSmartMotionPid;
 
     public final SendableChooser<ArmControlMode> controlMode;
+
+    private final GenericEntry voltRampEntry;
+    private final GenericEntry voltEntry;
 
     public static record ArmPosition(Measure<Angle> shoulderAngle, Measure<Angle> wristAngle) {}
 
@@ -158,6 +162,14 @@ public class ArmSubsystem extends SubsystemBase {
         wristGroup.addDouble("Absolute", () -> wristAbsEncoder.getPosition().in(Units.Rotations));
         wristGroup.addDouble("Rel Vel.", () -> wristRelEncoder.getVelocity().in(Units.RotationsPerSecond));
 
+        var sysidGroup = MoShuffleboard.getInstance()
+                .settingsTab
+                .getLayout("Sysid Settings", BuiltInLayouts.kList)
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
+        voltRampEntry = sysidGroup.add("Volts Ramp", 1.5).getEntry();
+        voltEntry = sysidGroup.add("Volts Step", 2).getEntry();
+
         controlMode = MoShuffleboard.enumToChooser(ArmControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
     }
@@ -234,7 +246,10 @@ public class ArmSubsystem extends SubsystemBase {
     public SysIdRoutine getShoulderRoutine(SysIdRoutine.Config config) {
         var voltsPerSec = Units.Volts.per(Units.Second);
         if (config == null) {
-            config = new SysIdRoutine.Config(voltsPerSec.of(0.1), Units.Volts.of(3), Units.Seconds.of(45));
+            config = new SysIdRoutine.Config(
+                    voltsPerSec.of(voltRampEntry.getDouble(1.5)),
+                    Units.Volts.of(voltEntry.getDouble(3)),
+                    Units.Seconds.of(45));
         }
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
