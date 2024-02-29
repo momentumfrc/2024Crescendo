@@ -40,7 +40,7 @@ public class JoystickDualControllerInput implements MoInput {
 
     @Override
     public double getTurnRequest() {
-        return applyInputTransforms(joystick.getZ() * getThrottle());
+        return applyInputTransforms(-1 * joystick.getZ() * getThrottle());
     }
 
     @Override
