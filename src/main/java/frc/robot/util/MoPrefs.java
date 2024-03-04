@@ -103,6 +103,15 @@ public class MoPrefs {
 
     public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
 
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> intakeRollerScale =
+            encoderTicksPerCentimeterPref("Intake Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> intakeDeployScale =
+            encoderTicksPerRotationPref("Intake Deploy Scale", MoUnits.EncoderTicksPerRotation.of(1));
+    public static final UnitPref<Angle> intakeDeployAbsZero =
+            rotationsPref("Intake Deploy Abs Zero", Units.Rotations.of(0));
+    public static final UnitPref<Angle> intakeDeployMaxExtension =
+            rotationsPref("Intake Deploy Max Extension", Units.Rotations.of(0.5));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;
