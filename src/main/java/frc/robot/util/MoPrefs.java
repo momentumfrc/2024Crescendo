@@ -112,6 +112,9 @@ public class MoPrefs {
     public static final UnitPref<Angle> intakeDeployMaxExtension =
             rotationsPref("Intake Deploy Max Extension", Units.Rotations.of(0.5));
 
+    public static final UnitPref<Velocity<Angle>> intakeDeployMaxSpeed =
+            rotationsPerSecPref("Intake Deploy Max Speed", Units.RotationsPerSecond.of(0.25));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

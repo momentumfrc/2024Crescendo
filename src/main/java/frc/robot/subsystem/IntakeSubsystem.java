@@ -10,6 +10,7 @@ import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -97,5 +98,21 @@ public class IntakeSubsystem extends SubsystemBase {
 
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
+    }
+
+    public Measure<Angle> getDeployPosition() {
+        return deployEncoder.getPosition();
+    }
+
+    public void deployFallbackDirectPower(double power) {
+        deployMtr.set(power);
+    }
+
+    public void deployVelocity(Measure<Velocity<Angle>> velocity) {
+        deployVelocityPID.setVelocityReference(velocity);
+    }
+
+    public void deploySmartMotion(Measure<Angle> position) {
+        deploySmartmotionPID.setPositionReference(position);
     }
 }

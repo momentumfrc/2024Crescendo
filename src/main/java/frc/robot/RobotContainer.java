@@ -25,6 +25,7 @@ import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
+import frc.robot.command.intake.IdleIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -32,6 +33,7 @@ import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
+import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
@@ -54,10 +56,13 @@ public class RobotContainer {
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
     private ArmSubsystem arm = new ArmSubsystem();
     private ShooterSubsystem shooter = new ShooterSubsystem();
+    private IntakeSubsystem intake = new IntakeSubsystem();
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
+    private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
+    private IdleIntakeCommand idleIntakeCommand = new IdleIntakeCommand(intake, this::getInput);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
@@ -124,7 +129,8 @@ public class RobotContainer {
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
-        shooter.setDefaultCommand(new IdleShooterCommand(shooter));
+        shooter.setDefaultCommand(idleShooterCommand);
+        intake.setDefaultCommand(idleIntakeCommand);
 
         configureBindings();
     }
