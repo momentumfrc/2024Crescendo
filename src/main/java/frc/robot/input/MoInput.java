@@ -32,4 +32,12 @@ public interface MoInput {
     public boolean getRunSysId();
 
     public boolean getReZeroArm();
+
+    public boolean getIntake();
+
+    public double getIntakeAdjust();
+
+    public boolean getSaveIntakeSetpoint();
+
+    public boolean getHandoff();
 }

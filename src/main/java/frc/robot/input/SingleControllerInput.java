@@ -40,7 +40,7 @@ public class SingleControllerInput implements MoInput {
 
     @Override
     public boolean getShouldUseSlowSpeed() {
-        return controller.getLeftBumper();
+        return controller.getLeftTriggerAxis() > 0.8;
     }
 
     @Override
@@ -97,5 +97,27 @@ public class SingleControllerInput implements MoInput {
     public boolean getReZeroArm() {
         // Re-zeroing is not supported in single-controller mode
         return false;
+    }
+
+    @Override
+    public boolean getIntake() {
+        return controller.getLeftBumper();
+    }
+
+    @Override
+    public double getIntakeAdjust() {
+        // Speed overrides is not supported in single-controller mode
+        return 0;
+    }
+
+    @Override
+    public boolean getSaveIntakeSetpoint() {
+        // Overwriting setpoints is not supported in single-controller mode
+        return false;
+    }
+
+    @Override
+    public boolean getHandoff() {
+        return controller.getAButton();
     }
 }

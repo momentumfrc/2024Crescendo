@@ -98,4 +98,24 @@ public class DualControllerInput implements MoInput {
     public boolean getReZeroArm() {
         return armController.getStartButton();
     }
+
+    @Override
+    public boolean getIntake() {
+        return driveController.getRightBumper();
+    }
+
+    @Override
+    public double getIntakeAdjust() {
+        return applyInputTransforms(driveController.getRightY());
+    }
+
+    @Override
+    public boolean getSaveIntakeSetpoint() {
+        return driveController.getBackButton();
+    }
+
+    @Override
+    public boolean getHandoff() {
+        return armController.getAButton();
+    }
 }

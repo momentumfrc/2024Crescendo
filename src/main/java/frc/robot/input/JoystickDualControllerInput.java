@@ -108,4 +108,35 @@ public class JoystickDualControllerInput implements MoInput {
         // require the consent of the drive controller.
         return armController.getXButton() && armController.getPOV() == 180;
     }
+
+    @Override
+    public boolean getIntake() {
+        return joystick.getRawButton(3);
+    }
+
+    @Override
+    public double getIntakeAdjust() {
+        double value = 0;
+        int pov = joystick.getPOV();
+
+        if (pov == 0) {
+            value = 1;
+        } else if (pov == 180) {
+            value = -1;
+        }
+
+        value *= joystick.getThrottle();
+
+        return value;
+    }
+
+    @Override
+    public boolean getSaveIntakeSetpoint() {
+        return joystick.getRawButton(8);
+    }
+
+    @Override
+    public boolean getHandoff() {
+        return armController.getAButton();
+    }
 }
