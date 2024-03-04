@@ -1,6 +1,7 @@
 package frc.robot.command.intake;
 
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -26,7 +27,9 @@ public class IdleIntakeCommand extends Command {
     private final Supplier<MoInput> inputSupplier;
 
     private final Timer timeoutTimer = new Timer();
+    private final MutableMeasure<Angle> deployPosition = MutableMeasure.zero(Units.Rotations);
     private final MutableMeasure<Velocity<Angle>> overrideVelocity = MutableMeasure.zero(Units.RotationsPerSecond);
+    private final MutableMeasure<Distance> rollerPosition = MutableMeasure.zero(Units.Centimeters);
 
     private State state = State.HOLD_STOW;
 
@@ -37,11 +40,38 @@ public class IdleIntakeCommand extends Command {
         addRequirements(intake);
     }
 
+    @Override
+    public void initialize() {
+        state = State.HOLD_STOW;
+        rollerPosition.mut_replace(intake.getRollerPosition());
+    }
+
+    private void holdRollerPosition() {
+        var controlMode = intake.controlMode.getSelected();
+
+        switch (controlMode) {
+            case SMARTMOTION:
+                intake.intakeSmartMotion(rollerPosition);
+                break;
+            case DIRECT_VELOCITY:
+                intake.intakeVelocity(Units.MetersPerSecond.zero());
+                break;
+            case FALLBACK_DIRECT_POWER:
+                intake.intakeFallbackDirectPower(0);
+        }
+    }
+
     private void adjustIntake(double amount) {
         var controlMode = intake.controlMode.getSelected();
 
         switch (controlMode) {
             case SMARTMOTION:
+                if (amount == 0) {
+                    intake.deploySmartMotion(deployPosition);
+                    break;
+                }
+                deployPosition.mut_replace(intake.getDeployPosition());
+                // FALL THROUGH!
             case DIRECT_VELOCITY:
                 overrideVelocity.mut_replace(MoPrefs.intakeDeployMaxSpeed.get());
                 overrideVelocity.mut_times(amount);
@@ -107,8 +137,11 @@ public class IdleIntakeCommand extends Command {
                 break;
         }
 
-        if (input.getSaveIntakeSetpoint() && (state == State.ACTIVE_ADJUST || state == State.WAIT_FOR_TIMEOUT)) {
+        if (input.getSaveIntakeSetpoint() && (state != State.HOLD_STOW)) {
             IntakeSetpointManager.getInstance().setSetpoint(IntakeSetpoint.STOW, intake.getDeployPosition());
+            state = State.HOLD_STOW;
         }
+
+        holdRollerPosition();
     }
 }

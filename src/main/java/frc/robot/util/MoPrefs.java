@@ -11,11 +11,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Per;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -114,6 +116,17 @@ public class MoPrefs {
 
     public static final UnitPref<Velocity<Angle>> intakeDeployMaxSpeed =
             rotationsPerSecPref("Intake Deploy Max Speed", Units.RotationsPerSecond.of(0.25));
+
+    public static final UnitPref<Time> intakeCurrentSenseTime =
+            secondsPref("Intake Current Sense Time", Units.Seconds.of(0.1));
+    public static final UnitPref<Current> intakeCurrentSenseThreshold =
+            getInstance().new UnitPref<>("Intake Current Sense Threshold", Units.Amps, Units.Amps.of(10));
+
+    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed = getInstance()
+    .new UnitPref<Velocity<Distance>>(
+            "Intake Roller Speed",
+            Units.Centimeters.per(Units.Second),
+            Units.Centimeters.per(Units.Second).of(1));
 
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
@@ -271,5 +284,9 @@ public class MoPrefs {
     private static UnitPref<Per<MoUnits.EncoderAngle, Angle>> encoderTicksPerRotationPref(
             String key, Measure<Per<MoUnits.EncoderAngle, Angle>> defaultValue) {
         return getInstance().new UnitPref<>(key, MoUnits.EncoderTicksPerRotation, defaultValue);
+    }
+
+    private static UnitPref<Time> secondsPref(String key, Measure<Time> defaultValue) {
+        return getInstance().new UnitPref<>(key, Units.Seconds, defaultValue);
     }
 }

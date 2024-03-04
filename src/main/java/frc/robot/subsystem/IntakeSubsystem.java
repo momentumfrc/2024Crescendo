@@ -5,13 +5,16 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -40,11 +43,17 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MoEncoder<Angle> deployEncoder;
     private final MoEncoder<Angle> deployAbsoluteEncoder;
 
-    private final MoSparkMaxPID<Distance> rollerPID;
+    private final MoSparkMaxPID<Distance> rollerVelocityPID;
+    private final MoSparkMaxPID<Distance> rollerSmartmotionPID;
+
     private final MoSparkMaxPID<Angle> deployVelocityPID;
     private final MoSparkMaxPID<Angle> deploySmartmotionPID;
 
+    private final GenericEntry isHoldingNote;
+
     public final SendableChooser<IntakeControlMode> controlMode;
+
+    private final MutableMeasure<Current> mut_intakeRollerCurrent = MutableMeasure.zero(Units.Amps);
 
     public IntakeSubsystem() {
         rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
@@ -78,11 +87,13 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         deployMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        rollerPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, rollerMtr, 0, rollerEncoder);
+        rollerVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, rollerMtr, 0, rollerEncoder);
+        rollerSmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, rollerMtr, 1, rollerEncoder);
         deployVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder);
         deploySmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder);
 
-        TunerUtils.forMoSparkMax(rollerPID, "Intake Roller Pos.");
+        TunerUtils.forMoSparkMax(rollerVelocityPID, "Intake Roller Vel.");
+        TunerUtils.forMoSparkMax(rollerSmartmotionPID, "Intake Roller Pos.");
         TunerUtils.forMoSparkMax(deployVelocityPID, "Intake Deploy Vel.");
         TunerUtils.forMoSparkMax(deploySmartmotionPID, "Intake Deploy Pos.");
 
@@ -98,10 +109,34 @@ public class IntakeSubsystem extends SubsystemBase {
 
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
+
+        isHoldingNote = MoShuffleboard.getInstance()
+                .matchTab
+                .add("Intake Has Note", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+
+        MoShuffleboard.getInstance().settingsTab.addDouble("Intake Roller Current", rollerMtr::getOutputCurrent);
+    }
+
+    public boolean getIsHoldingNote() {
+        return isHoldingNote.getBoolean(false);
+    }
+
+    public void setIsHoldingNote(boolean value) {
+        this.isHoldingNote.setBoolean(value);
     }
 
     public Measure<Angle> getDeployPosition() {
         return deployEncoder.getPosition();
+    }
+
+    public Measure<Distance> getRollerPosition() {
+        return rollerEncoder.getPosition();
+    }
+
+    public Measure<Current> getRollerCurrent() {
+        return mut_intakeRollerCurrent.mut_replace(rollerMtr.getOutputCurrent(), Units.Amps);
     }
 
     public void deployFallbackDirectPower(double power) {
@@ -114,5 +149,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void deploySmartMotion(Measure<Angle> position) {
         deploySmartmotionPID.setPositionReference(position);
+    }
+
+    public void intakeFallbackDirectPower(double power) {
+        rollerMtr.set(power);
+    }
+
+    public void intakeVelocity(Measure<Velocity<Distance>> velocity) {
+        rollerVelocityPID.setVelocityReference(velocity);
+    }
+
+    public void intakeSmartMotion(Measure<Distance> position) {
+        rollerSmartmotionPID.setPositionReference(position);
     }
 }
