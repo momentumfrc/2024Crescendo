@@ -14,7 +14,7 @@ public class IdleShooterCommand extends Command {
 
     private final ShooterSubsystem shooter;
 
-    private MutableMeasure<Distance> rollerPos;
+    private MutableMeasure<Distance> rollerPos = MutableMeasure.zero(Units.Centimeter);
 
     public IdleShooterCommand(ShooterSubsystem shooter) {
         this.shooter = shooter;
