@@ -26,6 +26,7 @@ import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.intake.IdleIntakeCommand;
+import frc.robot.command.intake.RunIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -78,6 +79,7 @@ public class RobotContainer {
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
+    private final Trigger intakeTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -126,6 +128,7 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
+        intakeTrigger = new Trigger(() -> getInput().getIntake());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -149,6 +152,8 @@ public class RobotContainer {
 
         shootAmpTrigger.whileTrue(Commands.defer(
                 () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning), Set.of(arm, drive, shooter)));
+
+        intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
 
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(
