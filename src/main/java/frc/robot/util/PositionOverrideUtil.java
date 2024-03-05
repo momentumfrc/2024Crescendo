@@ -40,6 +40,9 @@ public class PositionOverrideUtil {
     public void reset() {
         justFinishedAdjust = false;
         inPositionOverride = false;
+
+        overridePosTimer.stop();
+        overridePosTimer.reset();
     }
 
     public boolean getInPositionOverride() {
@@ -72,5 +75,12 @@ public class PositionOverrideUtil {
 
             setVelocity.accept(velocityOverride);
         }
+    }
+
+    public void runVelocity(double adjustPower) {
+        velocityOverride.mut_replace(maxVelocityPref.get());
+        velocityOverride.mut_times(adjustPower);
+
+        setVelocity.accept(velocityOverride);
     }
 }

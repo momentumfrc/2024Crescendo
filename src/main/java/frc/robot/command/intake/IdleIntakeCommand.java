@@ -44,7 +44,6 @@ public class IdleIntakeCommand extends Command {
 
     private void holdRollerPosition() {
         var controlMode = intake.controlMode.getSelected();
-
         switch (controlMode) {
             case SMARTMOTION:
                 intake.intakeSmartMotion(rollerPosition);
@@ -62,8 +61,20 @@ public class IdleIntakeCommand extends Command {
         var input = inputSupplier.get();
         double intakeAdjust = input.getIntakeAdjust();
 
-        overrideUtil.runSmartMotionWithAdjust(
-                IntakeSetpointManager.getInstance().getSetpoint(IntakeSetpoint.STOW), intakeAdjust);
+        var controlMode = intake.controlMode.getSelected();
+
+        switch (controlMode) {
+            case SMARTMOTION:
+                var setpointPos = IntakeSetpointManager.getInstance().getSetpoint(IntakeSetpoint.STOW);
+                overrideUtil.runSmartMotionWithAdjust(setpointPos, intakeAdjust);
+                break;
+            case DIRECT_VELOCITY:
+                overrideUtil.runVelocity(intakeAdjust);
+                break;
+            case FALLBACK_DIRECT_POWER:
+                intake.deployFallbackDirectPower(intakeAdjust);
+                break;
+        }
 
         if (input.getSaveIntakeSetpoint() && overrideUtil.getInPositionOverride()) {
             IntakeSetpointManager.getInstance().setSetpoint(IntakeSetpoint.STOW, intake.getDeployPosition());
