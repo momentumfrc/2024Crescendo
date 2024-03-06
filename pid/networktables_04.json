@@ -1,0 +1,392 @@
+[
+  {
+    "name": "/Preferences/Drive Max Speed (m_s)",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Max Speed (R_s)",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Deadzone",
+    "type": "double",
+    "value": 0.05,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Curve",
+    "type": "double",
+    "value": 1.4,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Slow Speed",
+    "type": "double",
+    "value": 0.35,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Turn Slow Speed",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Drive Ramp Time",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Zero (R)",
+    "type": "double",
+    "value": 0.186,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Zero (R)",
+    "type": "double",
+    "value": 0.48,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Zero (R)",
+    "type": "double",
+    "value": 0.895,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Zero (R)",
+    "type": "double",
+    "value": 0.968,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Rot Scale (Et_R)",
+    "type": "double",
+    "value": 12.8,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FL Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RL Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/RR Drive Dist Scale (Et_m)",
+    "type": "double",
+    "value": 21.49,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Auto Max Module Speed (m_s)",
+    "type": "double",
+    "value": 4.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Encoder Scale (Et_R)",
+    "type": "double",
+    "value": 144.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Absolute Encoder Scale (Et_R)",
+    "type": "double",
+    "value": 2.4,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Wrist Encoder Scale (Et_R)",
+    "type": "double",
+    "value": 108.0,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Absolute Zero (R)",
+    "type": "double",
+    "value": 0.151,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Wrist Absolute Zero (R)",
+    "type": "double",
+    "value": 0.022,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Max Rotations (R)",
+    "type": "double",
+    "value": 0.285,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Wrist Max Rotations (R)",
+    "type": "double",
+    "value": 0.49,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Horizontal (R)",
+    "type": "double",
+    "value": 0.22168,
+    "properties": {
+      "persistent": true,
+      "retained": true
+    }
+  },
+  {
+    "name": "/Preferences/Shoulder Max Spd (R_s)",
+    "type": "double",
+    "value": 0.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Wrist Max Speed (R_s)",
+    "type": "double",
+    "value": 0.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Arm Ramp Time",
+    "type": "double",
+    "value": 0.15,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm_Setpoints/STOW_shoulder",
+    "type": "double",
+    "value": 0.09822449833154678,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Arm_Setpoints/STOW_wrist",
+    "type": "double",
+    "value": -0.0186195969581604,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shooter Roller Scale (Et_cm)",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shooter Flywheel Scale (Et_R)",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shooter Setpoint Variance Threshold (%)",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Speaker Flywheel Setpoint (R_s)",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Amp Flywheel Setpoint (R_s)",
+    "type": "double",
+    "value": 2.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Shooter Roller Setpoint (cm)",
+    "type": "double",
+    "value": 50.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Roller Scale (Et_cm)",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Deploy Scale (Et_R)",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Deploy Abs Zero (R)",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Deploy Max Extension (R)",
+    "type": "double",
+    "value": 0.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Deploy Max Speed (R_s)",
+    "type": "double",
+    "value": 0.25,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Current Sense Time (s)",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Current Sense Threshold (A)",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake Roller Speed (cm_s)",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Intake_Setpoints/STOW",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  }
+]
