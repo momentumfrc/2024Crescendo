@@ -86,14 +86,18 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderRightMtr.setIdleMode(IdleMode.kBrake);
         wristMtr.setIdleMode(IdleMode.kBrake);
 
+        wristMtr.setInverted(true);
+
         shoulderLeftMtr.setInverted(true);
         shoulderRightMtr.follow(shoulderLeftMtr, true);
 
         // TODO: Ensure the shoulder abs encoder is wired to the left spark
         shoulderAbsEncoder = MoEncoder.forSparkAbsolute(
                 shoulderLeftMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle), Units.Rotations);
-        wristAbsEncoder = MoEncoder.forSparkAbsolute(
-                wristMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle), Units.Rotations);
+
+        var rawWristAbsEncoder = wristMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+        rawWristAbsEncoder.setInverted(true);
+        wristAbsEncoder = MoEncoder.forSparkAbsolute(rawWristAbsEncoder, Units.Rotations);
 
         shoulderRelEncoder = MoEncoder.forSparkRelative(shoulderLeftMtr.getEncoder(), Units.Rotations);
         wristRelEncoder = MoEncoder.forSparkRelative(wristMtr.getEncoder(), Units.Rotations);
