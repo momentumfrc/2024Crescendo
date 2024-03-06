@@ -19,6 +19,7 @@ import frc.robot.util.MoShuffleboard;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoSparkMaxPID.Type;
 import frc.robot.util.TunerUtils;
+import java.util.Map;
 
 public class ShooterSubsystem extends SubsystemBase {
     private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(50);
@@ -61,7 +62,8 @@ public class ShooterSubsystem extends SubsystemBase {
         var shooterGroup = MoShuffleboard.getInstance()
                 .matchTab
                 .getLayout("Shooter", BuiltInLayouts.kList)
-                .withSize(2, 1);
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "LEFT"));
         shooterGroup.addDouble(
                 "Roller Pos. (cm)", () -> rollerEncoder.getPosition().in(Units.Centimeters));
         shooterGroup.addDouble(
