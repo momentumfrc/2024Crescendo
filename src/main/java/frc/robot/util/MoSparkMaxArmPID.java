@@ -68,18 +68,22 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
         return lastFF;
     }
 
-    private double getFF(double positionRadians, double velocityRotsPerSec) {
+    private double getFF(Measure<Angle> position, Measure<Velocity<Angle>> velocity) {
         if (armFF.isEmpty()) {
             this.armFF = Optional.of(new ArmFeedforward(kS, kG, kV));
         }
 
-        return this.armFF.get().calculate(positionRadians, velocityRotsPerSec);
+        // The position must be in Units.Radians, because the ArmFeedForward just passes the value into
+        // Math.cos() which expects inputs in radians.
+        // However, the required velocity units depend on the units of kV. Since we tend to use rotations on our
+        // arms, sysid returns kV in units of v*s/rot, so we need velocity in units of rot/s.
+        return this.armFF.get().calculate(position.in(Units.Radians), velocity.in(Units.RotationsPerSecond));
     }
 
     /**
      * Set the reference of the PID controller. The units of value depend on the current type of the controller.
      * For position controllers (Type.POSITION or Type.SMARTMOTION), value is measured in internalEncoderUnits.
-     * For velocity controllers (Type.VELOCITY or Type.SMARTVELOCITY), value is measured in internalEncoderUnits per minute.
+     * For velocity controllers (Type.VELOCITY or Type.SMARTVELOCITY), value is measured in internalEncoderVelocityUnits.
      * <p>
      * @deprecated Use {@link #setPositionReference(Measure)} or {@link #setVelocityReference(Measure)}
      */
@@ -90,15 +94,13 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
         switch (this.type) {
             case POSITION:
             case SMARTMOTION:
-                lastPositionSetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnits());
-                ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
+                ff = getFF(this.getAngleFromHorizontal.get(), Units.RotationsPerSecond.zero());
                 break;
             case VELOCITY:
             case SMARTVELOCITY:
-                lastVelocitySetpoint.mut_replace(value, internalEncoder.getInternalEncoderUnitsPerSec());
                 ff = getFF(
-                        this.getAngleFromHorizontal.get().in(Units.Radians),
-                        lastVelocitySetpoint.in(Units.RadiansPerSecond));
+                        this.getAngleFromHorizontal.get(),
+                        mutVelocity.mut_replace(value, internalEncoder.getInternalEncoderVelocityUnits()));
                 break;
             default:
                 ff = 0;
@@ -115,13 +117,13 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
                     String.format("Cannot set position on PID controller of type %s", this.type.name()));
         }
 
-        double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
-        double value = internalEncoder.positionInEncoderUnits(desiredPosition);
+        double ff = getFF(this.getAngleFromHorizontal.get(), Units.RotationsPerSecond.zero());
+        double value = desiredPosition.in(internalEncoder.getInternalEncoderUnits());
 
         this.pidController.setReference(
                 value, this.type.innerType, pidSlot, ff, SparkPIDController.ArbFFUnits.kVoltage);
-        this.lastPositionSetpoint.mut_replace(desiredPosition);
         this.lastFF = ff;
+        this.lastSetpoint = value;
     }
 
     public void setVelocityReference(Measure<Velocity<Angle>> desiredVelocity) {
@@ -130,13 +132,12 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
                     String.format("Cannot set velocity on PID controller of type %s", this.type.name()));
         }
 
-        double value_radians = desiredVelocity.in(Units.RotationsPerSecond);
-        double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), value_radians);
+        double ff = getFF(this.getAngleFromHorizontal.get(), desiredVelocity);
 
-        double value_internal = internalEncoder.velocityInEncoderUnits(desiredVelocity);
+        double value_internal = desiredVelocity.in(internalEncoder.getInternalEncoderVelocityUnits());
         this.pidController.setReference(
                 value_internal, this.type.innerType, pidSlot, ff, SparkPIDController.ArbFFUnits.kVoltage);
-        this.lastVelocitySetpoint.mut_replace(desiredVelocity);
         this.lastFF = ff;
+        this.lastSetpoint = value_internal;
     }
 }

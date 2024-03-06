@@ -11,6 +11,9 @@ public class RevAnalogSensorEncoder implements MoEncoder.Encoder {
 
     public RevAnalogSensorEncoder(SparkAnalogSensor sensor) {
         this.sensor = sensor;
+
+        sensor.setPositionConversionFactor(1);
+        sensor.setVelocityConversionFactor(1);
     }
 
     @Override
@@ -31,10 +34,6 @@ public class RevAnalogSensorEncoder implements MoEncoder.Encoder {
     @Override
     public void setPositionFactor(double factor) {
         sensor.setPositionConversionFactor(factor);
-    }
-
-    @Override
-    public void setVelocityFactor(double factor) {
         sensor.setVelocityConversionFactor(factor);
     }
 

@@ -81,8 +81,10 @@ public class IntakeSubsystem extends SubsystemBase {
                 true);
 
         deployMtr.setSoftLimit(SoftLimitDirection.kReverse, 0);
-        deployMtr.setSoftLimit(SoftLimitDirection.kForward, (float)
-                deployEncoder.positionInEncoderUnits(MoPrefs.intakeDeployMaxExtension.get()));
+        MoPrefs.intakeDeployMaxExtension.subscribe(
+                max -> deployMtr.setSoftLimit(
+                        SoftLimitDirection.kForward, (float) max.in(deployEncoder.getInternalEncoderUnits())),
+                true);
 
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         deployMtr.enableSoftLimit(SoftLimitDirection.kForward, true);

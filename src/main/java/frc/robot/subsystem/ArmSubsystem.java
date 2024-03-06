@@ -121,10 +121,13 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderLeftMtr.setSoftLimit(SoftLimitDirection.kReverse, 0);
         wristMtr.setSoftLimit(SoftLimitDirection.kReverse, 0);
         MoPrefs.shoulderMaxExtension.subscribe(
-                limit -> shoulderLeftMtr.setSoftLimit(SoftLimitDirection.kForward, (float) limit.in(Units.Rotations)),
+                limit -> shoulderLeftMtr.setSoftLimit(
+                        SoftLimitDirection.kForward, (float) limit.in(shoulderRelEncoder.getInternalEncoderUnits())),
                 true);
         MoPrefs.wristMaxExtension.subscribe(
-                limit -> wristMtr.setSoftLimit(SoftLimitDirection.kForward, (float) limit.in(Units.Rotations)), true);
+                limit -> wristMtr.setSoftLimit(
+                        SoftLimitDirection.kForward, (float) limit.in(wristRelEncoder.getInternalEncoderUnits())),
+                true);
 
         shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kForward, true);

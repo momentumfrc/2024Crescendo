@@ -11,6 +11,9 @@ public class RevRelativeEncoder implements MoEncoder.Encoder {
 
     public RevRelativeEncoder(RelativeEncoder encoder) {
         this.encoder = encoder;
+
+        encoder.setPositionConversionFactor(1);
+        encoder.setVelocityConversionFactor(1);
     }
 
     @Override
@@ -31,10 +34,6 @@ public class RevRelativeEncoder implements MoEncoder.Encoder {
     @Override
     public void setPositionFactor(double factor) {
         encoder.setPositionConversionFactor(factor);
-    }
-
-    @Override
-    public void setVelocityFactor(double factor) {
         encoder.setVelocityConversionFactor(factor);
     }
 

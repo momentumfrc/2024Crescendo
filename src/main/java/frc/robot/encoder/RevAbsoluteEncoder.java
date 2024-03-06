@@ -11,6 +11,9 @@ public class RevAbsoluteEncoder implements MoEncoder.Encoder {
 
     public RevAbsoluteEncoder(AbsoluteEncoder encoder) {
         this.encoder = encoder;
+
+        encoder.setPositionConversionFactor(1);
+        encoder.setVelocityConversionFactor(1);
     }
 
     @Override
@@ -31,10 +34,6 @@ public class RevAbsoluteEncoder implements MoEncoder.Encoder {
     @Override
     public void setPositionFactor(double factor) {
         encoder.setPositionConversionFactor(factor);
-    }
-
-    @Override
-    public void setVelocityFactor(double factor) {
         encoder.setVelocityConversionFactor(factor);
     }
 

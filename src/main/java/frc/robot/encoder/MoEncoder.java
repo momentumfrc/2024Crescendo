@@ -9,7 +9,6 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Unit;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import frc.robot.util.MoUnits;
 
@@ -24,10 +23,21 @@ public class MoEncoder<Dim extends Unit<Dim>> {
 
         public double getVelocity();
 
+        /**
+         * Set the factor used internally by the encoder to scale encoder ticks to the desired output units.
+         * <p>
+         * Note: the factor is in units of internalEncoderUnits / encoder_tick.
+         * @param factor The factor to be internally multiplied by encoder ticks.
+         */
         public void setPositionFactor(double factor);
 
-        public void setVelocityFactor(double factor);
-
+        /**
+         * Velocity is measured in distance per time. However, the dividing time unit is different across different
+         * encoders. For example, CTRE returns velocity in units of internalEncoderUnits per *second*, but
+         * Rev returns velocity in units of internalEncoderUnits per *minute*. So, for a CTRE encoder this method
+         * would return Units.Second, but for a Rev encoder this method would return Units.Minute.
+         * @return The base time unit of the velocity returned by this encoder.
+         */
         public Time getVelocityBaseUnit();
     }
 
@@ -39,7 +49,11 @@ public class MoEncoder<Dim extends Unit<Dim>> {
      */
     private final Dim internalEncoderUnits;
 
-    private final Velocity<Dim> interEncoderUnitsPerSecond;
+    /*
+     * The units of the value returned by encoder.getVelocity(), assuming the encoder has internally applied the set
+     * position factor.
+     */
+    private final Velocity<Dim> internalEncoderVelocityUnits;
 
     private final MutableMeasure<Dim> mut_pos;
     private final MutableMeasure<Velocity<Dim>> mut_vel;
@@ -47,18 +61,18 @@ public class MoEncoder<Dim extends Unit<Dim>> {
     private MoEncoder(Encoder encoder, Dim internalEncoderUnits) {
         this.encoder = encoder;
         this.internalEncoderUnits = internalEncoderUnits;
-        this.interEncoderUnitsPerSecond = internalEncoderUnits.per(Units.Second);
+        this.internalEncoderVelocityUnits = internalEncoderUnits.per(encoder.getVelocityBaseUnit());
 
         mut_pos = MutableMeasure.zero(internalEncoderUnits);
-        mut_vel = MutableMeasure.zero(internalEncoderUnits.per(Units.Second));
+        mut_vel = MutableMeasure.zero(internalEncoderVelocityUnits);
     }
 
     public Dim getInternalEncoderUnits() {
         return internalEncoderUnits;
     }
 
-    public Velocity<Dim> getInternalEncoderUnitsPerSec() {
-        return interEncoderUnitsPerSecond;
+    public Velocity<Dim> getInternalEncoderVelocityUnits() {
+        return internalEncoderVelocityUnits;
     }
 
     public Encoder getEncoder() {
@@ -75,27 +89,7 @@ public class MoEncoder<Dim extends Unit<Dim>> {
          */
         double positionFactor = 1 / mechanismConversionFactor.in(MoUnits.EncoderTicks.per(internalEncoderUnits));
 
-        /*
-         * We need to set the velocity factor such that, when we call getVelocity(), the value returned is in the units
-         * of internalEncoderUnits per second. This is complicated by the fact that different encoders use different
-         * base time units for their returned velocities. For example, Rev's RelativeEncoder has a base unit of
-         * rotations per minute, while CTRE's TalonFX has a base unit of rotations per second. So to get
-         * internalEncoderUnits per second, we would need to divide the positionFactor by 60 for Rev, but we could
-         * leave it as-is for CTRE.
-         *
-         * We can model the internal encoder velocity calculation as such:
-         * [v encoder_ticks / base_time] * [vel_factor (internalEncoderUnits / encoder_ticks) / (sec / base_time)]
-         *     = [v internalEncoderUnits / sec]
-         * So, to get the output of the encoder in units of internalEncoderUnits per second, we need to calculate the
-         * vel_factor in units of (internalEncoderUnits per encoder_ticks) per (seconds per base_time) and set that
-         * as the velocityConversionFactor.
-         */
-        // There are velocityBaseUnitFactor seconds per base_time
-        double velocityBaseUnitFactor = encoder.getVelocityBaseUnit().one().in(Units.Seconds);
-        double velocityFactor = positionFactor / velocityBaseUnitFactor;
-
         encoder.setPositionFactor(positionFactor);
-        encoder.setVelocityFactor(velocityFactor);
     }
 
     public Measure<Dim> getPosition() {
@@ -107,19 +101,15 @@ public class MoEncoder<Dim extends Unit<Dim>> {
     }
 
     public Measure<Velocity<Dim>> getVelocity() {
-        return mut_vel.mut_replace(encoder.getVelocity(), interEncoderUnitsPerSecond);
+        return mut_vel.mut_replace(encoder.getVelocity(), internalEncoderVelocityUnits);
     }
 
-    public double positionInEncoderUnits(Measure<Dim> position) {
-        return position.in(internalEncoderUnits);
+    public double getPositionInEncoderUnits() {
+        return getPosition().in(internalEncoderUnits);
     }
 
-    public double velocityInEncoderUnits(Measure<Velocity<Dim>> velocity) {
-        // Note: We don't use encoder.getVelocityBaseUnit() because the encoder's velocity conversion factor is
-        // already calculated such that the encoder's internal velocity is measured in encoderUnits per second. If we
-        // were to also use encoder.getVelocityBaseUnit(), we would be accounting for the velocityBaseUnit *twice*,
-        // which would produce incorrect results.
-        return velocity.in(interEncoderUnitsPerSecond);
+    public double getVelocityInEncoderUnits() {
+        return getVelocity().in(internalEncoderVelocityUnits);
     }
 
     public static <Dim extends Unit<Dim>> MoEncoder<Dim> forSparkRelative(
