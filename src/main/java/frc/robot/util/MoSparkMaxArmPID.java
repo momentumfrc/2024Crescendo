@@ -118,7 +118,8 @@ public class MoSparkMaxArmPID extends MoSparkMaxPID<Angle> {
         double ff = getFF(this.getAngleFromHorizontal.get().in(Units.Radians), 0);
         double value = internalEncoder.positionInEncoderUnits(desiredPosition);
 
-        this.pidController.setReference(value, this.type.innerType, pidSlot, ff);
+        this.pidController.setReference(
+                value, this.type.innerType, pidSlot, ff, SparkPIDController.ArbFFUnits.kVoltage);
         this.lastPositionSetpoint.mut_replace(desiredPosition);
         this.lastFF = ff;
     }
