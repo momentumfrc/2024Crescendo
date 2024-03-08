@@ -109,8 +109,6 @@ public class MoPrefs {
             encoderTicksPerCentimeterPref("Intake Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> intakeDeployScale =
             encoderTicksPerRotationPref("Intake Deploy Scale", MoUnits.EncoderTicksPerRotation.of(1));
-    public static final UnitPref<Angle> intakeDeployAbsZero =
-            rotationsPref("Intake Deploy Abs Zero", Units.Rotations.of(0));
     public static final UnitPref<Angle> intakeDeployMaxExtension =
             rotationsPref("Intake Deploy Max Extension", Units.Rotations.of(0.5));
 
@@ -120,13 +118,20 @@ public class MoPrefs {
     public static final UnitPref<Time> intakeCurrentSenseTime =
             secondsPref("Intake Current Sense Time", Units.Seconds.of(0.1));
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
-            getInstance().new UnitPref<>("Intake Current Sense Threshold", Units.Amps, Units.Amps.of(10));
+            amperesPref("Intake Current Sense Threshold", Units.Amps.of(10));
 
     public static final UnitPref<Velocity<Distance>> intakeRollerSpeed = getInstance()
     .new UnitPref<Velocity<Distance>>(
             "Intake Roller Speed",
             Units.Centimeters.per(Units.Second),
             Units.Centimeters.per(Units.Second).of(1));
+
+    public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
+    public static final UnitPref<Current> intakeZeroCurrentCutoff =
+            amperesPref("Intake Zero Current", Units.Amps.of(10));
+    public static final UnitPref<Time> intakeZeroTimeCutoff = secondsPref("Intake Zero Time", Units.Seconds.of(0.1));
+    public static final UnitPref<Angle> intakeZeroPosition =
+            rotationsPref("Intake Zero Pos.", Units.Rotations.of(-0.05));
 
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
@@ -288,5 +293,9 @@ public class MoPrefs {
 
     private static UnitPref<Time> secondsPref(String key, Measure<Time> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.Seconds, defaultValue);
+    }
+
+    private static UnitPref<Current> amperesPref(String key, Measure<Current> defaultValue) {
+        return getInstance().new UnitPref<>(key, Units.Amps, defaultValue);
     }
 }

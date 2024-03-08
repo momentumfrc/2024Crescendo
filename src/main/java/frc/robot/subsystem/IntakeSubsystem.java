@@ -4,7 +4,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
@@ -22,7 +21,6 @@ import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.MoSparkMaxPID;
-import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
 
@@ -41,7 +39,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private final MoEncoder<Distance> rollerEncoder;
     private final MoEncoder<Angle> deployEncoder;
-    private final MoEncoder<Angle> deployAbsoluteEncoder;
 
     private final MoSparkMaxPID<Distance> rollerVelocityPID;
     private final MoSparkMaxPID<Distance> rollerSmartmotionPID;
@@ -49,11 +46,13 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MoSparkMaxPID<Angle> deployVelocityPID;
     private final MoSparkMaxPID<Angle> deploySmartmotionPID;
 
+    public final GenericEntry isDeployZeroed;
     private final GenericEntry isHoldingNote;
 
     public final SendableChooser<IntakeControlMode> controlMode;
 
     private final MutableMeasure<Current> mut_intakeRollerCurrent = MutableMeasure.zero(Units.Amps);
+    private final MutableMeasure<Current> mut_deployMtrCurrent = MutableMeasure.zero(Units.Amps);
 
     public IntakeSubsystem() {
         rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
@@ -67,18 +66,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
         rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Centimeters);
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
-        deployAbsoluteEncoder = MoEncoder.forSparkAbsolute(
-                deployMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle), Units.Rotations);
 
         MoPrefs.intakeRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
-        MoPrefs.intakeDeployScale.subscribe(
-                scale -> MoUtils.setupRelativeEncoder(
-                        deployEncoder, deployAbsoluteEncoder.getPosition(), MoPrefs.intakeDeployAbsZero.get(), scale),
-                false);
-        MoPrefs.intakeDeployAbsZero.subscribe(
-                zero -> MoUtils.setupRelativeEncoder(
-                        deployEncoder, deployAbsoluteEncoder.getPosition(), zero, MoPrefs.intakeDeployScale.get()),
-                true);
+        MoPrefs.intakeDeployScale.subscribe(scale -> deployEncoder.setConversionFactor(scale), true);
 
         deployMtr.setSoftLimit(SoftLimitDirection.kReverse, 0);
         MoPrefs.intakeDeployMaxExtension.subscribe(
@@ -105,8 +95,6 @@ public class IntakeSubsystem extends SubsystemBase {
                 .withSize(2, 1)
                 .withProperties(Map.of("Label Position", "RIGHT"));
         deployGroup.addDouble("Relative", () -> deployEncoder.getPosition().in(Units.Rotations));
-        deployGroup.addDouble(
-                "Absolute", () -> deployAbsoluteEncoder.getPosition().in(Units.Rotations));
         deployGroup.addDouble("Rel Vel.", () -> deployEncoder.getVelocity().in(Units.RotationsPerSecond));
 
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
@@ -115,6 +103,12 @@ public class IntakeSubsystem extends SubsystemBase {
         isHoldingNote = MoShuffleboard.getInstance()
                 .matchTab
                 .add("Intake Has Note", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+
+        isDeployZeroed = MoShuffleboard.getInstance()
+                .matchTab
+                .add("Intake Zeroed", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
@@ -141,6 +135,10 @@ public class IntakeSubsystem extends SubsystemBase {
         return mut_intakeRollerCurrent.mut_replace(rollerMtr.getOutputCurrent(), Units.Amps);
     }
 
+    public Measure<Current> getDeployCurrent() {
+        return mut_deployMtrCurrent.mut_replace(deployMtr.getOutputCurrent(), Units.Amps);
+    }
+
     public void deployFallbackDirectPower(double power) {
         deployMtr.set(power);
     }
@@ -163,5 +161,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void intakeSmartMotion(Measure<Distance> position) {
         rollerSmartmotionPID.setPositionReference(position);
+    }
+
+    public void zeroDeployEncoder(Measure<Angle> pos) {
+        this.deployEncoder.setPosition(pos);
     }
 }

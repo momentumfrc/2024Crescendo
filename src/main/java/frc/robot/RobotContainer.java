@@ -27,6 +27,7 @@ import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.intake.IdleIntakeCommand;
 import frc.robot.command.intake.RunIntakeCommand;
+import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -66,6 +67,8 @@ public class RobotContainer {
     private IdleIntakeCommand idleIntakeCommand = new IdleIntakeCommand(intake, this::getInput);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
+    private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
+
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
     private final StringEntry autoPathEntry;
     private final BooleanEntry autoAssumeAtStartEntry;
@@ -80,6 +83,7 @@ public class RobotContainer {
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
     private final Trigger intakeTrigger;
+    private final Trigger rezeroIntakeTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -129,6 +133,7 @@ public class RobotContainer {
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
         intakeTrigger = new Trigger(() -> getInput().getIntake());
+        rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -155,6 +160,8 @@ public class RobotContainer {
 
         intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
 
+        rezeroIntakeTrigger.onTrue(rezeroIntake);
+
         SysIdRoutine routine = arm.getShoulderRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(
                 () -> {
@@ -173,6 +180,10 @@ public class RobotContainer {
                     }
                 },
                 Set.of(arm)));
+
+        (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
+                .and(() -> intake.isDeployZeroed.getBoolean(false))
+                .onTrue(rezeroIntake);
 
         RobotModeTriggers.teleop()
                 .and(() -> shouldPlayEnableTone.getBoolean(false))
