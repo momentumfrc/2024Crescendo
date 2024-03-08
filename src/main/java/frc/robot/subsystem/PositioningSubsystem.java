@@ -123,7 +123,7 @@ public class PositioningSubsystem extends SubsystemBase {
 
     /** Get the robot pose in field coordinates. */
     public Pose2d getAbsoluteRobotPose() {
-        if (DriverStation.getAlliance().orElse(null) == Alliance.Blue) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
             return robotPose;
         }
         Pose2d alliancePose = robotPose;

@@ -38,7 +38,7 @@ public class PathPlannerCommands {
                     replanningConfig.dynamicReplanningErrorSpikeThreshold);
         }
         // Manually flip the path ourselves, since we need the starting pose
-        if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
             path = path.flipPath();
         }
 
