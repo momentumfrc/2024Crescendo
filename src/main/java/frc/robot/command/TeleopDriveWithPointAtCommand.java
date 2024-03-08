@@ -64,7 +64,7 @@ public class TeleopDriveWithPointAtCommand extends Command {
         fwdRequest = fwdLimiter.calculate(fwdRequest);
         leftRequest = leftLimiter.calculate(leftRequest);
 
-        Pose2d currentRobotPosition = positioning.getAbsoluteRobotPose();
+        Pose2d currentRobotPosition = positioning.getRobotPose();
         Transform2d currentRobotOffset = pointAtTarget.minus(currentRobotPosition);
         Rotation2d rotationOffset =
                 currentRobotOffset.getTranslation().getAngle().plus(Rotation2d.fromRotations(0.5));

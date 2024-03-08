@@ -49,7 +49,7 @@ public class AimSpeakerCommand extends Command {
 
     @Override
     public void execute() {
-        Pose2d robotPose = pos.getAbsoluteRobotPose();
+        Pose2d robotPose = pos.getRobotPose();
         Pose2d speakerPose = getSpeakerPose();
 
         Transform2d transform = speakerPose.minus(robotPose);

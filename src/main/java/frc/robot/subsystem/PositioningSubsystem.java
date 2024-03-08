@@ -5,15 +5,10 @@
 package frc.robot.subsystem;
 
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -31,20 +26,12 @@ public class PositioningSubsystem extends SubsystemBase {
      */
     private static final double POSITION_MAX_ACCEPTABLE_UPDATE_DELTA = 5;
 
-    /**
-     * The size of the field, in meters. Used to transform alliance-relative coordinates into
-     * field-relative coordinates.
-     */
-    private static final Translation2d fieldSize;
-
     /** The limelight. Should be used by auto scoring commands for fine targeting. */
     public final Limelight limelight = new Limelight();
 
     private Pose2d robotPose = new Pose2d();
 
     private Field2d field = MoShuffleboard.getInstance().field;
-
-    private DriverStation.Alliance lastAlliance = null;
 
     private GenericEntry didEstablishInitialPosition = MoShuffleboard.getInstance()
             .matchTab
@@ -73,11 +60,6 @@ public class PositioningSubsystem extends SubsystemBase {
             MoShuffleboard.enumToChooser(FieldOrientedDriveMode.class);
 
     private Rotation2d fieldOrientedFwd;
-
-    static {
-        AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-        fieldSize = new Translation2d(layout.getFieldLength(), layout.getFieldWidth());
-    }
 
     public PositioningSubsystem(AHRS ahrs, DriveSubsystem drive) {
         this.gyro = ahrs;
@@ -113,23 +95,10 @@ public class PositioningSubsystem extends SubsystemBase {
     }
 
     /**
-     * Get robot pose in alliance coordinates.
-     *
-     * <p>Note that the robot always assumes its origin is in the right corner of its alliance.
+     * Get robot pose, relative to the origin at the blue alliance.
      */
     public Pose2d getRobotPose() {
         return robotPose;
-    }
-
-    /** Get the robot pose in field coordinates. */
-    public Pose2d getAbsoluteRobotPose() {
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-            return robotPose;
-        }
-        Pose2d alliancePose = robotPose;
-        Translation2d translation = fieldSize.minus(alliancePose.getTranslation());
-        Rotation2d rotation = robotPose.getRotation().rotateBy(Rotation2d.fromRotations(0.5));
-        return new Pose2d(translation, rotation);
     }
 
     public void setRobotPose(Pose2d pose) {
@@ -150,11 +119,6 @@ public class PositioningSubsystem extends SubsystemBase {
     public void periodic() {
         limelight.periodic();
 
-        var currAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-        if (currAlliance != lastAlliance) {
-            this.didEstablishInitialPosition.setBoolean(false);
-        }
-
         limelight.getRobotPose().ifPresent(pose -> {
             if (!shouldUseAprilTags.getBoolean(true)) {
                 return;
@@ -166,7 +130,7 @@ public class PositioningSubsystem extends SubsystemBase {
         });
 
         robotPose = odometry.update(gyro.getRotation2d(), drive.getWheelPositions());
-        field.setRobotPose(getAbsoluteRobotPose());
+        field.setRobotPose(getRobotPose());
 
         if (fieldOrientedDriveMode.getSelected() != FieldOrientedDriveMode.GYRO) resetFieldOrientedFwd();
     }
