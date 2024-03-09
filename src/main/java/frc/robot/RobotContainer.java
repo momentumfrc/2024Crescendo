@@ -8,7 +8,6 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringEntry;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -34,12 +33,12 @@ import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
+import frc.robot.subsystem.AutoBuilderSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
-import frc.robot.util.PathPlannerCommands;
 import java.util.Set;
 
 public class RobotContainer {
@@ -59,6 +58,7 @@ public class RobotContainer {
     private ArmSubsystem arm = new ArmSubsystem();
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
+    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
@@ -70,8 +70,6 @@ public class RobotContainer {
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
-    private final StringEntry autoPathEntry;
-    private final BooleanEntry autoAssumeAtStartEntry;
 
     private SendableChooser<SysIdMode> sysidMode = MoShuffleboard.enumToChooser(SysIdMode.class);
 
@@ -119,15 +117,6 @@ public class RobotContainer {
                 .getEntry(false);
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
-
-        this.autoPathEntry = NetworkTableInstance.getDefault()
-                .getTable("Settings")
-                .getStringTopic("Autonomous Path")
-                .getEntry("");
-        this.autoAssumeAtStartEntry = NetworkTableInstance.getDefault()
-                .getTable("Settings")
-                .getBooleanTopic("Auto Assume At Start")
-                .getEntry(true);
 
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
@@ -195,7 +184,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return PathPlannerCommands.getFollowPathCommand(
-                drive, positioning, autoPathEntry.get(), autoAssumeAtStartEntry.get());
+        return autoBuilder.getAutonomousCommand(drive);
     }
 }

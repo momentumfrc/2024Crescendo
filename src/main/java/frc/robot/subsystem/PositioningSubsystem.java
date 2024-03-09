@@ -101,6 +101,10 @@ public class PositioningSubsystem extends SubsystemBase {
         return robotPose;
     }
 
+    public boolean hasInitialPosition() {
+        return this.didEstablishInitialPosition.getBoolean(false);
+    }
+
     public void setRobotPose(Pose2d pose) {
         if (this.didEstablishInitialPosition.getBoolean(false)
                 && this.odometry.getPoseMeters().getTranslation().getDistance(pose.getTranslation())
