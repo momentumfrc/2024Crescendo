@@ -115,7 +115,13 @@ public class IntakeSubsystem extends SubsystemBase {
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
-        MoShuffleboard.getInstance().settingsTab.addDouble("Intake Roller Current", rollerMtr::getOutputCurrent);
+        var group = MoShuffleboard.getInstance()
+                .matchTab
+                .getLayout("Intake Current", BuiltInLayouts.kList)
+                .withSize(2, 1)
+                .withProperties(Map.of("Label position", "RIGHT"));
+        group.addDouble("Roller (A)", rollerMtr::getOutputCurrent);
+        group.addDouble("Deploy (A)", deployMtr::getOutputCurrent);
     }
 
     public boolean getIsHoldingNote() {
