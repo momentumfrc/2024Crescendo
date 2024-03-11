@@ -12,9 +12,9 @@ import frc.robot.util.MoPrefs;
 
 public class ZeroIntakeCommand extends Command {
     private IntakeSubsystem intake;
-    private Timer currentTimer;
+    private Timer currentTimer = new Timer();
 
-    private MutableMeasure<Distance> initialRollerPos;
+    private MutableMeasure<Distance> initialRollerPos = MutableMeasure.zero(Units.Centimeter);
 
     public ZeroIntakeCommand(IntakeSubsystem intake) {
         this.intake = intake;
