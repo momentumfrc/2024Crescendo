@@ -58,6 +58,9 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
         deployMtr = new CANSparkMax(Constants.INTAKE_DEPLOY.address(), MotorType.kBrushless);
 
+        rollerMtr.restoreFactoryDefaults();
+        deployMtr.restoreFactoryDefaults();
+
         rollerMtr.setSmartCurrentLimit((int) ROLLER_CURRENT_LIMIT.in(Units.Amps));
         deployMtr.setSmartCurrentLimit((int) DEPLOY_CURRENT_LIMIT.in(Units.Amps));
 

@@ -78,6 +78,10 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderRightMtr = new CANSparkMax(Constants.SHOULDER_RIGHT_MTR.address(), MotorType.kBrushless);
         wristMtr = new CANSparkMax(Constants.WRIST_MTR.address(), MotorType.kBrushless);
 
+        shoulderLeftMtr.restoreFactoryDefaults();
+        shoulderRightMtr.restoreFactoryDefaults();
+        wristMtr.restoreFactoryDefaults();
+
         shoulderLeftMtr.setSmartCurrentLimit((int) SHOULDER_CURRENT_LIMIT.in(Units.Amps));
         shoulderRightMtr.setSmartCurrentLimit((int) SHOULDER_CURRENT_LIMIT.in(Units.Amps));
         wristMtr.setSmartCurrentLimit((int) WRIST_CURRENT_LIMIT.in(Units.Amps));
