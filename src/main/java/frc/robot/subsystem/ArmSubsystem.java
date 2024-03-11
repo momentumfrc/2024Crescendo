@@ -26,7 +26,6 @@ import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoUtils;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class ArmSubsystem extends SubsystemBase {
     private static final Measure<Current> SHOULDER_CURRENT_LIMIT = Units.Amps.of(50);
@@ -138,14 +137,22 @@ public class ArmSubsystem extends SubsystemBase {
         wristMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         wristMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        Supplier<Measure<Angle>> shoulderPosFromHorizontal =
-                () -> shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
         shoulderVelocityPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.VELOCITY, shoulderLeftMtr, 0, shoulderRelEncoder, shoulderPosFromHorizontal);
-        wristVelocityPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder);
+                MoSparkMaxPID.Type.VELOCITY,
+                shoulderLeftMtr,
+                0,
+                shoulderRelEncoder,
+                this::getShoulderAngleFromHorizontal);
+        wristVelocityPid = new MoSparkMaxArmPID(
+                MoSparkMaxPID.Type.VELOCITY, wristMtr, 0, wristRelEncoder, this::getWristAngleFromHorizontal);
         shoulderSmartMotionPid = new MoSparkMaxArmPID(
-                MoSparkMaxPID.Type.SMARTMOTION, shoulderLeftMtr, 1, shoulderRelEncoder, shoulderPosFromHorizontal);
-        wristSmartMotionPid = new MoSparkMaxPID<Angle>(MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder);
+                MoSparkMaxPID.Type.SMARTMOTION,
+                shoulderLeftMtr,
+                1,
+                shoulderRelEncoder,
+                this::getShoulderAngleFromHorizontal);
+        wristSmartMotionPid = new MoSparkMaxArmPID(
+                MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder, this::getWristAngleFromHorizontal);
 
         TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
         TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
@@ -196,6 +203,20 @@ public class ArmSubsystem extends SubsystemBase {
                 wristAbsEncoder.getPosition(),
                 MoPrefs.wristAbsZero.get(),
                 MoPrefs.wristEncoderScale.get());
+    }
+
+    private Measure<Angle> getShoulderAngleFromHorizontal() {
+        return shoulderRelEncoder.getPosition().minus(MoPrefs.shoulderHorizontal.get());
+    }
+
+    private Measure<Angle> getWristAngleFromShoulder() {
+        return wristRelEncoder.getPosition().plus(MoPrefs.wristZeroOffsetFromShoulder.get());
+    }
+
+    private static final Measure<Angle> half_rot = Units.Rotations.of(0.5);
+
+    private Measure<Angle> getWristAngleFromHorizontal() {
+        return half_rot.plus(getShoulderAngleFromHorizontal()).minus(getWristAngleFromShoulder());
     }
 
     private ArmMovementRequest limitArmMovementRequest(ArmMovementRequest request) {

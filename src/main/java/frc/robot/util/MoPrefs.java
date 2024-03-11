@@ -80,6 +80,9 @@ public class MoPrefs {
     public static final UnitPref<Angle> shoulderHorizontal =
             rotationsPref("Shoulder Horizontal", Units.Rotations.of(0.25));
 
+    public static final UnitPref<Angle> wristZeroOffsetFromShoulder =
+            rotationsPref("Wrist Offset From Shoulder", Units.Rotations.of(0.15));
+
     public static final UnitPref<Velocity<Angle>> shoulderMaxRps =
             rotationsPerSecPref("Shoulder Max Spd", Units.RotationsPerSecond.of(0.5));
     public static final UnitPref<Velocity<Angle>> wristMaxRps =
