@@ -146,6 +146,10 @@ public class DriveSubsystem extends SubsystemBase {
                 .matchTab
                 .addDouble("FL_POS_m", () -> frontLeft.distEncoder.getPosition().in(Units.Meters));
 
+        MoShuffleboard.getInstance()
+                .matchTab
+                .addDouble("FL_SPD", () -> frontLeft.distEncoder.getVelocity().in(Units.MetersPerSecond));
+
         double offset_meters = SWERVE_WHEEL_OFFSET.in(Units.Meters);
         Translation2d fl = new Translation2d(offset_meters, offset_meters);
         Translation2d fr = new Translation2d(offset_meters, -offset_meters);
