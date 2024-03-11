@@ -287,4 +287,32 @@ public class ArmSubsystem extends SubsystemBase {
                         },
                         this));
     }
+
+    public SysIdRoutine getWristRoutine(SysIdRoutine.Config config) {
+        var voltsPerSec = Units.Volts.per(Units.Second);
+        if (config == null) {
+            config = new SysIdRoutine.Config(
+                    voltsPerSec.of(voltRampEntry.getDouble(1.5)),
+                    Units.Volts.of(voltEntry.getDouble(3)),
+                    Units.Seconds.of(45));
+        }
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            wristMtr.setVoltage(v.in(Units.Volts));
+                            shoulderSmartMotionPid.setPositionReference(MoPrefs.shoulderHorizontal.get());
+                        },
+                        (log) -> {
+                            log.motor("wristMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            wristMtr.getAppliedOutput() * wristMtr.getBusVoltage(), Units.Volts))
+                                    .angularPosition(wristRelEncoder.getPosition())
+                                    .angularVelocity(wristRelEncoder.getVelocity());
+                        },
+                        this));
+    }
 }

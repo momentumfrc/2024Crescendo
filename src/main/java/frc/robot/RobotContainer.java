@@ -151,7 +151,7 @@ public class RobotContainer {
 
         rezeroIntakeTrigger.onTrue(rezeroIntake);
 
-        SysIdRoutine routine = arm.getShoulderRoutine(null);
+        SysIdRoutine routine = arm.getWristRoutine(null);
         runSysidTrigger.whileTrue(Commands.defer(
                 () -> {
                     switch (sysidMode.getSelected()) {
