@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.command.CompositeCommands;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
@@ -42,14 +41,6 @@ import frc.robot.util.MoShuffleboard;
 import java.util.Set;
 
 public class RobotContainer {
-    private enum SysIdMode {
-        NONE,
-        QUASISTATIC_FORWARD,
-        QUASISTATIC_REVERSE,
-        DYNAMIC_FORWARD,
-        DYNAMIC_REVERSE
-    };
-
     private AHRS gyro = new AHRS(SerialPort.Port.kMXP);
 
     // Subsystems
@@ -70,8 +61,6 @@ public class RobotContainer {
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
-
-    private SendableChooser<SysIdMode> sysidMode = MoShuffleboard.enumToChooser(SysIdMode.class);
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
@@ -95,7 +84,6 @@ public class RobotContainer {
         inputChooser.addOption("Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
         inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
-        MoShuffleboard.getInstance().settingsTab.add("Sysid Mode", sysidMode);
 
         BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
                 .getTable("Settings")
@@ -151,24 +139,8 @@ public class RobotContainer {
 
         rezeroIntakeTrigger.onTrue(rezeroIntake);
 
-        SysIdRoutine routine = shooter.getFlywheelUpperRoutine(null);
-        runSysidTrigger.whileTrue(Commands.defer(
-                () -> {
-                    switch (sysidMode.getSelected()) {
-                        case QUASISTATIC_FORWARD:
-                            return routine.quasistatic(SysIdRoutine.Direction.kForward);
-                        case QUASISTATIC_REVERSE:
-                            return routine.quasistatic(SysIdRoutine.Direction.kReverse);
-                        case DYNAMIC_FORWARD:
-                            return routine.dynamic(SysIdRoutine.Direction.kForward);
-                        case DYNAMIC_REVERSE:
-                            return routine.dynamic(SysIdRoutine.Direction.kReverse);
-                        case NONE:
-                        default:
-                            return Commands.none();
-                    }
-                },
-                Set.of(arm)));
+        runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
 
         (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
                 .and(() -> intake.isDeployZeroed.getBoolean(false))

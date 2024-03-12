@@ -34,7 +34,7 @@ public class PositioningSubsystem extends SubsystemBase {
     private Field2d field = MoShuffleboard.getInstance().field;
 
     private GenericEntry didEstablishInitialPosition = MoShuffleboard.getInstance()
-            .matchTab
+            .driveTab
             .add("Initial Position", false)
             .withWidget(BuiltInWidgets.kBooleanBox)
             .getEntry();
@@ -72,7 +72,7 @@ public class PositioningSubsystem extends SubsystemBase {
         resetFieldOrientedFwd();
 
         var posGroup = MoShuffleboard.getInstance()
-                .matchTab
+                .driveTab
                 .getLayout("Relative Pos", BuiltInLayouts.kList)
                 .withSize(2, 1)
                 .withProperties(Map.of("Label position", "RIGHT"));

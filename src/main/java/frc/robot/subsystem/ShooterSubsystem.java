@@ -11,7 +11,6 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -22,7 +21,6 @@ import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoSparkMaxPID.Type;
 import frc.robot.util.MoUnits;
 import frc.robot.util.TunerUtils;
-import java.util.Map;
 
 public class ShooterSubsystem extends SubsystemBase {
     private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(50);
@@ -74,19 +72,18 @@ public class ShooterSubsystem extends SubsystemBase {
                 },
                 true);
 
-        var shooterGroup = MoShuffleboard.getInstance()
-                .matchTab
-                .getLayout("Shooter", BuiltInLayouts.kList)
-                .withSize(2, 1)
-                .withProperties(Map.of("Label position", "LEFT"));
-        shooterGroup.addDouble(
-                "Roller Pos. (cm)", () -> rollerEncoder.getPosition().in(Units.Centimeters));
-        shooterGroup.addDouble(
-                "Flywheel Upper Vel. (cm_s)",
-                () -> flywheelUpperEncoder.getVelocity().in(MoUnits.CentimetersPerSec));
-        shooterGroup.addDouble(
-                "Flywheel Lower Vel. (cm_s)",
-                () -> flywheelLowerEncoder.getVelocity().in(MoUnits.CentimetersPerSec));
+        MoShuffleboard.getInstance()
+                .shooterTab
+                .addDouble("Roller Pos. (cm)", () -> rollerEncoder.getPosition().in(Units.Centimeters));
+        MoShuffleboard.getInstance().shooterTab.addDouble("Roller Vel. (cm_s)", () -> rollerEncoder
+                .getVelocity()
+                .in(MoUnits.CentimetersPerSec));
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Upper Vel. (cm_s)", () -> flywheelUpperEncoder
+                .getVelocity()
+                .in(MoUnits.CentimetersPerSec));
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Lower Vel. (cm_s)", () -> flywheelLowerEncoder
+                .getVelocity()
+                .in(MoUnits.CentimetersPerSec));
 
         rollerVelPid = new MoSparkMaxPID<>(Type.VELOCITY, roller, 1, rollerEncoder);
         rollerPosPid = new MoSparkMaxPID<>(Type.SMARTMOTION, roller, 0, rollerEncoder);
@@ -97,6 +94,8 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLowerVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelLower, 0, flywheelLowerEncoder);
         TunerUtils.forMoSparkMax(flywheelUpperVelocityPid, "Shooter Upper Flywheel Vel.");
         TunerUtils.forMoSparkMax(flywheelLowerVelocityPid, "Shooter Lower Flywheel Vel.");
+
+        MoShuffleboard.getInstance().shooterTab.add(this);
     }
 
     public Measure<Distance> getRollerPosition() {
@@ -145,11 +144,8 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLowerVelocityPid.setVelocityReference(speed);
     }
 
-    public SysIdRoutine getFlywheelUpperRoutine(SysIdRoutine.Config config) {
-        var voltsPerSec = Units.Volts.per(Units.Second);
-        if (config == null) {
-            config = new SysIdRoutine.Config(voltsPerSec.of(1.5), Units.Volts.of(4), Units.Seconds.of(45));
-        }
+    public SysIdRoutine getFlywheelUpperRoutine() {
+        var config = MoShuffleboard.getInstance().getSysidConfig();
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
 
@@ -172,11 +168,8 @@ public class ShooterSubsystem extends SubsystemBase {
                         this));
     }
 
-    public SysIdRoutine getFlywheelLowerRoutine(SysIdRoutine.Config config) {
-        var voltsPerSec = Units.Volts.per(Units.Second);
-        if (config == null) {
-            config = new SysIdRoutine.Config(voltsPerSec.of(1.5), Units.Volts.of(4), Units.Seconds.of(45));
-        }
+    public SysIdRoutine getFlywheelLowerRoutine() {
+        var config = MoShuffleboard.getInstance().getSysidConfig();
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
 
@@ -199,11 +192,8 @@ public class ShooterSubsystem extends SubsystemBase {
                         this));
     }
 
-    public SysIdRoutine getRollerRoutine(SysIdRoutine.Config config) {
-        var voltsPerSec = Units.Volts.per(Units.Second);
-        if (config == null) {
-            config = new SysIdRoutine.Config(voltsPerSec.of(1.5), Units.Volts.of(4), Units.Seconds.of(45));
-        }
+    public SysIdRoutine getRollerRoutine() {
+        var config = MoShuffleboard.getInstance().getSysidConfig();
 
         final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
 

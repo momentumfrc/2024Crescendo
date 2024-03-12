@@ -55,6 +55,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MutableMeasure<Current> mut_deployMtrCurrent = MutableMeasure.zero(Units.Amps);
 
     public IntakeSubsystem() {
+        super("Intake");
+
         rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
         deployMtr = new CANSparkMax(Constants.INTAKE_DEPLOY.address(), MotorType.kBrushless);
 
@@ -93,7 +95,7 @@ public class IntakeSubsystem extends SubsystemBase {
         TunerUtils.forMoSparkMax(deploySmartmotionPID, "Intake Deploy Pos.");
 
         var deployGroup = MoShuffleboard.getInstance()
-                .matchTab
+                .intakeTab
                 .getLayout("Intake Position", BuiltInLayouts.kList)
                 .withSize(2, 1)
                 .withProperties(Map.of("Label Position", "RIGHT"));
@@ -104,24 +106,26 @@ public class IntakeSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
 
         isHoldingNote = MoShuffleboard.getInstance()
-                .matchTab
+                .intakeTab
                 .add("Intake Has Note", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
         isDeployZeroed = MoShuffleboard.getInstance()
-                .matchTab
+                .intakeTab
                 .add("Intake Zeroed", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
         var group = MoShuffleboard.getInstance()
-                .matchTab
+                .intakeTab
                 .getLayout("Intake Current", BuiltInLayouts.kList)
                 .withSize(2, 1)
                 .withProperties(Map.of("Label position", "RIGHT"));
         group.addDouble("Roller (A)", rollerMtr::getOutputCurrent);
         group.addDouble("Deploy (A)", deployMtr::getOutputCurrent);
+
+        MoShuffleboard.getInstance().intakeTab.add(this);
     }
 
     public boolean getIsHoldingNote() {
