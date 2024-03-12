@@ -10,6 +10,9 @@ public class TalonFxEncoder implements MoEncoder.Encoder {
 
     private final TalonFX talon;
 
+    private boolean inverted = false;
+    private double lastSetPosFactor = 0;
+
     public TalonFxEncoder(TalonFX talon) {
         talon.getConfigurator()
                 .apply(new FeedbackConfigs().withRotorToSensorRatio(1).withSensorToMechanismRatio(1));
@@ -33,11 +36,20 @@ public class TalonFxEncoder implements MoEncoder.Encoder {
 
     @Override
     public void setPositionFactor(double factor) {
-        talon.getConfigurator().apply(new FeedbackConfigs().withSensorToMechanismRatio(1 / factor));
+        lastSetPosFactor = factor;
+        double dir = this.inverted ? -1 : 1;
+        talon.getConfigurator().apply(new FeedbackConfigs().withSensorToMechanismRatio(1 / (dir * lastSetPosFactor)));
     }
 
     @Override
     public Time getVelocityBaseUnit() {
         return VELOCITY_BASE_UNIT;
+    }
+
+    @Override
+    public void setInverted(boolean inverted) {
+        this.inverted = inverted;
+        double dir = this.inverted ? -1 : 1;
+        talon.getConfigurator().apply(new FeedbackConfigs().withSensorToMechanismRatio(1 / (dir * lastSetPosFactor)));
     }
 }
