@@ -5,10 +5,13 @@
 package frc.robot.subsystem;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -16,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.component.Limelight;
 import frc.robot.util.MoShuffleboard;
+import java.util.EnumMap;
 import java.util.Map;
 
 /** Subsystem that determines the robot's position on the field. */
@@ -32,6 +36,8 @@ public class PositioningSubsystem extends SubsystemBase {
     private Pose2d robotPose = new Pose2d();
 
     private Field2d field = MoShuffleboard.getInstance().field;
+
+    private EnumMap<DriverStation.Alliance, Pose2d> speakerPoses = new EnumMap<>(DriverStation.Alliance.class);
 
     private GenericEntry didEstablishInitialPosition = MoShuffleboard.getInstance()
             .driveTab
@@ -71,6 +77,10 @@ public class PositioningSubsystem extends SubsystemBase {
 
         resetFieldOrientedFwd();
 
+        AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+        speakerPoses.put(DriverStation.Alliance.Blue, layout.getTagPose(7).get().toPose2d());
+        speakerPoses.put(DriverStation.Alliance.Red, layout.getTagPose(4).get().toPose2d());
+
         var posGroup = MoShuffleboard.getInstance()
                 .driveTab
                 .getLayout("Relative Pos", BuiltInLayouts.kList)
@@ -79,6 +89,10 @@ public class PositioningSubsystem extends SubsystemBase {
         posGroup.addDouble("X", () -> robotPose.getX());
         posGroup.addDouble("Y", () -> robotPose.getY());
         posGroup.addDouble("Rot", () -> robotPose.getRotation().getDegrees());
+    }
+
+    public Pose2d getSpeakerPose() {
+        return speakerPoses.get(DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
     }
 
     public Rotation2d getFieldOrientedDriveHeading() {

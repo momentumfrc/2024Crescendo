@@ -1,9 +1,6 @@
 package frc.robot.command;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.command.arm.AimSpeakerCommand;
@@ -30,15 +27,7 @@ public class CompositeCommands {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
         var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
-        AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-        Pose2d targetPose;
-
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            targetPose = layout.getTagPose(4).get().toPose2d();
-        } else {
-            targetPose = layout.getTagPose(7).get().toPose2d();
-        }
+        Pose2d targetPose = pos.getSpeakerPose();
 
         var pointAtSpeakerCommand = new TeleopDriveWithPointAtCommand(drive, pos, getInput, targetPose);
 
