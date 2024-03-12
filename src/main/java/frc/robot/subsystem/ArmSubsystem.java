@@ -48,10 +48,10 @@ public class ArmSubsystem extends SubsystemBase {
     public final MoEncoder<Angle> wristRelEncoder;
 
     private final MoSparkMaxArmPID shoulderVelocityPid;
-    private final MoSparkMaxPID<Angle> wristVelocityPid;
+    private final MoSparkMaxArmPID wristVelocityPid;
 
     private final MoSparkMaxArmPID shoulderSmartMotionPid;
-    private final MoSparkMaxPID<Angle> wristSmartMotionPid;
+    private final MoSparkMaxArmPID wristSmartMotionPid;
 
     public final SendableChooser<ArmControlMode> controlMode;
 
@@ -158,9 +158,9 @@ public class ArmSubsystem extends SubsystemBase {
                 MoSparkMaxPID.Type.SMARTMOTION, wristMtr, 1, wristRelEncoder, this::getWristAngleFromHorizontal);
 
         TunerUtils.forSparkMaxArm(shoulderVelocityPid, "Shoulder Vel.");
-        TunerUtils.forMoSparkMax(wristVelocityPid, "Wrist Vel.");
+        TunerUtils.forSparkMaxArm(wristVelocityPid, "Wrist Vel.");
         TunerUtils.forSparkMaxArm(shoulderSmartMotionPid, "Shoulder Pos.");
-        TunerUtils.forMoSparkMax(wristSmartMotionPid, "Wrist Pos.");
+        TunerUtils.forSparkMaxArm(wristSmartMotionPid, "Wrist Pos.");
 
         var shoulderGroup = MoShuffleboard.getInstance()
                 .matchTab
