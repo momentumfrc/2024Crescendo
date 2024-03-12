@@ -8,10 +8,13 @@ import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
@@ -90,5 +93,56 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void setFlywheelSpeed(Measure<Velocity<Angle>> speed) {
         flywheelVelocityPid.setVelocityReference(speed);
+    }
+
+    public SysIdRoutine getFlywheelRoutine(SysIdRoutine.Config config) {
+        var voltsPerSec = Units.Volts.per(Units.Second);
+        if (config == null) {
+            config = new SysIdRoutine.Config(voltsPerSec.of(1.5), Units.Volts.of(4), Units.Seconds.of(45));
+        }
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            flywheelLeft.setVoltage(v.in(Units.Volts));
+                            roller.stopMotor();
+                        },
+                        (log) -> {
+                            log.motor("flywheelMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            flywheelLeft.getAppliedOutput() * flywheelLeft.getBusVoltage(),
+                                            Units.Volts))
+                                    .angularPosition(flywheelEncoder.getPosition())
+                                    .angularVelocity(flywheelEncoder.getVelocity());
+                        },
+                        this));
+    }
+
+    public SysIdRoutine getRollerRoutine(SysIdRoutine.Config config) {
+        var voltsPerSec = Units.Volts.per(Units.Second);
+        if (config == null) {
+            config = new SysIdRoutine.Config(voltsPerSec.of(1.5), Units.Volts.of(4), Units.Seconds.of(45));
+        }
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            roller.setVoltage(v.in(Units.Volts));
+                            flywheelLeft.stopMotor();
+                        },
+                        (log) -> {
+                            log.motor("rollerMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            roller.getAppliedOutput() * roller.getBusVoltage(), Units.Volts))
+                                    .linearPosition(rollerEncoder.getPosition())
+                                    .linearVelocity(rollerEncoder.getVelocity());
+                        },
+                        this));
     }
 }
