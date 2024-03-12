@@ -245,12 +245,6 @@ public class ArmSubsystem extends SubsystemBase {
         return new ArmMovementRequest(shoulderPower, wristPower);
     }
 
-    private ArmPosition limitArmPositionRequest(ArmPosition request) {
-        return new ArmPosition(
-                MoUtils.clampUnit(request.shoulderAngle, Units.Rotations.zero(), MoPrefs.shoulderMaxExtension.get()),
-                MoUtils.clampUnit(request.wristAngle, Units.Rotations.zero(), MoPrefs.wristMaxExtension.get()));
-    }
-
     public ArmPosition getArmPosition() {
         return new ArmPosition(shoulderRelEncoder.getPosition(), wristRelEncoder.getPosition());
     }
@@ -272,8 +266,6 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void adjustSmartPosition(ArmPosition position) {
-        position = limitArmPositionRequest(position);
-
         shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
         wristSmartMotionPid.setPositionReference(position.wristAngle);
     }
