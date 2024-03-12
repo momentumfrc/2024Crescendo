@@ -139,9 +139,10 @@ public class RobotContainer {
         // right before we're about to execute the command.
         shootSpeakerTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
-                .whileTrue(Commands.defer(
-                        () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
-                        Set.of(arm, drive, shooter)));
+                .whileTrue(CompositeCommands.tuneShootSpeakerCommand(drive, this::getInput, arm, shooter, positioning));
+        // .whileTrue(Commands.defer(
+        //         () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
+        //         Set.of(arm, drive, shooter)));
 
         shootAmpTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))

@@ -14,6 +14,7 @@ import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class CompositeCommands {
@@ -57,6 +58,19 @@ public class CompositeCommands {
                         .deadlineWith(spinupShooterCommand)
                         .andThen(shootShooterCommand))
                 .deadlineWith(moveArmCommand);
+    }
+
+    public static Command tuneShootSpeakerCommand(
+            DriveSubsystem drive,
+            Supplier<MoInput> inputSupplier,
+            ArmSubsystem arm,
+            ShooterSubsystem shooter,
+            PositioningSubsystem pos) {
+
+        return (new TuneShooterCommand(shooter, arm, pos))
+                .alongWith(Commands.defer(
+                        () -> new TeleopDriveWithPointAtCommand(drive, pos, inputSupplier, pos.getSpeakerPose()),
+                        Set.of(drive)));
     }
 
     private CompositeCommands() {
