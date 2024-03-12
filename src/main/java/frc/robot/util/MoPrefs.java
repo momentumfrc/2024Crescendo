@@ -91,17 +91,18 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> shooterRollerScale =
             encoderTicksPerCentimeterPref("Shooter Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
 
-    public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shooterFlywheelScale =
-            encoderTicksPerRotationPref("Shooter Flywheel Scale", MoUnits.EncoderTicksPerRotation.of(1));
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> shooterFlywheelScale =
+            encoderTicksPerCentimeterPref(
+                    "Shooter Flywheel Scale", MoUnits.EncoderTicksPerCentimeter.of(0.04699456981059901));
 
     public static final UnitPref<Dimensionless> pidSetpointVarianceThreshold = getInstance()
     .new UnitPref<Dimensionless>("Shooter Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
-    public static final UnitPref<Velocity<Angle>> flywheelSpeakerSetpoint =
-            rotationsPerSecPref("Speaker Flywheel Setpoint", Units.RotationsPerSecond.of(10));
+    public static final UnitPref<Velocity<Distance>> flywheelSpeakerSetpoint =
+            centimetersPerSecPref("Speaker Flywheel Setpoint", MoUnits.CentimetersPerSec.of(10));
 
-    public static final UnitPref<Velocity<Angle>> flywheelAmpSetpoint =
-            rotationsPerSecPref("Amp Flywheel Setpoint", Units.RotationsPerSecond.of(2));
+    public static final UnitPref<Velocity<Distance>> flywheelAmpSetpoint =
+            centimetersPerSecPref("Amp Flywheel Setpoint", MoUnits.CentimetersPerSec.of(2));
 
     public static final UnitPref<Distance> shooterRollerSetpoint =
             centimetersPref("Shooter Roller Setpoint", Units.Centimeters.of(50));
@@ -123,11 +124,8 @@ public class MoPrefs {
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
             amperesPref("Intake Current Sense Threshold", Units.Amps.of(10));
 
-    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed = getInstance()
-    .new UnitPref<Velocity<Distance>>(
-            "Intake Roller Speed",
-            Units.Centimeters.per(Units.Second),
-            Units.Centimeters.per(Units.Second).of(1));
+    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed =
+            centimetersPerSecPref("Intake Roller Speed", MoUnits.CentimetersPerSec.of(1));
 
     public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
     public static final UnitPref<Current> intakeZeroCurrentCutoff =
@@ -269,6 +267,11 @@ public class MoPrefs {
 
     private static UnitPref<Distance> centimetersPref(String key, Measure<Distance> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.Centimeters, defaultValue);
+    }
+
+    private static UnitPref<Velocity<Distance>> centimetersPerSecPref(
+            String key, Measure<Velocity<Distance>> defaultValue) {
+        return getInstance().new UnitPref<>(key, MoUnits.CentimetersPerSec, defaultValue);
     }
 
     private static UnitPref<Velocity<Distance>> metersPerSecPref(String key, Measure<Velocity<Distance>> defaultValue) {

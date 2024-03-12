@@ -4,7 +4,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -21,6 +20,7 @@ import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoSparkMaxPID.Type;
+import frc.robot.util.MoUnits;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
 
@@ -33,15 +33,15 @@ public class ShooterSubsystem extends SubsystemBase {
     private final CANSparkFlex flywheelUpper;
 
     private final MoEncoder<Distance> rollerEncoder;
-    private final MoEncoder<Angle> flywheelUpperEncoder;
-    private final MoEncoder<Angle> flywheelLowerEncoder;
+    private final MoEncoder<Distance> flywheelUpperEncoder;
+    private final MoEncoder<Distance> flywheelLowerEncoder;
 
     private final MoSparkMaxPID<Distance> rollerPosPid;
-    private final MoSparkMaxPID<Angle> flywheelUpperVelocityPid;
-    private final MoSparkMaxPID<Angle> flywheelLowerVelocityPid;
+    private final MoSparkMaxPID<Distance> flywheelUpperVelocityPid;
+    private final MoSparkMaxPID<Distance> flywheelLowerVelocityPid;
 
-    private final MutableMeasure<Angle> mut_flywheelPos = MutableMeasure.zero(Units.Rotations);
-    private final MutableMeasure<Velocity<Angle>> mut_flywheelVel = MutableMeasure.zero(Units.RotationsPerSecond);
+    private final MutableMeasure<Distance> mut_flywheelPos = MutableMeasure.zero(Units.Centimeters);
+    private final MutableMeasure<Velocity<Distance>> mut_flywheelVel = MutableMeasure.zero(MoUnits.CentimetersPerSec);
 
     public ShooterSubsystem() {
         super("Shooter");
@@ -62,8 +62,8 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLower.setInverted(true);
 
         rollerEncoder = MoEncoder.forSparkRelative(roller.getEncoder(), Units.Centimeter);
-        flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Rotations);
-        flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Rotations);
+        flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Centimeters);
+        flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Centimeters);
 
         MoPrefs.shooterRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
         MoPrefs.shooterFlywheelScale.subscribe(
@@ -81,17 +81,17 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterGroup.addDouble(
                 "Roller Pos. (cm)", () -> rollerEncoder.getPosition().in(Units.Centimeters));
         shooterGroup.addDouble(
-                "Flywheel Upper Vel. (rps)",
-                () -> flywheelUpperEncoder.getVelocity().in(Units.RotationsPerSecond));
+                "Flywheel Upper Vel. (cm_s)",
+                () -> flywheelUpperEncoder.getVelocity().in(MoUnits.CentimetersPerSec));
         shooterGroup.addDouble(
-                "Flywheel Lower Vel. (rps)",
-                () -> flywheelLowerEncoder.getVelocity().in(Units.RotationsPerSecond));
+                "Flywheel Lower Vel. (cm_s)",
+                () -> flywheelLowerEncoder.getVelocity().in(MoUnits.CentimetersPerSec));
 
         rollerPosPid = new MoSparkMaxPID<Distance>(Type.SMARTMOTION, roller, 0, rollerEncoder);
         TunerUtils.forMoSparkMax(rollerPosPid, "Shooter Roller Pos.");
 
-        flywheelUpperVelocityPid = new MoSparkMaxPID<Angle>(Type.VELOCITY, flywheelUpper, 0, flywheelUpperEncoder);
-        flywheelLowerVelocityPid = new MoSparkMaxPID<Angle>(Type.VELOCITY, flywheelLower, 0, flywheelLowerEncoder);
+        flywheelUpperVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelUpper, 0, flywheelUpperEncoder);
+        flywheelLowerVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelLower, 0, flywheelLowerEncoder);
         TunerUtils.forMoSparkMax(flywheelUpperVelocityPid, "Shooter Upper Flywheel Vel.");
         TunerUtils.forMoSparkMax(flywheelLowerVelocityPid, "Shooter Lower Flywheel Vel.");
     }
@@ -104,7 +104,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return rollerEncoder.getVelocity();
     }
 
-    public Measure<Angle> getAvgFlywheelPosition() {
+    public Measure<Distance> getAvgFlywheelPosition() {
         mut_flywheelPos.mut_replace(flywheelUpperEncoder.getPosition());
         mut_flywheelPos.mut_plus(flywheelLowerEncoder.getPosition());
         mut_flywheelPos.mut_divide(2);
@@ -112,7 +112,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return mut_flywheelPos;
     }
 
-    public Measure<Velocity<Angle>> getAvgFlywheelVelocity() {
+    public Measure<Velocity<Distance>> getAvgFlywheelVelocity() {
         mut_flywheelVel.mut_replace(flywheelUpperEncoder.getVelocity());
         mut_flywheelVel.mut_plus(flywheelLowerEncoder.getVelocity());
         mut_flywheelVel.mut_divide(2);
@@ -133,7 +133,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLower.set(speed);
     }
 
-    public void setFlywheelSpeed(Measure<Velocity<Angle>> speed) {
+    public void setFlywheelSpeed(Measure<Velocity<Distance>> speed) {
         flywheelUpperVelocityPid.setVelocityReference(speed);
         flywheelLowerVelocityPid.setVelocityReference(speed);
     }
@@ -159,8 +159,8 @@ public class ShooterSubsystem extends SubsystemBase {
                                     .voltage(mut_volt.mut_replace(
                                             flywheelUpper.getAppliedOutput() * flywheelUpper.getBusVoltage(),
                                             Units.Volts))
-                                    .angularPosition(flywheelUpperEncoder.getPosition())
-                                    .angularVelocity(flywheelUpperEncoder.getVelocity());
+                                    .linearPosition(flywheelUpperEncoder.getPosition())
+                                    .linearVelocity(flywheelUpperEncoder.getVelocity());
                         },
                         this));
     }
@@ -186,8 +186,8 @@ public class ShooterSubsystem extends SubsystemBase {
                                     .voltage(mut_volt.mut_replace(
                                             flywheelLower.getAppliedOutput() * flywheelLower.getBusVoltage(),
                                             Units.Volts))
-                                    .angularPosition(flywheelLowerEncoder.getPosition())
-                                    .angularVelocity(flywheelLowerEncoder.getVelocity());
+                                    .linearPosition(flywheelLowerEncoder.getPosition())
+                                    .linearVelocity(flywheelLowerEncoder.getVelocity());
                         },
                         this));
     }

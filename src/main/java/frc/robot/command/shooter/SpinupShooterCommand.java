@@ -1,6 +1,5 @@
 package frc.robot.command.shooter;
 
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
@@ -13,10 +12,10 @@ import frc.robot.util.MoPrefs;
 public class SpinupShooterCommand extends Command {
     private final ShooterSubsystem shooter;
 
-    private final Measure<Velocity<Angle>> flywheelSpeed;
+    private final Measure<Velocity<Distance>> flywheelSpeed;
     private final MutableMeasure<Distance> rollerPos = MutableMeasure.zero(Units.Centimeters);
 
-    public SpinupShooterCommand(ShooterSubsystem shooter, Measure<Velocity<Angle>> flywheelSpeed) {
+    public SpinupShooterCommand(ShooterSubsystem shooter, Measure<Velocity<Distance>> flywheelSpeed) {
         this.shooter = shooter;
 
         this.flywheelSpeed = flywheelSpeed;
