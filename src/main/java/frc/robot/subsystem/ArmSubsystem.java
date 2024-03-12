@@ -326,7 +326,7 @@ public class ArmSubsystem extends SubsystemBase {
                             log.motor("wristMtr")
                                     .voltage(mut_volt.mut_replace(
                                             wristMtr.getAppliedOutput() * wristMtr.getBusVoltage(), Units.Volts))
-                                    .angularPosition(wristRelEncoder.getPosition())
+                                    .angularPosition(getWristAngleFromHorizontal())
                                     .angularVelocity(wristRelEncoder.getVelocity());
                         },
                         this));
