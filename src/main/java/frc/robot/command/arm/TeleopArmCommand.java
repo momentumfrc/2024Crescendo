@@ -39,6 +39,11 @@ public class TeleopArmCommand extends Command {
         addRequirements(arms);
     }
 
+    @Override
+    public void initialize() {
+        arms.reZeroArm();
+    }
+
     private ArmMovementRequest getMovementRequest(MoInput input) {
         ArmMovementRequest requestedMovement = input.getArmMovementRequest();
         return new ArmMovementRequest(
