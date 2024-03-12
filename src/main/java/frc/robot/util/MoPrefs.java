@@ -104,8 +104,8 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Distance>> flywheelAmpSetpoint =
             centimetersPerSecPref("Amp Flywheel Setpoint", MoUnits.CentimetersPerSec.of(2));
 
-    public static final UnitPref<Distance> shooterRollerSetpoint =
-            centimetersPref("Shooter Roller Setpoint", Units.Centimeters.of(50));
+    public static final UnitPref<Time> shooterRollerRunTime =
+            secondsPref("Shooter Roller RunTime", Units.Seconds.of(2));
 
     public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
 

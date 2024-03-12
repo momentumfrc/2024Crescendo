@@ -30,7 +30,7 @@ public class SpinupShooterCommand extends Command {
 
     @Override
     public void execute() {
-        shooter.setRollerPos(rollerPos);
+        shooter.setRollerPosition(rollerPos);
         shooter.setFlywheelSpeed(flywheelSpeed);
     }
 

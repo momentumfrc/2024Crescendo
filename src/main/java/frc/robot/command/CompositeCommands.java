@@ -28,7 +28,7 @@ public class CompositeCommands {
             PositioningSubsystem pos,
             Supplier<MoInput> getInput) {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
-        var rollerSetpoint = MoPrefs.shooterRollerSetpoint.get();
+        var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
         AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
         Pose2d targetPose;
@@ -44,7 +44,7 @@ public class CompositeCommands {
 
         var aimSpeakerCommand = new AimSpeakerCommand(arm, pos);
         var spinupShooterCommand = new SpinupShooterCommand(shooter, flywheelSpeed);
-        var shootShooterCommand = new ShootShooterCommand(shooter, rollerSetpoint, flywheelSpeed);
+        var shootShooterCommand = new ShootShooterCommand(shooter, rollerRunTime, flywheelSpeed);
         var waitForAim = Commands.waitUntil(aimSpeakerCommand::onTarget);
         var waitForSpinup = Commands.waitUntil(spinupShooterCommand::onTarget);
 
@@ -56,11 +56,11 @@ public class CompositeCommands {
 
     public static Command shootAmpCommand(ArmSubsystem arm, ShooterSubsystem shooter, PositioningSubsystem pos) {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
-        var rollerSetpoint = MoPrefs.shooterRollerSetpoint.get();
+        var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
         var moveArmCommand = MoveArmCommand.forSetpoint(arm, ArmSetpoint.AMP);
         var spinupShooterCommand = new SpinupShooterCommand(shooter, flywheelSpeed);
-        var shootShooterCommand = new ShootShooterCommand(shooter, rollerSetpoint, flywheelSpeed);
+        var shootShooterCommand = new ShootShooterCommand(shooter, rollerRunTime, flywheelSpeed);
         var waitForArm = Commands.waitUntil(moveArmCommand::onTarget);
         var waitForSpinup = Commands.waitUntil(spinupShooterCommand::onTarget);
 

@@ -29,7 +29,7 @@ public class IdleShooterCommand extends Command {
 
     @Override
     public void execute() {
-        shooter.setRollerPos(rollerPos);
+        shooter.setRollerPosition(rollerPos);
         shooter.setFlywheelSpeed(IDLE_SPEED);
     }
 }

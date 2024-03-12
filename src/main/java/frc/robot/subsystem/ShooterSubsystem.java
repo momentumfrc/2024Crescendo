@@ -36,6 +36,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final MoEncoder<Distance> flywheelUpperEncoder;
     private final MoEncoder<Distance> flywheelLowerEncoder;
 
+    private final MoSparkMaxPID<Distance> rollerVelPid;
     private final MoSparkMaxPID<Distance> rollerPosPid;
     private final MoSparkMaxPID<Distance> flywheelUpperVelocityPid;
     private final MoSparkMaxPID<Distance> flywheelLowerVelocityPid;
@@ -87,7 +88,9 @@ public class ShooterSubsystem extends SubsystemBase {
                 "Flywheel Lower Vel. (cm_s)",
                 () -> flywheelLowerEncoder.getVelocity().in(MoUnits.CentimetersPerSec));
 
-        rollerPosPid = new MoSparkMaxPID<Distance>(Type.SMARTMOTION, roller, 0, rollerEncoder);
+        rollerVelPid = new MoSparkMaxPID<>(Type.VELOCITY, roller, 1, rollerEncoder);
+        rollerPosPid = new MoSparkMaxPID<>(Type.SMARTMOTION, roller, 0, rollerEncoder);
+        TunerUtils.forMoSparkMax(rollerVelPid, "Shooter Roller Vel.");
         TunerUtils.forMoSparkMax(rollerPosPid, "Shooter Roller Pos.");
 
         flywheelUpperVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelUpper, 0, flywheelUpperEncoder);
@@ -124,7 +127,11 @@ public class ShooterSubsystem extends SubsystemBase {
         roller.set(speed);
     }
 
-    public void setRollerPos(Measure<Distance> pos) {
+    public void setRollerVelocity(Measure<Velocity<Distance>> vel) {
+        rollerVelPid.setVelocityReference(vel);
+    }
+
+    public void setRollerPosition(Measure<Distance> pos) {
         rollerPosPid.setPositionReference(pos);
     }
 
