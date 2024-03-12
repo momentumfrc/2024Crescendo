@@ -7,6 +7,7 @@ package frc.robot;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.GenericSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -66,6 +67,8 @@ public class RobotContainer {
     private final NetworkButton calibrateTurnButton;
     private final NetworkButton coastSwerveButton;
 
+    private final GenericSubscriber tuneSetpointSubscriber;
+
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
@@ -106,6 +109,12 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
+        tuneSetpointSubscriber = MoShuffleboard.getInstance()
+                .settingsTab
+                .add("Tune Setpoints?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
@@ -128,12 +137,17 @@ public class RobotContainer {
         // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
         // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
         // right before we're about to execute the command.
-        shootSpeakerTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
-                Set.of(arm, drive, shooter)));
+        shootSpeakerTrigger
+                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
+                .whileTrue(Commands.defer(
+                        () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
+                        Set.of(arm, drive, shooter)));
 
-        shootAmpTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning), Set.of(arm, drive, shooter)));
+        shootAmpTrigger
+                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
+                .whileTrue(Commands.defer(
+                        () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
+                        Set.of(arm, drive, shooter)));
 
         intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
 
