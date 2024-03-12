@@ -31,7 +31,7 @@ public class ShootShooterCommand extends Command {
     @Override
     public void initialize() {
         upToSpeed = false;
-        var pos = shooter.rollerEncoder.getPosition();
+        var pos = shooter.getRollerPosition();
         startRollerPos.mut_replace(pos);
         targetRollerPos.mut_replace(pos).mut_plus(rollerFeed);
     }
@@ -41,7 +41,7 @@ public class ShootShooterCommand extends Command {
         shooter.setFlywheelSpeed(flywheelSpeed);
 
         double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        if (shooter.flywheelEncoder.getVelocity().isNear(flywheelSpeed, thresh)) {
+        if (shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh)) {
             upToSpeed = true;
         }
 
@@ -55,6 +55,6 @@ public class ShootShooterCommand extends Command {
     @Override
     public boolean isFinished() {
         double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        return shooter.rollerEncoder.getPosition().isNear(targetRollerPos, thresh);
+        return shooter.getRollerPosition().isNear(targetRollerPos, thresh);
     }
 }

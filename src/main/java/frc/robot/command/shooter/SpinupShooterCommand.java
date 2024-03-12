@@ -26,7 +26,7 @@ public class SpinupShooterCommand extends Command {
 
     @Override
     public void initialize() {
-        rollerPos.mut_replace(shooter.rollerEncoder.getPosition());
+        rollerPos.mut_replace(shooter.getRollerPosition());
     }
 
     @Override
@@ -37,6 +37,6 @@ public class SpinupShooterCommand extends Command {
 
     public boolean onTarget() {
         double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        return shooter.flywheelEncoder.getVelocity().isNear(flywheelSpeed, thresh);
+        return shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh);
     }
 }

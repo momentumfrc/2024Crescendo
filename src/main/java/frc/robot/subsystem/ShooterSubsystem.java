@@ -32,13 +32,16 @@ public class ShooterSubsystem extends SubsystemBase {
     private final CANSparkFlex flywheelLower;
     private final CANSparkFlex flywheelUpper;
 
-    public final MoEncoder<Distance> rollerEncoder;
-    public final MoEncoder<Angle> flywheelUpperEncoder;
-    public final MoEncoder<Angle> flywheelLowerEncoder;
+    private final MoEncoder<Distance> rollerEncoder;
+    private final MoEncoder<Angle> flywheelUpperEncoder;
+    private final MoEncoder<Angle> flywheelLowerEncoder;
 
     private final MoSparkMaxPID<Distance> rollerPosPid;
     private final MoSparkMaxPID<Angle> flywheelUpperVelocityPid;
     private final MoSparkMaxPID<Angle> flywheelLowerVelocityPid;
+
+    private final MutableMeasure<Angle> mut_flywheelPos = MutableMeasure.zero(Units.Rotations);
+    private final MutableMeasure<Velocity<Angle>> mut_flywheelVel = MutableMeasure.zero(Units.RotationsPerSecond);
 
     public ShooterSubsystem() {
         super("Shooter");
@@ -91,6 +94,30 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLowerVelocityPid = new MoSparkMaxPID<Angle>(Type.VELOCITY, flywheelLower, 0, flywheelLowerEncoder);
         TunerUtils.forMoSparkMax(flywheelUpperVelocityPid, "Shooter Upper Flywheel Vel.");
         TunerUtils.forMoSparkMax(flywheelLowerVelocityPid, "Shooter Lower Flywheel Vel.");
+    }
+
+    public Measure<Distance> getRollerPosition() {
+        return rollerEncoder.getPosition();
+    }
+
+    public Measure<Velocity<Distance>> getRollerVelocity() {
+        return rollerEncoder.getVelocity();
+    }
+
+    public Measure<Angle> getAvgFlywheelPosition() {
+        mut_flywheelPos.mut_replace(flywheelUpperEncoder.getPosition());
+        mut_flywheelPos.mut_plus(flywheelLowerEncoder.getPosition());
+        mut_flywheelPos.mut_divide(2);
+
+        return mut_flywheelPos;
+    }
+
+    public Measure<Velocity<Angle>> getAvgFlywheelVelocity() {
+        mut_flywheelVel.mut_replace(flywheelUpperEncoder.getVelocity());
+        mut_flywheelVel.mut_plus(flywheelLowerEncoder.getVelocity());
+        mut_flywheelVel.mut_divide(2);
+
+        return mut_flywheelVel;
     }
 
     public void directDriveRoller(double speed) {

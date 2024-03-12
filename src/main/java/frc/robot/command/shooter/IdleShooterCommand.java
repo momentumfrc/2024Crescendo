@@ -24,7 +24,7 @@ public class IdleShooterCommand extends Command {
 
     @Override
     public void initialize() {
-        rollerPos.mut_replace(shooter.rollerEncoder.getPosition());
+        rollerPos.mut_replace(shooter.getRollerPosition());
     }
 
     @Override
