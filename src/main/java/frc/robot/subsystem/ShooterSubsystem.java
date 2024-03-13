@@ -45,6 +45,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private final MutableMeasure<Velocity<Distance>> mut_flywheelSetpoint = MutableMeasure.zero(Units.MetersPerSecond);
 
+    private final MutableMeasure<Current> mut_rollerCurrent = MutableMeasure.zero(Units.Amps);
+
     private SlewRateLimiter limiter;
 
     public ShooterSubsystem() {
@@ -165,6 +167,10 @@ public class ShooterSubsystem extends SubsystemBase {
         mut_flywheelSetpoint.mut_replace(limited, Units.MetersPerSecond);
         flywheelUpperVelocityPid.setVelocityReference(mut_flywheelSetpoint);
         flywheelLowerVelocityPid.setVelocityReference(mut_flywheelSetpoint);
+    }
+
+    public Measure<Current> getRollerCurrent() {
+        return mut_rollerCurrent.mut_replace(roller.getOutputCurrent(), Units.Amps);
     }
 
     public SysIdRoutine getFlywheelUpperRoutine() {

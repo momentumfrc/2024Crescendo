@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.command.CompositeCommands;
+import frc.robot.command.HandoffCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.command.arm.TeleopArmCommand;
@@ -56,6 +57,7 @@ public class RobotContainer {
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
+    private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
@@ -73,6 +75,7 @@ public class RobotContainer {
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
     private final Trigger rezeroIntakeTrigger;
+    private final Trigger handoffTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -123,6 +126,7 @@ public class RobotContainer {
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
         rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
+        handoffTrigger = new Trigger(() -> getInput().getHandoff());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -157,6 +161,8 @@ public class RobotContainer {
                         Set.of(arm, drive, shooter)));
 
         rezeroIntakeTrigger.onTrue(rezeroIntake);
+
+        handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
                 .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
