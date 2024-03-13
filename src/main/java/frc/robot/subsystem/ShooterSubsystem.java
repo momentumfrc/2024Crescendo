@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -42,6 +43,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final MutableMeasure<Distance> mut_flywheelPos = MutableMeasure.zero(Units.Centimeters);
     private final MutableMeasure<Velocity<Distance>> mut_flywheelVel = MutableMeasure.zero(MoUnits.CentimetersPerSec);
 
+    private final MutableMeasure<Velocity<Distance>> mut_flywheelSetpoint = MutableMeasure.zero(Units.MetersPerSecond);
+
+    private SlewRateLimiter limiter;
+
     public ShooterSubsystem() {
         super("Shooter");
 
@@ -69,6 +74,12 @@ public class ShooterSubsystem extends SubsystemBase {
                 scale -> {
                     flywheelUpperEncoder.setConversionFactor(scale);
                     flywheelLowerEncoder.setConversionFactor(scale);
+                },
+                true);
+
+        MoPrefs.flywheelSpindownRate.subscribe(
+                rate -> {
+                    this.limiter = new SlewRateLimiter(Double.POSITIVE_INFINITY, -Math.abs(rate), 0);
                 },
                 true);
 
@@ -140,8 +151,12 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setFlywheelSpeed(Measure<Velocity<Distance>> speed) {
-        flywheelUpperVelocityPid.setVelocityReference(speed);
-        flywheelLowerVelocityPid.setVelocityReference(speed);
+        double value = speed.in(Units.MetersPerSecond);
+        double limited = limiter.calculate(value);
+
+        mut_flywheelSetpoint.mut_replace(limited, Units.MetersPerSecond);
+        flywheelUpperVelocityPid.setVelocityReference(mut_flywheelSetpoint);
+        flywheelLowerVelocityPid.setVelocityReference(mut_flywheelSetpoint);
     }
 
     public SysIdRoutine getFlywheelUpperRoutine() {

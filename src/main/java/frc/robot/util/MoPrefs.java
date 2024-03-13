@@ -110,6 +110,8 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Distance>> flywheelAmpSetpoint =
             centimetersPerSecPref("Amp Flywheel Setpoint", MoUnits.CentimetersPerSec.of(2));
 
+    public static final Pref<Double> flywheelSpindownRate = unitlessDoublePref("Flywheel spindown rate", 1);
+
     public static final UnitPref<Time> shooterRollerRunTime =
             secondsPref("Shooter Roller RunTime", Units.Seconds.of(2));
 
