@@ -43,6 +43,7 @@ public class MoShuffleboard {
     public final ShuffleboardTab armTab;
     public final ShuffleboardTab intakeTab;
     public final ShuffleboardTab shooterTab;
+    public final ShuffleboardTab climberTab;
     public final ShuffleboardTab settingsTab;
     public final ShuffleboardTab autoTab;
     public final Field2d field;
@@ -56,6 +57,7 @@ public class MoShuffleboard {
         driveTab = Shuffleboard.getTab("Drive");
         armTab = Shuffleboard.getTab("Arm");
         intakeTab = Shuffleboard.getTab("Intake");
+        climberTab = Shuffleboard.getTab("Climber");
         shooterTab = Shuffleboard.getTab("Shooter");
 
         field = new Field2d();

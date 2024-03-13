@@ -17,6 +17,8 @@ public class ClimbSubsystem extends SubsystemBase {
     public final Climber rightClimber;
 
     public ClimbSubsystem() {
+        super("Climber");
+
         var leftSparkMax = new CANSparkMax(Constants.CLIMBER_LEFT.address(), CANSparkMax.MotorType.kBrushless);
         var rightSparkMax = new CANSparkMax(Constants.CLIMBER_RIGHT.address(), CANSparkMax.MotorType.kBrushless);
 

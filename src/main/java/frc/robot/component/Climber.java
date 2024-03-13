@@ -28,7 +28,7 @@ public class Climber {
         this.zeroLimit = CurrentTrigger.ofSparkMax(winch, zeroCurrentLimit, zeroTriggerDuration);
 
         var layout = MoShuffleboard.getInstance()
-                .matchTab
+                .climberTab
                 .getLayout(name, BuiltInLayouts.kList)
                 .withSize(1, 2);
         layout.addBoolean("At Zero Limit", this::atZeroLimit);
