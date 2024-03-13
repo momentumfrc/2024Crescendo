@@ -68,6 +68,7 @@ public class RobotContainer {
     private final NetworkButton coastSwerveButton;
 
     private final GenericSubscriber tuneSetpointSubscriber;
+    private final GenericSubscriber tuneShooterAngleSubscriber;
 
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
@@ -111,7 +112,12 @@ public class RobotContainer {
 
         tuneSetpointSubscriber = MoShuffleboard.getInstance()
                 .settingsTab
-                .add("Tune Setpoints?", false)
+                .add("Tune Arm Setpoints?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+        tuneShooterAngleSubscriber = MoShuffleboard.getInstance()
+                .settingsTab
+                .add("Tune shooter angle?", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
@@ -139,10 +145,13 @@ public class RobotContainer {
         // right before we're about to execute the command.
         shootSpeakerTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
-                .whileTrue(CompositeCommands.tuneShootSpeakerCommand(drive, this::getInput, arm, shooter, positioning));
-        // .whileTrue(Commands.defer(
-        //         () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
-        //         Set.of(arm, drive, shooter)));
+                .whileTrue(Commands.either(
+                        CompositeCommands.tuneShootSpeakerCommand(drive, this::getInput, arm, shooter, positioning),
+                        Commands.defer(
+                                () -> CompositeCommands.shootSpeakerCommand(
+                                        arm, drive, shooter, positioning, this::getInput),
+                                Set.of(arm, drive, shooter)),
+                        () -> tuneShooterAngleSubscriber.getBoolean(false)));
 
         shootAmpTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
