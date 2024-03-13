@@ -1,12 +1,10 @@
 package frc.robot.command.arm;
 
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.component.ArmSetpointManager;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
-import frc.robot.util.MoPrefs;
 
 public class MoveArmCommand extends Command {
     private final ArmSubsystem arm;
@@ -29,7 +27,6 @@ public class MoveArmCommand extends Command {
     }
 
     public boolean onTarget() {
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        return arm.atPosition(position, thresh);
+        return arm.atPosition(position);
     }
 }

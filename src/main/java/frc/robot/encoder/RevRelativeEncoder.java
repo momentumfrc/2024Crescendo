@@ -41,4 +41,9 @@ public class RevRelativeEncoder implements MoEncoder.Encoder {
     public Time getVelocityBaseUnit() {
         return VELOCITY_BASE_UNIT;
     }
+
+    @Override
+    public void setInverted(boolean inverted) {
+        encoder.setInverted(inverted);
+    }
 }

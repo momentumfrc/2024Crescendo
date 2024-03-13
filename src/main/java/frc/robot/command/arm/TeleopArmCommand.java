@@ -1,14 +1,17 @@
 package frc.robot.command.arm;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.networktables.GenericPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.component.ArmSetpointManager;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.MoInput;
 import frc.robot.subsystem.ArmSubsystem;
+import frc.robot.subsystem.ArmSubsystem.ArmControlMode;
 import frc.robot.subsystem.ArmSubsystem.ArmMovementRequest;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
 import frc.robot.util.MoPrefs;
+import frc.robot.util.MoShuffleboard;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -23,6 +26,8 @@ public class TeleopArmCommand extends Command {
     private SlewRateLimiter shoulderLimiter;
     private SlewRateLimiter wristLimiter;
 
+    private GenericPublisher setpointPublisher;
+
     public TeleopArmCommand(ArmSubsystem arms, Supplier<MoInput> inputSupplier) {
         this.arms = arms;
         this.inputSupplier = inputSupplier;
@@ -36,7 +41,15 @@ public class TeleopArmCommand extends Command {
                 },
                 true);
 
+        setpointPublisher =
+                MoShuffleboard.getInstance().armTab.add("Setpoint", "UNKNOWN").getEntry();
+
         addRequirements(arms);
+    }
+
+    @Override
+    public void initialize() {
+        arms.reZeroArm();
     }
 
     private ArmMovementRequest getMovementRequest(MoInput input) {
@@ -66,8 +79,10 @@ public class TeleopArmCommand extends Command {
         ArmSetpoint setpoint = requestedSetpoint.orElse(DEFAULT_SETPOINT);
         ArmPosition requestedPosition = ArmSetpointManager.getInstance().getSetpoint(setpoint);
         if (smartMotionOverride) {
+            setpointPublisher.setString("OVERRIDE");
             arms.adjustVelocity(requestedMovement);
         } else {
+            setpointPublisher.setString(setpoint.toString());
             arms.adjustSmartPosition(requestedPosition);
         }
     }
@@ -81,6 +96,10 @@ public class TeleopArmCommand extends Command {
             arms.reZeroArm();
         }
 
+        if (controlMode != ArmControlMode.SMARTMOTION) {
+            setpointPublisher.setString(controlMode.toString());
+        }
+
         switch (controlMode) {
             case FALLBACK_DIRECT_POWER:
                 arms.adjustDirectPower(getMovementRequest(input));
@@ -92,5 +111,10 @@ public class TeleopArmCommand extends Command {
                 moveSmartMotion(input);
                 return;
         }
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        setpointPublisher.setString("UNKNOWN");
     }
 }

@@ -23,6 +23,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -32,6 +33,7 @@ import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.MutablePIDConstants;
 import frc.robot.util.TunerUtils;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -99,6 +101,8 @@ public class DriveSubsystem extends SubsystemBase {
     private LinearFilter desiredOffsetFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
     public DriveSubsystem(AHRS gyro) {
+        super("Drive");
+
         this.gyro = gyro;
         maintainHeading = getCurrHeading();
 
@@ -138,13 +142,27 @@ public class DriveSubsystem extends SubsystemBase {
 
         resetEncoderTimer.start();
 
-        MoShuffleboard.getInstance()
-                .matchTab
-                .addDouble(
-                        "FL_POS", () -> frontLeft.driveMotor.getRotorPosition().getValueAsDouble());
-        MoShuffleboard.getInstance()
-                .matchTab
-                .addDouble("FL_POS_m", () -> frontLeft.distEncoder.getPosition().in(Units.Meters));
+        forEachSwerveModule((module) -> {
+            var group = MoShuffleboard.getInstance()
+                    .driveTab
+                    .getLayout(module.getKey(), BuiltInLayouts.kList)
+                    .withSize(2, 2)
+                    .withProperties(Map.of("Label Position", "RIGHT"));
+            group.addDouble(
+                    "Drive Position (raw)",
+                    () -> module.driveMotor.getRotorPosition().getValueAsDouble());
+            group.addDouble(
+                    "Drive Position (m)", () -> module.distEncoder.getPosition().in(Units.Meters));
+            group.addDouble(
+                    "Drive Velocity (m_s)",
+                    () -> module.distEncoder.getVelocity().in(Units.MetersPerSecond));
+            group.addDouble(
+                    "Turn Relative (R)",
+                    () -> module.relativeEncoder.getPosition().in(Units.Rotations));
+            group.addDouble(
+                    "Turn Absolute (R)",
+                    () -> module.absoluteEncoder.getPosition().in(Units.Rotations));
+        });
 
         double offset_meters = SWERVE_WHEEL_OFFSET.in(Units.Meters);
         Translation2d fl = new Translation2d(offset_meters, offset_meters);
@@ -153,6 +171,8 @@ public class DriveSubsystem extends SubsystemBase {
         Translation2d rr = new Translation2d(-offset_meters, -offset_meters);
 
         this.kinematics = new SwerveDriveKinematics(fl, fr, rl, rr);
+
+        MoShuffleboard.getInstance().driveTab.add(this);
     }
 
     public SwerveModulePosition[] getWheelPositions() {

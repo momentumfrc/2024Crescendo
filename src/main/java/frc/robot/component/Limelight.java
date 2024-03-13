@@ -13,8 +13,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.PoseFilter;
 import java.util.Optional;
 
@@ -55,8 +53,6 @@ public class Limelight {
 
     private final DoubleArraySubscriber botposeBlueSubscriber =
             limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
-    private final DoubleArraySubscriber botposeRedSubscriber =
-            limelightTable.getDoubleArrayTopic("botpose_wpired").subscribe(new double[6]);
 
     public Optional<Pose3d> getRobotPose() {
         return lastReportedPose;
@@ -90,12 +86,7 @@ public class Limelight {
         // Receive data from Limelight
         boolean hasDetection = tvSubscriber.get() > 0;
         Translation2d crosshairs = new Translation2d(txSubscriber.get(), tySubscriber.get());
-        double[] rawPoseData;
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            rawPoseData = botposeRedSubscriber.get();
-        } else {
-            rawPoseData = botposeBlueSubscriber.get();
-        }
+        double[] rawPoseData = botposeBlueSubscriber.get();
 
         // Process received data
         if (!hasDetection) {

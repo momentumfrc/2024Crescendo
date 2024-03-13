@@ -1,9 +1,6 @@
 package frc.robot.command;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.command.arm.AimSpeakerCommand;
@@ -17,6 +14,7 @@ import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class CompositeCommands {
@@ -28,23 +26,15 @@ public class CompositeCommands {
             PositioningSubsystem pos,
             Supplier<MoInput> getInput) {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
-        var rollerSetpoint = MoPrefs.shooterRollerSetpoint.get();
+        var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
-        AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-        Pose2d targetPose;
-
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            targetPose = layout.getTagPose(4).get().toPose2d();
-        } else {
-            targetPose = layout.getTagPose(7).get().toPose2d();
-        }
+        Pose2d targetPose = pos.getSpeakerPose();
 
         var pointAtSpeakerCommand = new TeleopDriveWithPointAtCommand(drive, pos, getInput, targetPose);
 
         var aimSpeakerCommand = new AimSpeakerCommand(arm, pos);
         var spinupShooterCommand = new SpinupShooterCommand(shooter, flywheelSpeed);
-        var shootShooterCommand = new ShootShooterCommand(shooter, rollerSetpoint, flywheelSpeed);
+        var shootShooterCommand = new ShootShooterCommand(shooter, rollerRunTime, flywheelSpeed);
         var waitForAim = Commands.waitUntil(aimSpeakerCommand::onTarget);
         var waitForSpinup = Commands.waitUntil(spinupShooterCommand::onTarget);
 
@@ -56,11 +46,11 @@ public class CompositeCommands {
 
     public static Command shootAmpCommand(ArmSubsystem arm, ShooterSubsystem shooter, PositioningSubsystem pos) {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
-        var rollerSetpoint = MoPrefs.shooterRollerSetpoint.get();
+        var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
         var moveArmCommand = MoveArmCommand.forSetpoint(arm, ArmSetpoint.AMP);
         var spinupShooterCommand = new SpinupShooterCommand(shooter, flywheelSpeed);
-        var shootShooterCommand = new ShootShooterCommand(shooter, rollerSetpoint, flywheelSpeed);
+        var shootShooterCommand = new ShootShooterCommand(shooter, rollerRunTime, flywheelSpeed);
         var waitForArm = Commands.waitUntil(moveArmCommand::onTarget);
         var waitForSpinup = Commands.waitUntil(spinupShooterCommand::onTarget);
 
@@ -68,6 +58,19 @@ public class CompositeCommands {
                         .deadlineWith(spinupShooterCommand)
                         .andThen(shootShooterCommand))
                 .deadlineWith(moveArmCommand);
+    }
+
+    public static Command tuneShootSpeakerCommand(
+            DriveSubsystem drive,
+            Supplier<MoInput> inputSupplier,
+            ArmSubsystem arm,
+            ShooterSubsystem shooter,
+            PositioningSubsystem pos) {
+
+        return (new TuneShooterCommand(shooter, arm, pos))
+                .alongWith(Commands.defer(
+                        () -> new TeleopDriveWithPointAtCommand(drive, pos, inputSupplier, pos.getSpeakerPose()),
+                        Set.of(drive)));
     }
 
     private CompositeCommands() {

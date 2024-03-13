@@ -39,16 +39,15 @@ public class Constants {
     public static final CANAddress WRIST_MTR = new CANAddress(2);
 
     public static final CANAddress SHOOTER_ROLLER_MTR = new CANAddress(3);
-    public static final CANAddress SHOOTER_FLYWHEEL_MTR_LEFT = new CANAddress(15);
-    public static final CANAddress SHOOTER_FLYWHEEL_MTR_RIGHT = new CANAddress(16);
+    public static final CANAddress SHOOTER_FLYWHEEL_MTR_UPPER = new CANAddress(16);
+    public static final CANAddress SHOOTER_FLYWHEEL_MTR_LOWER = new CANAddress(15);
 
     // TODO: Placeholder id - fill with real values
     public static final CANAddress CLIMBER_LEFT = new CANAddress(0);
     public static final CANAddress CLIMBER_RIGHT = new CANAddress(0);
 
-    // TODO: Placeholder id - fill with real values
-    public static final CANAddress INTAKE_ROLLER = new CANAddress(0);
-    public static final CANAddress INTAKE_DEPLOY = new CANAddress(0);
+    public static final CANAddress INTAKE_ROLLER = new CANAddress(14);
+    public static final CANAddress INTAKE_DEPLOY = new CANAddress(7);
 
     public static final HIDPort DRIVE_F310 = new HIDPort(0);
     public static final HIDPort ARM_F310 = new HIDPort(1);

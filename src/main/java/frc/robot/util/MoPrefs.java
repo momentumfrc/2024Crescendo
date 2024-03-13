@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Dimensionless;
@@ -21,7 +22,11 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -80,6 +85,9 @@ public class MoPrefs {
     public static final UnitPref<Angle> shoulderHorizontal =
             rotationsPref("Shoulder Horizontal", Units.Rotations.of(0.25));
 
+    public static final UnitPref<Angle> wristZeroOffsetFromShoulder =
+            rotationsPref("Wrist Offset From Shoulder", Units.Rotations.of(0.15));
+
     public static final UnitPref<Velocity<Angle>> shoulderMaxRps =
             rotationsPerSecPref("Shoulder Max Spd", Units.RotationsPerSecond.of(0.5));
     public static final UnitPref<Velocity<Angle>> wristMaxRps =
@@ -88,20 +96,29 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> shooterRollerScale =
             encoderTicksPerCentimeterPref("Shooter Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
 
-    public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> shooterFlywheelScale =
-            encoderTicksPerRotationPref("Shooter Flywheel Scale", MoUnits.EncoderTicksPerRotation.of(1));
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> shooterFlywheelScale =
+            encoderTicksPerCentimeterPref(
+                    "Shooter Flywheel Scale", MoUnits.EncoderTicksPerCentimeter.of(0.04699456981059901));
 
-    public static final UnitPref<Dimensionless> pidSetpointVarianceThreshold = getInstance()
+    public static final UnitPref<Dimensionless> shooterSetpointVarianceThreshold = getInstance()
     .new UnitPref<Dimensionless>("Shooter Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
-    public static final UnitPref<Velocity<Angle>> flywheelSpeakerSetpoint =
-            rotationsPerSecPref("Speaker Flywheel Setpoint", Units.RotationsPerSecond.of(10));
+    public static final UnitPref<Dimensionless> armSetpointVarianceThreshold = getInstance()
+    .new UnitPref<Dimensionless>("Arm Setpoint Variance Threshold", Units.Percent, Units.Percent.of(3));
 
-    public static final UnitPref<Velocity<Angle>> flywheelAmpSetpoint =
-            rotationsPerSecPref("Amp Flywheel Setpoint", Units.RotationsPerSecond.of(2));
+    public static final UnitPref<Dimensionless> intakeSetpointVarianceThreshold = getInstance()
+    .new UnitPref<Dimensionless>("Intake Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
-    public static final UnitPref<Distance> shooterRollerSetpoint =
-            centimetersPref("Shooter Roller Setpoint", Units.Centimeters.of(50));
+    public static final UnitPref<Velocity<Distance>> flywheelSpeakerSetpoint =
+            metersPerSecPref("Speaker Flywheel Setpoint", Units.MetersPerSecond.of(10));
+
+    public static final UnitPref<Velocity<Distance>> flywheelAmpSetpoint =
+            metersPerSecPref("Amp Flywheel Setpoint", Units.MetersPerSecond.of(2));
+
+    public static final Pref<Double> flywheelSpindownRate = unitlessDoublePref("Flywheel spindown rate", 1);
+
+    public static final UnitPref<Time> shooterRollerRunTime =
+            secondsPref("Shooter Roller RunTime", Units.Seconds.of(2));
 
     public static final Pref<Double> armRampTime = unitlessDoublePref("Arm Ramp Time", 0.15);
 
@@ -109,8 +126,6 @@ public class MoPrefs {
             encoderTicksPerCentimeterPref("Intake Roller Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> intakeDeployScale =
             encoderTicksPerRotationPref("Intake Deploy Scale", MoUnits.EncoderTicksPerRotation.of(1));
-    public static final UnitPref<Angle> intakeDeployAbsZero =
-            rotationsPref("Intake Deploy Abs Zero", Units.Rotations.of(0));
     public static final UnitPref<Angle> intakeDeployMaxExtension =
             rotationsPref("Intake Deploy Max Extension", Units.Rotations.of(0.5));
 
@@ -132,11 +147,16 @@ public class MoPrefs {
             unitlessDoublePref("Climber Zero Threshold (Enc. Ticks)", 50);
     public static final Pref<Double> climberMaximum = unitlessDoublePref("Climber Maximum (Enc. Ticks)", 400);
 
-    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed = getInstance()
-    .new UnitPref<Velocity<Distance>>(
-            "Intake Roller Speed",
-            Units.Centimeters.per(Units.Second),
-            Units.Centimeters.per(Units.Second).of(1));
+
+    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed =
+            centimetersPerSecPref("Intake Roller Speed", MoUnits.CentimetersPerSec.of(1));
+
+    public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
+    public static final UnitPref<Current> intakeZeroCurrentCutoff =
+            ampsPref("Intake Zero Current", Units.Amps.of(10));
+    public static final UnitPref<Time> intakeZeroTimeCutoff = secondsPref("Intake Zero Time", Units.Seconds.of(0.1));
+    public static final UnitPref<Angle> intakeZeroPosition =
+            rotationsPref("Intake Zero Pos.", Units.Rotations.of(-0.05));
 
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
@@ -176,6 +196,10 @@ public class MoPrefs {
 
         public void subscribe(Consumer<Measure<U>> consumer, boolean notifyImmediately) {
             basePref.subscribe((value) -> consumer.accept(currValue.mut_replace(value, storeUnits)), notifyImmediately);
+        }
+
+        public String getKey() {
+            return basePref.getKey();
         }
     }
 
@@ -234,6 +258,10 @@ public class MoPrefs {
                 consumer.accept(this.get());
             }
         }
+
+        public String getKey() {
+            return key;
+        }
     }
 
     private static MoPrefs instance;
@@ -245,6 +273,46 @@ public class MoPrefs {
             instance = new MoPrefs();
         }
         return instance;
+    }
+
+    public static void cleanUpPrefs() {
+        MoPrefs instance = getInstance();
+
+        HashSet<String> pref_keys = new HashSet<>();
+
+        // Shouldn't remove the special field .type
+        pref_keys.add(".type");
+
+        for (Field f : MoPrefs.class.getFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                Object fo;
+
+                try {
+                    fo = f.get(instance);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    continue;
+                }
+
+                if (fo instanceof Pref) {
+                    pref_keys.add(((Pref) fo).getKey());
+                } else if (fo instanceof UnitPref) {
+                    pref_keys.add(((UnitPref) fo).getKey());
+                }
+            }
+        }
+
+        Set<String> table_keys = instance.table.getKeys();
+
+        System.out.println("****** Clean up MoPrefs ******");
+        for (String key : table_keys) {
+            if (!pref_keys.contains(key)) {
+                System.out.format("Remove unused pref \"%s\"\n", key);
+
+                Topic topic = instance.table.getTopic(key);
+                topic.setPersistent(false);
+                topic.setRetained(false);
+            }
+        }
     }
 
     private MoPrefs() {
@@ -276,6 +344,11 @@ public class MoPrefs {
 
     private static UnitPref<Distance> centimetersPref(String key, Measure<Distance> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.Centimeters, defaultValue);
+    }
+
+    private static UnitPref<Velocity<Distance>> centimetersPerSecPref(
+            String key, Measure<Velocity<Distance>> defaultValue) {
+        return getInstance().new UnitPref<>(key, MoUnits.CentimetersPerSec, defaultValue);
     }
 
     private static UnitPref<Velocity<Distance>> metersPerSecPref(String key, Measure<Velocity<Distance>> defaultValue) {

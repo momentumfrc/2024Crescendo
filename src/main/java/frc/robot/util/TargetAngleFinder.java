@@ -21,10 +21,12 @@ public class TargetAngleFinder {
 
     private record CalibrationPoint(double distanceInMeters, double angleInRotations) {}
 
-    // TODO: This should be filled out with empirically measured data
     private CalibrationPoint[] data = {
-        new CalibrationPoint(1, 0.25), // TEST DATA DO NOT USE
-        new CalibrationPoint(3, 0.3) // TEST DATA DO NOT USE
+        new CalibrationPoint(1.01, 0.16),
+        new CalibrationPoint(1.2, 0.16),
+        new CalibrationPoint(1.69, 0.152),
+        new CalibrationPoint(1.95, 0.145),
+        new CalibrationPoint(2.75, 0.135)
     };
 
     private MutableMeasure<Angle> mutAngle = MutableMeasure.zero(Units.Rotations);

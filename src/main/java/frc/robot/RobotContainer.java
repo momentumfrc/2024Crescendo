@@ -7,8 +7,8 @@ package frc.robot;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.GenericSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringEntry;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.command.CompositeCommands;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
@@ -30,6 +29,7 @@ import frc.robot.command.climb.ClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
 import frc.robot.command.intake.IdleIntakeCommand;
 import frc.robot.command.intake.RunIntakeCommand;
+import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -37,23 +37,15 @@ import frc.robot.input.MoInput;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ClimbSubsystem;
+import frc.robot.subsystem.AutoBuilderSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoShuffleboard;
-import frc.robot.util.PathPlannerCommands;
 import java.util.Set;
 
 public class RobotContainer {
-    private enum SysIdMode {
-        NONE,
-        QUASISTATIC_FORWARD,
-        QUASISTATIC_REVERSE,
-        DYNAMIC_FORWARD,
-        DYNAMIC_REVERSE
-    };
-
     private AHRS gyro = new AHRS(SerialPort.Port.kMXP);
 
     // Subsystems
@@ -63,6 +55,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
+    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
@@ -73,20 +66,22 @@ public class RobotContainer {
     private IdleIntakeCommand idleIntakeCommand = new IdleIntakeCommand(intake, this::getInput);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
-    private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
-    private final StringEntry autoPathEntry;
-    private final BooleanEntry autoAssumeAtStartEntry;
+    private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
 
-    private SendableChooser<SysIdMode> sysidMode = MoShuffleboard.enumToChooser(SysIdMode.class);
+    private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
     private final NetworkButton coastSwerveButton;
 
+    private final GenericSubscriber tuneSetpointSubscriber;
+    private final GenericSubscriber tuneShooterAngleSubscriber;
+
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
     private final Trigger intakeTrigger;
+    private final Trigger rezeroIntakeTrigger;
     private final Trigger reZeroClimbTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
@@ -101,7 +96,6 @@ public class RobotContainer {
         inputChooser.addOption("Dual Controller", new DualControllerInput(Constants.DRIVE_F310, Constants.ARM_F310));
         inputChooser.addOption("Single Controller", new SingleControllerInput(Constants.DRIVE_F310));
         MoShuffleboard.getInstance().settingsTab.add("Controller Mode", inputChooser);
-        MoShuffleboard.getInstance().settingsTab.add("Sysid Mode", sysidMode);
 
         BooleanEntry calibrateDriveEntry = NetworkTableInstance.getDefault()
                 .getTable("Settings")
@@ -124,20 +118,23 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
-        this.autoPathEntry = NetworkTableInstance.getDefault()
-                .getTable("Settings")
-                .getStringTopic("Autonomous Path")
-                .getEntry("");
-        this.autoAssumeAtStartEntry = NetworkTableInstance.getDefault()
-                .getTable("Settings")
-                .getBooleanTopic("Auto Assume At Start")
-                .getEntry(true);
+        tuneSetpointSubscriber = MoShuffleboard.getInstance()
+                .settingsTab
+                .add("Tune Arm Setpoints?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+        tuneShooterAngleSubscriber = MoShuffleboard.getInstance()
+                .settingsTab
+                .add("Tune shooter angle?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
 
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
         intakeTrigger = new Trigger(() -> getInput().getIntake());
         reZeroClimbTrigger = new Trigger(() -> getInput().getReZeroClimbers());
+        rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -156,35 +153,33 @@ public class RobotContainer {
         // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
         // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
         // right before we're about to execute the command.
-        shootSpeakerTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootSpeakerCommand(arm, drive, shooter, positioning, this::getInput),
-                Set.of(arm, drive, shooter)));
+        shootSpeakerTrigger
+                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
+                .whileTrue(Commands.either(
+                        CompositeCommands.tuneShootSpeakerCommand(drive, this::getInput, arm, shooter, positioning),
+                        Commands.defer(
+                                () -> CompositeCommands.shootSpeakerCommand(
+                                        arm, drive, shooter, positioning, this::getInput),
+                                Set.of(arm, drive, shooter)),
+                        () -> tuneShooterAngleSubscriber.getBoolean(false)));
 
-        shootAmpTrigger.whileTrue(Commands.defer(
-                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning), Set.of(arm, drive, shooter)));
+        shootAmpTrigger
+                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
+                .whileTrue(Commands.defer(
+                        () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
+                        Set.of(arm, drive, shooter)));
 
         intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
+        rezeroIntakeTrigger.onTrue(rezeroIntake);
 
         reZeroClimbTrigger.onTrue(new ZeroClimbersCommand(climb));
 
-        SysIdRoutine routine = arm.getShoulderRoutine(null);
-        runSysidTrigger.whileTrue(Commands.defer(
-                () -> {
-                    switch (sysidMode.getSelected()) {
-                        case QUASISTATIC_FORWARD:
-                            return routine.quasistatic(SysIdRoutine.Direction.kForward);
-                        case QUASISTATIC_REVERSE:
-                            return routine.quasistatic(SysIdRoutine.Direction.kReverse);
-                        case DYNAMIC_FORWARD:
-                            return routine.dynamic(SysIdRoutine.Direction.kForward);
-                        case DYNAMIC_REVERSE:
-                            return routine.dynamic(SysIdRoutine.Direction.kReverse);
-                        case NONE:
-                        default:
-                            return Commands.none();
-                    }
-                },
-                Set.of(arm)));
+        runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
+
+        (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
+                .and(() -> intake.isDeployZeroed.getBoolean(false))
+                .onTrue(rezeroIntake);
 
         RobotModeTriggers.teleop()
                 .and(() -> shouldPlayEnableTone.getBoolean(false))
@@ -196,7 +191,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return PathPlannerCommands.getFollowPathCommand(
-                drive, positioning, autoPathEntry.get(), autoAssumeAtStartEntry.get());
+        return autoBuilder.getAutonomousCommand(drive);
     }
 }

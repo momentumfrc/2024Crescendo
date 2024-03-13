@@ -23,6 +23,8 @@ public class MoEncoder<Dim extends Unit<Dim>> {
 
         public double getVelocity();
 
+        public void setInverted(boolean inverted);
+
         /**
          * Set the factor used internally by the encoder to scale encoder ticks to the desired output units.
          * <p>
@@ -110,6 +112,10 @@ public class MoEncoder<Dim extends Unit<Dim>> {
 
     public double getVelocityInEncoderUnits() {
         return getVelocity().in(internalEncoderVelocityUnits);
+    }
+
+    public void setInverted(boolean inverted) {
+        encoder.setInverted(inverted);
     }
 
     public static <Dim extends Unit<Dim>> MoEncoder<Dim> forSparkRelative(

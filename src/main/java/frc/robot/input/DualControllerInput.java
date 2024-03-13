@@ -82,15 +82,11 @@ public class DualControllerInput implements MoInput {
 
     @Override
     public boolean getShouldShootSpeaker() {
-        // Since shooting involves rotating the chassis and disables driving, we need the consent of both the arm
-        // controller and the drive controller.
-        return driveController.getXButton() && armController.getXButton() && armController.getPOV() == 0;
+        return armController.getXButton() && armController.getPOV() == 0;
     }
 
     @Override
     public boolean getShouldShootAmp() {
-        // There is no auto-align implemented for the amp, so it does not disable driving and so it need not
-        // require the consent of the drive controller.
         return armController.getXButton() && armController.getPOV() == 180;
     }
 

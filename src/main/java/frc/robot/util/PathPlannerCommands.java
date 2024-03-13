@@ -20,7 +20,7 @@ import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 
 public class PathPlannerCommands {
-    private static final ReplanningConfig DEFAULT_REPLANNING_CONFIG = new ReplanningConfig(true, false);
+    private static final ReplanningConfig DEFAULT_REPLANNING_CONFIG = new ReplanningConfig(false, false);
 
     public static Command getFollowPathCommand(
             DriveSubsystem drive,
@@ -38,7 +38,7 @@ public class PathPlannerCommands {
                     replanningConfig.dynamicReplanningErrorSpikeThreshold);
         }
         // Manually flip the path ourselves, since we need the starting pose
-        if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
             path = path.flipPath();
         }
 

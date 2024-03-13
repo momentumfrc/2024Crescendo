@@ -1,28 +1,31 @@
 package frc.robot.command.shooter;
 
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
 
 public class ShootShooterCommand extends Command {
     private final ShooterSubsystem shooter;
-    private final Measure<Distance> rollerFeed;
-    private final Measure<Velocity<Angle>> flywheelSpeed;
+    private final Measure<Time> rollerFeedTime;
+    private final Measure<Velocity<Distance>> flywheelSpeed;
 
     private MutableMeasure<Distance> startRollerPos = MutableMeasure.zero(Units.Centimeters);
-    private MutableMeasure<Distance> targetRollerPos = MutableMeasure.zero(Units.Centimeters);
+
     private boolean upToSpeed = false;
 
+    private Timer timer = new Timer();
+
     public ShootShooterCommand(
-            ShooterSubsystem shooter, Measure<Distance> rollerFeed, Measure<Velocity<Angle>> flywheelSpeed) {
+            ShooterSubsystem shooter, Measure<Time> rollerFeedTime, Measure<Velocity<Distance>> flywheelSpeed) {
         this.shooter = shooter;
-        this.rollerFeed = rollerFeed;
+        this.rollerFeedTime = rollerFeedTime;
         this.flywheelSpeed = flywheelSpeed;
 
         addRequirements(shooter);
@@ -31,30 +34,30 @@ public class ShootShooterCommand extends Command {
     @Override
     public void initialize() {
         upToSpeed = false;
-        var pos = shooter.rollerEncoder.getPosition();
-        startRollerPos.mut_replace(pos);
-        targetRollerPos.mut_replace(pos).mut_plus(rollerFeed);
+        startRollerPos.mut_replace(shooter.getRollerPosition());
+
+        timer.restart();
     }
 
     @Override
     public void execute() {
         shooter.setFlywheelSpeed(flywheelSpeed);
 
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        if (shooter.flywheelEncoder.getVelocity().isNear(flywheelSpeed, thresh)) {
+        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+        if (shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh)) {
             upToSpeed = true;
         }
 
         if (upToSpeed) {
-            shooter.setRollerPos(targetRollerPos);
+            shooter.directDriveRoller(1);
         } else {
-            shooter.setRollerPos(startRollerPos);
+            shooter.setRollerPosition(startRollerPos);
+            timer.restart();
         }
     }
 
     @Override
     public boolean isFinished() {
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        return shooter.rollerEncoder.getPosition().isNear(targetRollerPos, thresh);
+        return upToSpeed && timer.hasElapsed(rollerFeedTime.in(Units.Seconds));
     }
 }

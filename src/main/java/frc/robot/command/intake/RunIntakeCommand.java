@@ -59,7 +59,7 @@ public class RunIntakeCommand extends Command {
     }
 
     private void executeSmartMotion() {
-        double tolerance = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        double tolerance = MoPrefs.intakeSetpointVarianceThreshold.get().in(Units.Value);
         var setpointManager = IntakeSetpointManager.getInstance();
         var intakeSetpoint = setpointManager.getSetpoint(IntakeSetpoint.INTAKE);
         var handoffSetpoint = setpointManager.getSetpoint(IntakeSetpoint.HANDOFF);

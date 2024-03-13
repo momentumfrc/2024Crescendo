@@ -21,15 +21,12 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs.UnitPref;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.MoTalonFxPID;
 import frc.robot.util.MoUnits;
 import frc.robot.util.TunerUtils;
-import java.util.Map;
 
 public class SwerveModule {
     // The Thrifty absolute magnetic encoder outputs a voltage between 0-5v throughout 1 rotation, but it's scaled
@@ -103,13 +100,6 @@ public class SwerveModule {
         encoderRotScale.subscribe(
                 scale -> this.setupRelativeEncoder(absoluteEncoder.getPosition(), encoderZero.get(), scale));
         setupRelativeEncoder();
-
-        var layout = Shuffleboard.getTab("match")
-                .getLayout(key, BuiltInLayouts.kList)
-                .withSize(2, 1)
-                .withProperties(Map.of("Label position", "LEFT"));
-        layout.addDouble("Relative", () -> relativeEncoder.getPosition().in(Units.Rotations));
-        layout.addDouble("Absolute", () -> absoluteEncoder.getPosition().in(Units.Rotations));
     }
 
     private boolean areMotorsPowered() {
@@ -157,6 +147,10 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(distEncoder.getVelocity(), new Rotation2d(relativeEncoder.getPosition()));
+    }
+
+    public String getKey() {
+        return key;
     }
 
     @Override
