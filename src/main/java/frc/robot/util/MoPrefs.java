@@ -105,10 +105,10 @@ public class MoPrefs {
     .new UnitPref<Dimensionless>("Intake Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
 
     public static final UnitPref<Velocity<Distance>> flywheelSpeakerSetpoint =
-            centimetersPerSecPref("Speaker Flywheel Setpoint", MoUnits.CentimetersPerSec.of(10));
+            metersPerSecPref("Speaker Flywheel Setpoint", Units.MetersPerSecond.of(10));
 
     public static final UnitPref<Velocity<Distance>> flywheelAmpSetpoint =
-            centimetersPerSecPref("Amp Flywheel Setpoint", MoUnits.CentimetersPerSec.of(2));
+            metersPerSecPref("Amp Flywheel Setpoint", Units.MetersPerSecond.of(2));
 
     public static final Pref<Double> flywheelSpindownRate = unitlessDoublePref("Flywheel spindown rate", 1);
 

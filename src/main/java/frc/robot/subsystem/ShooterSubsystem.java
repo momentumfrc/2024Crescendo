@@ -67,8 +67,8 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLower.setInverted(false);
 
         rollerEncoder = MoEncoder.forSparkRelative(roller.getEncoder(), Units.Centimeter);
-        flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Centimeters);
-        flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Centimeters);
+        flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Meter);
+        flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Meter);
 
         MoPrefs.shooterRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
         MoPrefs.shooterFlywheelScale.subscribe(
@@ -90,12 +90,19 @@ public class ShooterSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().shooterTab.addDouble("Roller Vel. (cm_s)", () -> rollerEncoder
                 .getVelocity()
                 .in(MoUnits.CentimetersPerSec));
-        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Upper Vel. (cm_s)", () -> flywheelUpperEncoder
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Upper Vel. (m_s)", () -> flywheelUpperEncoder
                 .getVelocity()
-                .in(MoUnits.CentimetersPerSec));
-        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Lower Vel. (cm_s)", () -> flywheelLowerEncoder
+                .in(Units.MetersPerSecond));
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Lower Vel. (m_s)", () -> flywheelLowerEncoder
                 .getVelocity()
-                .in(MoUnits.CentimetersPerSec));
+                .in(Units.MetersPerSecond));
+
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Upper Pos. (m)", () -> flywheelUpperEncoder
+                .getPosition()
+                .in(Units.Meters));
+        MoShuffleboard.getInstance().shooterTab.addDouble("Flywheel Lower Pos. (m)", () -> flywheelLowerEncoder
+                .getPosition()
+                .in(Units.Meters));
 
         rollerVelPid = new MoSparkMaxPID<>(Type.VELOCITY, roller, 1, rollerEncoder);
         rollerPosPid = new MoSparkMaxPID<>(Type.SMARTMOTION, roller, 0, rollerEncoder);
