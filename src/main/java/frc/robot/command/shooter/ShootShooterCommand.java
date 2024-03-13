@@ -43,7 +43,7 @@ public class ShootShooterCommand extends Command {
     public void execute() {
         shooter.setFlywheelSpeed(flywheelSpeed);
 
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
         if (shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh)) {
             upToSpeed = true;
         }

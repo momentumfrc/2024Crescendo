@@ -13,7 +13,6 @@ import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.ArmSubsystem.ArmPosition;
 import frc.robot.subsystem.PositioningSubsystem;
-import frc.robot.util.MoPrefs;
 import frc.robot.util.TargetAngleFinder;
 
 public class AimSpeakerCommand extends Command {
@@ -54,7 +53,6 @@ public class AimSpeakerCommand extends Command {
             return false;
         }
 
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
-        return arm.atPosition(adjustedPosition, thresh);
+        return arm.atPosition(adjustedPosition);
     }
 }

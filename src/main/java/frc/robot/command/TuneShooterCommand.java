@@ -45,7 +45,7 @@ public class TuneShooterCommand extends Command {
 
     @Override
     public void execute() {
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
 
         ArmPosition position = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.SPEAKER);
         position = new ArmPosition(
@@ -55,7 +55,7 @@ public class TuneShooterCommand extends Command {
 
         arm.adjustSmartPosition(position);
 
-        if (!arm.atPosition(position, thresh)) {
+        if (!arm.atPosition(position)) {
             shooter.setFlywheelSpeed(MoUnits.CentimetersPerSec.zero());
             shooter.setRollerVelocity(MoUnits.CentimetersPerSec.zero());
             return;

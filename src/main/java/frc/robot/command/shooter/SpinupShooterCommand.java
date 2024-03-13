@@ -35,7 +35,8 @@ public class SpinupShooterCommand extends Command {
     }
 
     public boolean onTarget() {
-        double thresh = MoPrefs.pidSetpointVarianceThreshold.get().in(Units.Value);
+        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+
         return shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh);
     }
 }
