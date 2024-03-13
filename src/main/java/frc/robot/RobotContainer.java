@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.command.CompositeCommands;
+import frc.robot.command.HandoffCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.command.arm.TeleopArmCommand;
@@ -27,8 +28,7 @@ import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.climb.ClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
-import frc.robot.command.intake.IdleIntakeCommand;
-import frc.robot.command.intake.RunIntakeCommand;
+import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
@@ -62,8 +62,9 @@ public class RobotContainer {
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private SequentialCommandGroup climbCommand =
             new SequentialCommandGroup(new ZeroClimbersCommand(climb), new ClimbCommand(climb, this::getInput));
+    private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
-    private IdleIntakeCommand idleIntakeCommand = new IdleIntakeCommand(intake, this::getInput);
+    private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
@@ -80,9 +81,9 @@ public class RobotContainer {
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
-    private final Trigger intakeTrigger;
     private final Trigger rezeroIntakeTrigger;
     private final Trigger reZeroClimbTrigger;
+    private final Trigger handoffTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -132,14 +133,14 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
-        intakeTrigger = new Trigger(() -> getInput().getIntake());
         reZeroClimbTrigger = new Trigger(() -> getInput().getReZeroClimbers());
         rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
+        handoffTrigger = new Trigger(() -> getInput().getHandoff());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
+        intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
-        intake.setDefaultCommand(idleIntakeCommand);
         climb.setDefaultCommand(climbCommand);
 
         configureBindings();
@@ -169,8 +170,9 @@ public class RobotContainer {
                         () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
                         Set.of(arm, drive, shooter)));
 
-        intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
         rezeroIntakeTrigger.onTrue(rezeroIntake);
+
+        handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
 
         reZeroClimbTrigger.onTrue(new ZeroClimbersCommand(climb));
 

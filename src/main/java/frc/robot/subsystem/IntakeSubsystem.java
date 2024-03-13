@@ -40,9 +40,6 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MoEncoder<Distance> rollerEncoder;
     private final MoEncoder<Angle> deployEncoder;
 
-    private final MoSparkMaxPID<Distance> rollerVelocityPID;
-    private final MoSparkMaxPID<Distance> rollerSmartmotionPID;
-
     private final MoSparkMaxPID<Angle> deployVelocityPID;
     private final MoSparkMaxPID<Angle> deploySmartmotionPID;
 
@@ -84,13 +81,9 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         deployMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        rollerVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, rollerMtr, 0, rollerEncoder);
-        rollerSmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, rollerMtr, 1, rollerEncoder);
         deployVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder);
         deploySmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder);
 
-        TunerUtils.forMoSparkMax(rollerVelocityPID, "Intake Roller Vel.");
-        TunerUtils.forMoSparkMax(rollerSmartmotionPID, "Intake Roller Pos.");
         TunerUtils.forMoSparkMax(deployVelocityPID, "Intake Deploy Vel.");
         TunerUtils.forMoSparkMax(deploySmartmotionPID, "Intake Deploy Pos.");
 
@@ -164,16 +157,8 @@ public class IntakeSubsystem extends SubsystemBase {
         deploySmartmotionPID.setPositionReference(position);
     }
 
-    public void intakeFallbackDirectPower(double power) {
+    public void intakeDirectPower(double power) {
         rollerMtr.set(power);
-    }
-
-    public void intakeVelocity(Measure<Velocity<Distance>> velocity) {
-        rollerVelocityPID.setVelocityReference(velocity);
-    }
-
-    public void intakeSmartMotion(Measure<Distance> position) {
-        rollerSmartmotionPID.setPositionReference(position);
     }
 
     public void zeroDeployEncoder(Measure<Angle> pos) {
