@@ -118,4 +118,19 @@ public class DualControllerInput implements MoInput {
     public boolean getHandoff() {
         return armController.getAButton();
     }
+
+    @Override
+    public double getLeftClimbRequest() {
+        return (armController.getLeftTriggerAxis() - 0.5) * 2;
+    }
+
+    @Override
+    public double getRightClimbRequest() {
+        return (armController.getRightTriggerAxis() - 0.5) * 2;
+    }
+
+    @Override
+    public boolean getReZeroClimbers() {
+        return driveController.getYButton();
+    }
 }

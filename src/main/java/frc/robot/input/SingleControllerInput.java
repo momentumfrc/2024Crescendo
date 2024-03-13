@@ -120,4 +120,20 @@ public class SingleControllerInput implements MoInput {
     public boolean getHandoff() {
         return controller.getAButton();
     }
+
+    @Override
+    public double getLeftClimbRequest() {
+        return (controller.getRightTriggerAxis() - 0.5) * 2;
+    }
+
+    @Override
+    public double getRightClimbRequest() {
+        return (controller.getRightTriggerAxis() - 0.5) * 2;
+    }
+
+    @Override
+    public boolean getReZeroClimbers() {
+        // Re-zeroing is not supported in single-controller mode
+        return false;
+    }
 }

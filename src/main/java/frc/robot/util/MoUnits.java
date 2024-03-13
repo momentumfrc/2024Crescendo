@@ -6,6 +6,7 @@ import edu.wpi.first.units.Per;
 import edu.wpi.first.units.UnaryFunction;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 
 public class MoUnits {
     private MoUnits() {
@@ -28,4 +29,5 @@ public class MoUnits {
     public static Per<EncoderAngle, Distance> EncoderTicksPerCentimeter = EncoderTicks.per(Units.Centimeters);
     public static Per<EncoderAngle, Angle> EncoderTicksPerRotation = EncoderTicks.per(Units.Rotations);
     public static Per<EncoderAngle, Angle> EncoderTicksPerRadian = EncoderTicks.per(Units.Radians);
+    public static Velocity<Angle> RotationsPerMinute = Units.Rotations.per(Units.Minutes);
 }

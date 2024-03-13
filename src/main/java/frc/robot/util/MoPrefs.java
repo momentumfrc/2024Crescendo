@@ -120,7 +120,17 @@ public class MoPrefs {
     public static final UnitPref<Time> intakeCurrentSenseTime =
             secondsPref("Intake Current Sense Time", Units.Seconds.of(0.1));
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
-            getInstance().new UnitPref<>("Intake Current Sense Threshold", Units.Amps, Units.Amps.of(10));
+            ampsPref("Intake Current Sense Threshold", Units.Amps.of(10));
+
+    public static final Pref<Boolean> climberPid = booleanPref("Climber PID", true);
+    public static final UnitPref<Time> climberLimitTime = secondsPref("Climber Limit Time", Units.Seconds.of(0.25));
+    public static final UnitPref<Current> climberCurrentThreshold =
+            ampsPref("Climber Current Threshold", Units.Amps.of(80));
+    public static final UnitPref<Velocity<Angle>> climberMotorSpeed =
+            rotationsPerSecPref("Climber Motor Speed", Units.RotationsPerSecond.of(75));
+    public static final Pref<Double> climberZeroThreshold =
+            unitlessDoublePref("Climber Zero Threshold (Enc. Ticks)", 50);
+    public static final Pref<Double> climberMaximum = unitlessDoublePref("Climber Maximum (Enc. Ticks)", 400);
 
     public static final UnitPref<Velocity<Distance>> intakeRollerSpeed = getInstance()
     .new UnitPref<Velocity<Distance>>(
@@ -243,6 +253,11 @@ public class MoPrefs {
         typePublisher.set("RobotPreferences");
     }
 
+    private static Pref<Boolean> booleanPref(String key, boolean defaultValue) {
+        return getInstance()
+        .new Pref<>(key, defaultValue, NetworkTableValue::getBoolean, NetworkTableEntry::setBoolean);
+    }
+
     private static Pref<Double> unitlessDoublePref(String key, double defaultValue) {
         return getInstance().new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
     }
@@ -288,5 +303,9 @@ public class MoPrefs {
 
     private static UnitPref<Time> secondsPref(String key, Measure<Time> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.Seconds, defaultValue);
+    }
+
+    private static UnitPref<Current> ampsPref(String key, Measure<Current> defaultValue) {
+        return getInstance().new UnitPref<>(key, Units.Amps, defaultValue);
     }
 }

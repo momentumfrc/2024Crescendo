@@ -40,4 +40,10 @@ public interface MoInput {
     public boolean getSaveIntakeSetpoint();
 
     public boolean getHandoff();
+
+    public double getLeftClimbRequest();
+
+    public double getRightClimbRequest();
+
+    public boolean getReZeroClimbers();
 }

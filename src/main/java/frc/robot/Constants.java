@@ -43,6 +43,10 @@ public class Constants {
     public static final CANAddress SHOOTER_FLYWHEEL_MTR_RIGHT = new CANAddress(16);
 
     // TODO: Placeholder id - fill with real values
+    public static final CANAddress CLIMBER_LEFT = new CANAddress(0);
+    public static final CANAddress CLIMBER_RIGHT = new CANAddress(0);
+
+    // TODO: Placeholder id - fill with real values
     public static final CANAddress INTAKE_ROLLER = new CANAddress(0);
     public static final CANAddress INTAKE_DEPLOY = new CANAddress(0);
 
