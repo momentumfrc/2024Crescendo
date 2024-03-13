@@ -62,8 +62,9 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelUpper.setIdleMode(IdleMode.kCoast);
         flywheelLower.setIdleMode(IdleMode.kCoast);
 
+        roller.setInverted(true);
         flywheelUpper.setInverted(false);
-        flywheelLower.setInverted(true);
+        flywheelLower.setInverted(false);
 
         rollerEncoder = MoEncoder.forSparkRelative(roller.getEncoder(), Units.Centimeter);
         flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Centimeters);
