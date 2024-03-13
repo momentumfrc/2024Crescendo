@@ -24,8 +24,7 @@ import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
-import frc.robot.command.intake.IdleIntakeCommand;
-import frc.robot.command.intake.RunIntakeCommand;
+import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
@@ -55,8 +54,8 @@ public class RobotContainer {
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
+    private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
-    private IdleIntakeCommand idleIntakeCommand = new IdleIntakeCommand(intake, this::getInput);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
@@ -73,7 +72,6 @@ public class RobotContainer {
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
-    private final Trigger intakeTrigger;
     private final Trigger rezeroIntakeTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
@@ -124,13 +122,12 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
-        intakeTrigger = new Trigger(() -> getInput().getIntake());
         rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
+        intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
-        intake.setDefaultCommand(idleIntakeCommand);
 
         configureBindings();
     }
@@ -158,8 +155,6 @@ public class RobotContainer {
                 .whileTrue(Commands.defer(
                         () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
                         Set.of(arm, drive, shooter)));
-
-        intakeTrigger.whileTrue(new RunIntakeCommand(intake, this::getInput));
 
         rezeroIntakeTrigger.onTrue(rezeroIntake);
 
