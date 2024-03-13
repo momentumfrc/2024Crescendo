@@ -161,8 +161,7 @@ public class MoPrefs {
     public static final UnitPref<Dimensionless> handoffShooterRollerPower =
             getInstance().new UnitPref<>("Handoff Shooter Roller Power", Units.Percent, Units.Percent.of(40));
     public static final UnitPref<Time> handoffTimeCutoff = secondsPref("Handoff Time Cutoff", Units.Seconds.of(0.25));
-    public static final UnitPref<Current> handoffCurrentCutoff =
-            amperesPref("Handoff Current Cutoff", Units.Amps.of(10));
+    public static final UnitPref<Current> handoffCurrentCutoff = ampsPref("Handoff Current Cutoff", Units.Amps.of(10));
 
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
