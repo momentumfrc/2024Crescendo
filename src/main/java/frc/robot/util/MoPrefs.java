@@ -147,13 +147,11 @@ public class MoPrefs {
             unitlessDoublePref("Climber Zero Threshold (Enc. Ticks)", 50);
     public static final Pref<Double> climberMaximum = unitlessDoublePref("Climber Maximum (Enc. Ticks)", 400);
 
-
     public static final UnitPref<Velocity<Distance>> intakeRollerSpeed =
             centimetersPerSecPref("Intake Roller Speed", MoUnits.CentimetersPerSec.of(1));
 
     public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
-    public static final UnitPref<Current> intakeZeroCurrentCutoff =
-            ampsPref("Intake Zero Current", Units.Amps.of(10));
+    public static final UnitPref<Current> intakeZeroCurrentCutoff = ampsPref("Intake Zero Current", Units.Amps.of(10));
     public static final UnitPref<Time> intakeZeroTimeCutoff = secondsPref("Intake Zero Time", Units.Seconds.of(0.1));
     public static final UnitPref<Angle> intakeZeroPosition =
             rotationsPref("Intake Zero Pos.", Units.Rotations.of(-0.05));
