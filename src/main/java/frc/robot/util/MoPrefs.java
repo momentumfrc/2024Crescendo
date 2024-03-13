@@ -137,8 +137,8 @@ public class MoPrefs {
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
             amperesPref("Intake Current Sense Threshold", Units.Amps.of(10));
 
-    public static final UnitPref<Velocity<Distance>> intakeRollerSpeed =
-            centimetersPerSecPref("Intake Roller Speed", MoUnits.CentimetersPerSec.of(1));
+    public static final UnitPref<Dimensionless> intakeRollerPower =
+            getInstance().new UnitPref<Dimensionless>("Intake Roller Power", Units.Percent, Units.Percent.of(30));
 
     public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
     public static final UnitPref<Current> intakeZeroCurrentCutoff =

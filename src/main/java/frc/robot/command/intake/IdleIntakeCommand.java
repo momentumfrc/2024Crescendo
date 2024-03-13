@@ -42,20 +42,6 @@ public class IdleIntakeCommand extends Command {
         rollerPosition.mut_replace(intake.getRollerPosition());
     }
 
-    private void holdRollerPosition() {
-        var controlMode = intake.controlMode.getSelected();
-        switch (controlMode) {
-            case SMARTMOTION:
-                intake.intakeSmartMotion(rollerPosition);
-                break;
-            case DIRECT_VELOCITY:
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
-                break;
-            case FALLBACK_DIRECT_POWER:
-                intake.intakeFallbackDirectPower(0);
-        }
-    }
-
     @Override
     public void execute() {
         var input = inputSupplier.get();
@@ -81,6 +67,6 @@ public class IdleIntakeCommand extends Command {
             overrideUtil.reset();
         }
 
-        holdRollerPosition();
+        intake.intakeDirectPower(0);
     }
 }

@@ -51,11 +51,6 @@ public class RunIntakeCommand extends Command {
         currentSenseTimer.reset();
         positionOverride.reset();
         state = State.DEPLOY;
-
-        if (intake.getIsHoldingNote()) {
-            state = State.RETRACT;
-            holdNotePosition.mut_replace(intake.getRollerPosition());
-        }
     }
 
     private void executeSmartMotion() {
@@ -92,15 +87,15 @@ public class RunIntakeCommand extends Command {
         switch (state) {
             case DEPLOY:
                 positionOverride.runSmartMotionWithAdjust(intakeSetpoint, deployAdjust);
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
+                intake.intakeDirectPower(0);
                 break;
             case INTAKE:
                 positionOverride.runSmartMotionWithAdjust(intakeSetpoint, deployAdjust);
-                intake.intakeVelocity(MoPrefs.intakeRollerSpeed.get());
+                intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
                 break;
             case RETRACT:
                 positionOverride.runSmartMotionWithAdjust(handoffSetpoint, deployAdjust);
-                intake.intakeSmartMotion(holdNotePosition);
+                intake.intakeDirectPower(0);
                 break;
         }
     }
@@ -131,15 +126,15 @@ public class RunIntakeCommand extends Command {
         switch (state) {
             case DEPLOY:
                 positionOverride.runVelocity(deployAdjust);
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
+                intake.intakeDirectPower(0);
                 break;
             case INTAKE:
                 positionOverride.runVelocity(deployAdjust);
-                intake.intakeVelocity(MoPrefs.intakeRollerSpeed.get());
+                intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
                 break;
             case RETRACT:
                 positionOverride.runVelocity(deployAdjust);
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
+                intake.intakeDirectPower(0);
                 break;
         }
     }
@@ -170,15 +165,15 @@ public class RunIntakeCommand extends Command {
         switch (state) {
             case DEPLOY:
                 intake.deployFallbackDirectPower(deployAdjust);
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
+                intake.intakeDirectPower(0);
                 break;
             case INTAKE:
                 intake.deployFallbackDirectPower(deployAdjust);
-                intake.intakeVelocity(MoPrefs.intakeRollerSpeed.get());
+                intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
                 break;
             case RETRACT:
                 intake.deployFallbackDirectPower(deployAdjust);
-                intake.intakeFallbackDirectPower(0);
+                intake.intakeDirectPower(0);
                 break;
         }
     }

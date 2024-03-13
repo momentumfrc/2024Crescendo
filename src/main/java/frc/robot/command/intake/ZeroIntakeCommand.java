@@ -43,18 +43,7 @@ public class ZeroIntakeCommand extends Command {
             currentTimer.restart();
         }
 
-        switch (intake.controlMode.getSelected()) {
-            case SMARTMOTION:
-                intake.intakeSmartMotion(initialRollerPos);
-                break;
-            case DIRECT_VELOCITY:
-                intake.intakeVelocity(Units.MetersPerSecond.zero());
-                break;
-            case FALLBACK_DIRECT_POWER:
-                intake.intakeFallbackDirectPower(0);
-                break;
-        }
-
+        intake.intakeDirectPower(0);
         intake.deployFallbackDirectPower(MoPrefs.intakeZeroPwr.get());
     }
 
