@@ -49,7 +49,7 @@ public class ShootShooterCommand extends Command {
         }
 
         if (upToSpeed) {
-            shooter.setRollerVelocity(flywheelSpeed);
+            shooter.directDriveRoller(1);
         } else {
             shooter.setRollerPosition(startRollerPos);
             timer.restart();
