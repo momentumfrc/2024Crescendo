@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Dimensionless;
@@ -21,7 +22,11 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -181,6 +186,10 @@ public class MoPrefs {
         public void subscribe(Consumer<Measure<U>> consumer, boolean notifyImmediately) {
             basePref.subscribe((value) -> consumer.accept(currValue.mut_replace(value, storeUnits)), notifyImmediately);
         }
+
+        public String getKey() {
+            return basePref.getKey();
+        }
     }
 
     public final class Pref<T> {
@@ -238,6 +247,10 @@ public class MoPrefs {
                 consumer.accept(this.get());
             }
         }
+
+        public String getKey() {
+            return key;
+        }
     }
 
     private static MoPrefs instance;
@@ -249,6 +262,46 @@ public class MoPrefs {
             instance = new MoPrefs();
         }
         return instance;
+    }
+
+    public static void cleanUpPrefs() {
+        MoPrefs instance = getInstance();
+
+        HashSet<String> pref_keys = new HashSet<>();
+
+        // Shouldn't remove the special field .type
+        pref_keys.add(".type");
+
+        for (Field f : MoPrefs.class.getFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                Object fo;
+
+                try {
+                    fo = f.get(instance);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    continue;
+                }
+
+                if (fo instanceof Pref) {
+                    pref_keys.add(((Pref) fo).getKey());
+                } else if (fo instanceof UnitPref) {
+                    pref_keys.add(((UnitPref) fo).getKey());
+                }
+            }
+        }
+
+        Set<String> table_keys = instance.table.getKeys();
+
+        System.out.println("****** Clean up MoPrefs ******");
+        for (String key : table_keys) {
+            if (!pref_keys.contains(key)) {
+                System.out.format("Remove unused pref \"%s\"\n", key);
+
+                Topic topic = instance.table.getTopic(key);
+                topic.setPersistent(false);
+                topic.setRetained(false);
+            }
+        }
     }
 
     private MoPrefs() {
