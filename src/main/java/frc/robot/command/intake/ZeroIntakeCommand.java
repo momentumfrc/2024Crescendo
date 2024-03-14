@@ -23,6 +23,7 @@ public class ZeroIntakeCommand extends Command {
         currentTimer.stop();
         currentTimer.reset();
 
+        intake.enableDeploySoftLimitReverse(false);
     }
 
     @Override
@@ -45,5 +46,10 @@ public class ZeroIntakeCommand extends Command {
     @Override
     public boolean isFinished() {
         return intake.isDeployZeroed.getBoolean(false);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        intake.enableDeploySoftLimitReverse(true);
     }
 }

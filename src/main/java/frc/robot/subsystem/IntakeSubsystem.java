@@ -121,6 +121,10 @@ public class IntakeSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().intakeTab.add(this);
     }
 
+    public void enableDeploySoftLimitReverse(boolean enable) {
+        deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, enable);
+    }
+
     public boolean getIsHoldingNote() {
         return isHoldingNote.getBoolean(false);
     }
