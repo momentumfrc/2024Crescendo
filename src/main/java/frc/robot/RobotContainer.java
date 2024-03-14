@@ -171,7 +171,7 @@ public class RobotContainer {
                 .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
 
         (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
-                .and(() -> intake.isDeployZeroed.getBoolean(false))
+                .and(() -> !intake.isDeployZeroed.getBoolean(false))
                 .onTrue(rezeroIntake);
 
         RobotModeTriggers.teleop()
