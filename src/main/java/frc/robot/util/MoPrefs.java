@@ -158,6 +158,8 @@ public class MoPrefs {
     public static final UnitPref<Dimensionless> intakeAdjustPower =
             getInstance().new UnitPref<Dimensionless>("Intake Adjust power", Units.Percent, Units.Percent.of(15));
 
+    public static final UnitPref<Angle> intakeHorizontal = rotationsPref("Intake Horizontal", Units.Rotations.of(0));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

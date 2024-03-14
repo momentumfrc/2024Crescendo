@@ -20,9 +20,11 @@ import frc.robot.Constants;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
+import frc.robot.util.MoSparkMaxArmPID;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class IntakeSubsystem extends SubsystemBase {
     private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(30);
@@ -40,8 +42,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MoEncoder<Distance> rollerEncoder;
     private final MoEncoder<Angle> deployEncoder;
 
-    private final MoSparkMaxPID<Angle> deployVelocityPID;
-    private final MoSparkMaxPID<Angle> deploySmartmotionPID;
+    private final MoSparkMaxArmPID deployVelocityPID;
+    private final MoSparkMaxArmPID deploySmartmotionPID;
 
     public final GenericEntry isDeployZeroed;
     private final GenericEntry isHoldingNote;
@@ -81,11 +83,19 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         deployMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        deployVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder);
-        deploySmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder);
+        final MutableMeasure<Angle> mut_angle = MutableMeasure.zero(Units.Rotations);
+        Supplier<Measure<Angle>> intakeHorizontalAngle = () -> {
+            mut_angle.mut_replace(deployEncoder.getPosition());
+            return mut_angle.mut_minus(MoPrefs.intakeHorizontal.get());
+        };
 
-        TunerUtils.forMoSparkMax(deployVelocityPID, "Intake Deploy Vel.");
-        TunerUtils.forMoSparkMax(deploySmartmotionPID, "Intake Deploy Pos.");
+        deployVelocityPID =
+                new MoSparkMaxArmPID(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder, intakeHorizontalAngle);
+        deploySmartmotionPID = new MoSparkMaxArmPID(
+                MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder, intakeHorizontalAngle);
+
+        TunerUtils.forSparkMaxArm(deployVelocityPID, "Intake Deploy Vel.");
+        TunerUtils.forSparkMaxArm(deploySmartmotionPID, "Intake Deploy Pos.");
 
         var deployGroup = MoShuffleboard.getInstance()
                 .intakeTab
