@@ -68,7 +68,7 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.setSmartCurrentLimit((int) DEPLOY_CURRENT_LIMIT.in(Units.Amps));
 
         rollerMtr.setIdleMode(IdleMode.kCoast);
-        deployMtr.setIdleMode(IdleMode.kCoast);
+        deployMtr.setIdleMode(IdleMode.kBrake);
 
         rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Centimeters);
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
