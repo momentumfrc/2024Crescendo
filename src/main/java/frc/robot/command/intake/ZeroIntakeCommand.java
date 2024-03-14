@@ -1,9 +1,7 @@
 package frc.robot.command.intake;
 
 import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,8 +11,6 @@ import frc.robot.util.MoPrefs;
 public class ZeroIntakeCommand extends Command {
     private IntakeSubsystem intake;
     private Timer currentTimer = new Timer();
-
-    private MutableMeasure<Distance> initialRollerPos = MutableMeasure.zero(Units.Centimeter);
 
     public ZeroIntakeCommand(IntakeSubsystem intake) {
         this.intake = intake;
@@ -27,7 +23,6 @@ public class ZeroIntakeCommand extends Command {
         currentTimer.stop();
         currentTimer.reset();
 
-        initialRollerPos.mut_replace(intake.getRollerPosition());
     }
 
     @Override
