@@ -1,5 +1,6 @@
 package frc.robot.input;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
@@ -121,7 +122,7 @@ public class JoystickDualControllerInput implements MoInput {
             value = -1;
         }
 
-        value *= joystick.getThrottle();
+        value *= MoPrefs.intakeAdjustPower.get().in(Units.Value);
 
         return value;
     }
