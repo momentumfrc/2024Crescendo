@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.GenericSubscriber;
@@ -143,6 +144,8 @@ public class RobotContainer {
         shooter.setDefaultCommand(idleShooterCommand);
         climb.setDefaultCommand(climbCommand);
 
+        CameraServer.startAutomaticCapture();
+
         configureBindings();
     }
 
@@ -177,10 +180,10 @@ public class RobotContainer {
         reZeroClimbTrigger.onTrue(new ZeroClimbersCommand(climb));
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
-                .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
 
         (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
-                .and(() -> intake.isDeployZeroed.getBoolean(false))
+                .and(() -> !intake.isDeployZeroed.getBoolean(false))
                 .onTrue(rezeroIntake);
 
         RobotModeTriggers.teleop()

@@ -163,6 +163,11 @@ public class MoPrefs {
     public static final UnitPref<Time> handoffTimeCutoff = secondsPref("Handoff Time Cutoff", Units.Seconds.of(0.25));
     public static final UnitPref<Current> handoffCurrentCutoff = ampsPref("Handoff Current Cutoff", Units.Amps.of(10));
 
+    public static final UnitPref<Dimensionless> intakeAdjustPower =
+            getInstance().new UnitPref<Dimensionless>("Intake Adjust power", Units.Percent, Units.Percent.of(15));
+
+    public static final UnitPref<Angle> intakeHorizontal = rotationsPref("Intake Horizontal", Units.Rotations.of(0));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

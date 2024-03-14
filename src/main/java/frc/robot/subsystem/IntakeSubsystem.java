@@ -12,17 +12,21 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
+import frc.robot.util.MoSparkMaxArmPID;
 import frc.robot.util.MoSparkMaxPID;
 import frc.robot.util.TunerUtils;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class IntakeSubsystem extends SubsystemBase {
     private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(30);
@@ -40,8 +44,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MoEncoder<Distance> rollerEncoder;
     private final MoEncoder<Angle> deployEncoder;
 
-    private final MoSparkMaxPID<Angle> deployVelocityPID;
-    private final MoSparkMaxPID<Angle> deploySmartmotionPID;
+    private final MoSparkMaxArmPID deployVelocityPID;
+    private final MoSparkMaxArmPID deploySmartmotionPID;
 
     public final GenericEntry isDeployZeroed;
     private final GenericEntry isHoldingNote;
@@ -64,7 +68,7 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.setSmartCurrentLimit((int) DEPLOY_CURRENT_LIMIT.in(Units.Amps));
 
         rollerMtr.setIdleMode(IdleMode.kCoast);
-        deployMtr.setIdleMode(IdleMode.kCoast);
+        deployMtr.setIdleMode(IdleMode.kBrake);
 
         rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Centimeters);
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
@@ -81,11 +85,19 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, true);
         deployMtr.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        deployVelocityPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder);
-        deploySmartmotionPID = new MoSparkMaxPID<>(MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder);
+        final MutableMeasure<Angle> mut_angle = MutableMeasure.zero(Units.Rotations);
+        Supplier<Measure<Angle>> intakeHorizontalAngle = () -> {
+            mut_angle.mut_replace(deployEncoder.getPosition());
+            return mut_angle.mut_minus(MoPrefs.intakeHorizontal.get());
+        };
 
-        TunerUtils.forMoSparkMax(deployVelocityPID, "Intake Deploy Vel.");
-        TunerUtils.forMoSparkMax(deploySmartmotionPID, "Intake Deploy Pos.");
+        deployVelocityPID =
+                new MoSparkMaxArmPID(MoSparkMaxPID.Type.VELOCITY, deployMtr, 0, deployEncoder, intakeHorizontalAngle);
+        deploySmartmotionPID = new MoSparkMaxArmPID(
+                MoSparkMaxPID.Type.SMARTMOTION, deployMtr, 1, deployEncoder, intakeHorizontalAngle);
+
+        TunerUtils.forSparkMaxArm(deployVelocityPID, "Intake Deploy Vel.");
+        TunerUtils.forSparkMaxArm(deploySmartmotionPID, "Intake Deploy Pos.");
 
         var deployGroup = MoShuffleboard.getInstance()
                 .intakeTab
@@ -119,6 +131,10 @@ public class IntakeSubsystem extends SubsystemBase {
         group.addDouble("Deploy (A)", deployMtr::getOutputCurrent);
 
         MoShuffleboard.getInstance().intakeTab.add(this);
+    }
+
+    public void enableDeploySoftLimitReverse(boolean enable) {
+        deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, enable);
     }
 
     public boolean getIsHoldingNote() {
@@ -163,5 +179,27 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void zeroDeployEncoder(Measure<Angle> pos) {
         this.deployEncoder.setPosition(pos);
+    }
+
+    public SysIdRoutine getDeployRoutine() {
+        var config = MoShuffleboard.getInstance().getSysidConfig();
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            deployMtr.setVoltage(v.in(Units.Volts));
+                            rollerMtr.stopMotor();
+                        },
+                        (log) -> {
+                            log.motor("intakeDeployMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            deployMtr.getAppliedOutput() * deployMtr.getBusVoltage(), Units.Volts))
+                                    .angularPosition(deployEncoder.getPosition())
+                                    .angularVelocity(deployEncoder.getVelocity());
+                        },
+                        this));
     }
 }
