@@ -113,6 +113,14 @@ public class JoystickDualControllerInput implements MoInput {
         }
     }
 
+    public boolean getReverseShooter() {
+        return armController.getXButton() && armController.getRightBumper();
+    }
+
+    public boolean getReverseIntake() {
+        return joystick.getRawButton(3);
+    }
+
     @Override
     public boolean getIntake() {
         return joystick.getRawButton(1);

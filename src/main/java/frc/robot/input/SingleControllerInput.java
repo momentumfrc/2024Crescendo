@@ -100,6 +100,16 @@ public class SingleControllerInput implements MoInput {
         }
     }
 
+    public boolean getReverseShooter() {
+        // Not supported in single-controller mode
+        return false;
+    }
+
+    public boolean getReverseIntake() {
+        // Not supported in single-controller mode
+        return false;
+    }
+
     @Override
     public boolean getReZeroArm() {
         // Re-zeroing is not supported in single-controller mode

@@ -36,11 +36,15 @@ public interface MoInput {
 
     public ShootTarget getShootTarget();
 
+    public boolean getReverseShooter();
+
     public boolean getRunSysId();
 
     public boolean getReZeroArm();
 
     public boolean getIntake();
+
+    public boolean getReverseIntake();
 
     public double getIntakeAdjust();
 

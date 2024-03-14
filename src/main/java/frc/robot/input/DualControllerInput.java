@@ -97,6 +97,14 @@ public class DualControllerInput implements MoInput {
         }
     }
 
+    public boolean getReverseShooter() {
+        return armController.getXButton() && armController.getRightBumper();
+    }
+
+    public boolean getReverseIntake() {
+        return armController.getLeftBumper() && armController.getRightBumper();
+    }
+
     @Override
     public boolean getReZeroArm() {
         return armController.getStartButton();

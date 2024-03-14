@@ -58,7 +58,7 @@ public class RobotContainer {
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
-    private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
+    private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
