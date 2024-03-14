@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.GenericSubscriber;
@@ -132,6 +133,8 @@ public class RobotContainer {
         arm.setDefaultCommand(armCommand);
         intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
+
+        CameraServer.startAutomaticCapture();
 
         configureBindings();
     }
