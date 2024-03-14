@@ -12,10 +12,12 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
@@ -177,5 +179,27 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void zeroDeployEncoder(Measure<Angle> pos) {
         this.deployEncoder.setPosition(pos);
+    }
+
+    public SysIdRoutine getDeployRoutine() {
+        var config = MoShuffleboard.getInstance().getSysidConfig();
+
+        final MutableMeasure<Voltage> mut_volt = MutableMeasure.zero(Units.Volts);
+
+        return new SysIdRoutine(
+                config,
+                new SysIdRoutine.Mechanism(
+                        (v) -> {
+                            deployMtr.setVoltage(v.in(Units.Volts));
+                            rollerMtr.stopMotor();
+                        },
+                        (log) -> {
+                            log.motor("intakeDeployMtr")
+                                    .voltage(mut_volt.mut_replace(
+                                            deployMtr.getAppliedOutput() * deployMtr.getBusVoltage(), Units.Volts))
+                                    .angularPosition(deployEncoder.getPosition())
+                                    .angularVelocity(deployEncoder.getVelocity());
+                        },
+                        this));
     }
 }

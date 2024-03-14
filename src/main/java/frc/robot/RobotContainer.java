@@ -168,7 +168,7 @@ public class RobotContainer {
         handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
-                .andThen(MoShuffleboard.getInstance().getSysidCommand(shooter::getFlywheelUpperRoutine, shooter)));
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
 
         (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
                 .and(() -> !intake.isDeployZeroed.getBoolean(false))
