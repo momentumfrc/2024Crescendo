@@ -11,6 +11,13 @@ import java.util.Optional;
 
 /** Accesses the state of robot input */
 public interface MoInput {
+
+    public enum ShootTarget {
+        SPEAKER,
+        AMP,
+        NONE
+    };
+
     Vec2 getMoveRequest();
 
     double getTurnRequest();
@@ -25,9 +32,9 @@ public interface MoInput {
 
     public boolean getSaveArmSetpoint();
 
-    public boolean getShouldShootSpeaker();
+    public boolean getShoot();
 
-    public boolean getShouldShootAmp();
+    public ShootTarget getShootTarget();
 
     public boolean getRunSysId();
 
