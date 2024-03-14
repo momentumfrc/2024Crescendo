@@ -115,7 +115,7 @@ public class JoystickDualControllerInput implements MoInput {
 
     @Override
     public boolean getIntake() {
-        return joystick.getRawButton(3);
+        return joystick.getRawButton(1);
     }
 
     @Override
