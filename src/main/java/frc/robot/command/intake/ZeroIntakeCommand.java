@@ -40,7 +40,7 @@ public class ZeroIntakeCommand extends Command {
         }
 
         intake.intakeDirectPower(0);
-        intake.deployFallbackDirectPower(MoPrefs.intakeZeroPwr.get());
+        intake.deployFallbackDirectPower(-Math.abs(MoPrefs.intakeZeroPwr.get()));
     }
 
     @Override
