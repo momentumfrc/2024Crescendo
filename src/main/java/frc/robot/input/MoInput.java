@@ -44,6 +44,4 @@ public interface MoInput {
     public double getLeftClimbRequest();
 
     public double getRightClimbRequest();
-
-    public boolean getReZeroClimbers();
 }

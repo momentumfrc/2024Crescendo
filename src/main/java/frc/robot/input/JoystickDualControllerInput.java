@@ -139,16 +139,11 @@ public class JoystickDualControllerInput implements MoInput {
 
     @Override
     public double getLeftClimbRequest() {
-        return (armController.getLeftTriggerAxis() - 0.5) * 2;
+        return (armController.getPOV() == 90 ? -1 : 1) * armController.getLeftTriggerAxis();
     }
 
     @Override
     public double getRightClimbRequest() {
-        return (armController.getRightTriggerAxis() - 0.5) * 2;
-    }
-
-    @Override
-    public boolean getReZeroClimbers() {
-        return joystick.getRawButton(4);
+        return (armController.getPOV() == 90 ? -1 : 1) * armController.getRightTriggerAxis();
     }
 }

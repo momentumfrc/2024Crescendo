@@ -4,13 +4,15 @@
 
 package frc.robot.command.climb;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.ClimbSubsystem;
+import frc.robot.util.MoPrefs;
 
 public class ZeroClimbersCommand extends Command {
-    private static final double POWER = 0.3;
-
     private final ClimbSubsystem climb;
+    private Timer leftCurrentTimer = new Timer();
+    private Timer rightCurrentTimer = new Timer();
 
     public ZeroClimbersCommand(ClimbSubsystem climb) {
         this.climb = climb;
@@ -18,13 +20,31 @@ public class ZeroClimbersCommand extends Command {
     }
 
     @Override
+    public void initialize() {
+        leftCurrentTimer.stop();
+        leftCurrentTimer.reset();
+
+        rightCurrentTimer.stop();
+        rightCurrentTimer.reset();
+
+        climb.leftClimber.enableWinchSoftLimitReverse(false);
+        climb.rightClimber.enableWinchSoftLimitReverse(false);
+    }
+
+    @Override
     public void execute() {
-        climb.leftClimber.zero(POWER);
-        climb.rightClimber.zero(POWER);
+        climb.leftClimber.zero(MoPrefs.climberZeroPwr.get(), leftCurrentTimer);
+        climb.rightClimber.zero(MoPrefs.climberZeroPwr.get(), rightCurrentTimer);
     }
 
     @Override
     public boolean isFinished() {
         return climb.leftClimber.hasZero() && climb.rightClimber.hasZero();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        climb.leftClimber.enableWinchSoftLimitReverse(true);
+        climb.rightClimber.enableWinchSoftLimitReverse(true);
     }
 }

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -61,8 +60,7 @@ public class RobotContainer {
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
-    private SequentialCommandGroup climbCommand =
-            new SequentialCommandGroup(new ZeroClimbersCommand(climb), new ClimbCommand(climb, this::getInput));
+    private ClimbCommand climbCommand = new ClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
@@ -134,7 +132,7 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
         shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
-        reZeroClimbTrigger = new Trigger(() -> getInput().getReZeroClimbers());
+        reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
         rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
 

@@ -123,17 +123,11 @@ public class SingleControllerInput implements MoInput {
 
     @Override
     public double getLeftClimbRequest() {
-        return (controller.getRightTriggerAxis() - 0.5) * 2;
+        return (controller.getPOV() == 90 ? -1 : 1) * controller.getRightTriggerAxis();
     }
 
     @Override
     public double getRightClimbRequest() {
-        return (controller.getRightTriggerAxis() - 0.5) * 2;
-    }
-
-    @Override
-    public boolean getReZeroClimbers() {
-        // Re-zeroing is not supported in single-controller mode
-        return false;
+        return (controller.getPOV() == 90 ? -1 : 1) * controller.getRightTriggerAxis();
     }
 }

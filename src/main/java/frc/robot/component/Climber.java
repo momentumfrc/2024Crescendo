@@ -4,96 +4,90 @@
 
 package frc.robot.component;
 
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkPIDController;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
-import frc.robot.util.MoPrefs.UnitPref;
 import frc.robot.util.MoShuffleboard;
-import frc.robot.util.MoUnits;
 
 /* A single side climber */
 public class Climber {
     public final CANSparkMax winch;
-    public final SparkPIDController winchPID;
-    public final CurrentTrigger zeroLimit;
-    private boolean hasZero = false;
+    public final MoEncoder<Distance> encoder;
 
-    public Climber(
-            String name, CANSparkMax winch, UnitPref<Current> zeroCurrentLimit, UnitPref<Time> zeroTriggerDuration) {
+    public final GenericEntry hasZero;
+
+    public Climber(String name, CANSparkMax winch) {
         this.winch = winch;
-        this.winchPID = winch.getPIDController();
-        this.zeroLimit = CurrentTrigger.ofSparkMax(winch, zeroCurrentLimit, zeroTriggerDuration);
+        winch.restoreFactoryDefaults();
+
+        this.encoder = MoEncoder.forSparkRelative(winch.getEncoder(), Units.Centimeters);
+
+        MoPrefs.climberEncoderScale.subscribe(this.encoder::setConversionFactor, true);
+        MoPrefs.climberZeroCurrentCutoff.subscribe(
+                current -> winch.setSmartCurrentLimit((int) current.in(Units.Amps)), true);
+
+        winch.setIdleMode(IdleMode.kBrake);
+
+        winch.setSoftLimit(SoftLimitDirection.kReverse, 0);
+        MoPrefs.climberMaximum.subscribe(
+                max -> winch.setSoftLimit(
+                        SoftLimitDirection.kForward, (float) max.in(this.encoder.getInternalEncoderUnits())),
+                true);
+
+        winch.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        winch.enableSoftLimit(SoftLimitDirection.kForward, true);
 
         var layout = MoShuffleboard.getInstance()
                 .climberTab
                 .getLayout(name, BuiltInLayouts.kList)
                 .withSize(1, 2);
-        layout.addBoolean("At Zero Limit", this::atZeroLimit);
-        layout.addBoolean("Has Zero", this::hasZero);
-        layout.addDouble("Encoder Pos", () -> this.winch.getEncoder().getPosition());
-        layout.addDouble("Current", () -> this.winch.getOutputCurrent());
-    }
 
-    public void invalidateZero() {
-        hasZero = false;
+        hasZero = layout.add("Has Zero?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
+
+        layout.addDouble("Position (cm)", () -> winch.getEncoder().getPosition());
+        layout.addDouble("Current (A)", () -> winch.getOutputCurrent());
     }
 
     public boolean hasZero() {
-        return hasZero;
+        return hasZero.getBoolean(false);
     }
 
-    private void runWinch(double power) {
-        if (MoPrefs.climberPid.get()) {
-            winchPID.setReference(
-                    power * MoPrefs.climberMotorSpeed.get().in(MoUnits.RotationsPerMinute),
-                    CANSparkMax.ControlType.kVelocity);
-        } else {
-            winchPID.setReference(power, CANSparkMax.ControlType.kDutyCycle);
-        }
+    public void runWinch(double power) {
+        this.winch.set(power);
     }
 
-    public boolean atZeroLimit() {
-        return zeroLimit.getAsBoolean();
-    }
+    public void zero(double power, Timer currentTimer) {
+        Measure<Current> current = Units.Amps.of(this.winch.getOutputCurrent());
 
-    public void raise(double power) {
-        if (!hasZero) {
-            this.runWinch(power);
-
-            return;
-        }
-
-        if (power > 0 && winch.getEncoder().getPosition() >= MoPrefs.climberZeroThreshold.get()) {
-            this.runWinch(0);
-            return;
-        }
-
-        if (power < 0 && winch.getEncoder().getPosition() <= MoPrefs.climberZeroThreshold.get()) {
-            this.runWinch(0);
-            return;
-        }
-
-        this.runWinch(power);
-    }
-
-    public void zero(double power) {
-        if (!hasZero) {
-            winch.set(-power);
-
-            if (atZeroLimit()) {
-                winch.getEncoder().setPosition(0);
-                hasZero = true;
-                winch.set(0);
+        if (current.gte(MoPrefs.climberZeroCurrentCutoff.get())) {
+            if (currentTimer.hasElapsed(MoPrefs.climberZeroTimeCutoff.get().in(Units.Seconds))) {
+                this.encoder.setPosition(Units.Centimeters.of(0));
+                this.hasZero.setBoolean(true);
             }
         } else {
-            winch.set(0);
+            currentTimer.restart();
         }
+
+        this.runWinch(-Math.abs(MoPrefs.intakeZeroPwr.get()));
+    }
+
+    public void enableWinchSoftLimitReverse(boolean enable) {
+        this.winch.enableSoftLimit(SoftLimitDirection.kReverse, enable);
     }
 
     public void stop() {
-        winch.stopMotor();
+        this.winch.stopMotor();
     }
 }

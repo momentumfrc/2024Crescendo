@@ -5,11 +5,9 @@
 package frc.robot.subsystem;
 
 import com.revrobotics.CANSparkMax;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.component.Climber;
-import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
 
 public class ClimbSubsystem extends SubsystemBase {
@@ -22,19 +20,18 @@ public class ClimbSubsystem extends SubsystemBase {
         var leftSparkMax = new CANSparkMax(Constants.CLIMBER_LEFT.address(), CANSparkMax.MotorType.kBrushless);
         var rightSparkMax = new CANSparkMax(Constants.CLIMBER_RIGHT.address(), CANSparkMax.MotorType.kBrushless);
 
-        leftClimber =
-                new Climber("Climber Left", leftSparkMax, MoPrefs.climberCurrentThreshold, MoPrefs.climberLimitTime);
-        rightClimber =
-                new Climber("Climber Right", rightSparkMax, MoPrefs.climberCurrentThreshold, MoPrefs.climberLimitTime);
+        leftClimber = new Climber("Climber Left", leftSparkMax);
+        rightClimber = new Climber("Climber Right", rightSparkMax);
 
-        MoShuffleboard.getInstance().settingsTab.add("Invalidate Climber Zeros", new InstantCommand(() -> {
-            leftClimber.invalidateZero();
-            rightClimber.invalidateZero();
-        }));
+        MoShuffleboard.getInstance().climberTab.add(this);
     }
 
     public void stop() {
         leftClimber.stop();
         rightClimber.stop();
+    }
+
+    public boolean bothZeroed() {
+        return leftClimber.hasZero() && rightClimber.hasZero();
     }
 }

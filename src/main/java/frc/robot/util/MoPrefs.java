@@ -74,6 +74,10 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> wristEncoderScale =
             encoderTicksPerRotationPref("Wrist Encoder Scale", MoUnits.EncoderTicksPerRotation.of(1));
 
+    // TODO: Determine this
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> climberEncoderScale =
+            encoderTicksPerCentimeterPref("Climber Encoder Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
+
     public static final UnitPref<Angle> shoulderAbsZero =
             rotationsPref("Shoulder Absolute Zero", Units.Rotations.of(0));
     public static final UnitPref<Angle> wristAbsZero = rotationsPref("Wrist Absolute Zero", Units.Rotations.of(0));
@@ -137,15 +141,15 @@ public class MoPrefs {
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
             ampsPref("Intake Current Sense Threshold", Units.Amps.of(10));
 
-    public static final Pref<Boolean> climberPid = booleanPref("Climber PID", true);
-    public static final UnitPref<Time> climberLimitTime = secondsPref("Climber Limit Time", Units.Seconds.of(0.25));
-    public static final UnitPref<Current> climberCurrentThreshold =
-            ampsPref("Climber Current Threshold", Units.Amps.of(80));
+    public static final Pref<Double> climberZeroPwr = unitlessDoublePref("Climber Zero Power", -0.3);
+    public static final UnitPref<Time> climberZeroTimeCutoff = secondsPref("Climber Zero Time", Units.Seconds.of(0.25));
+    public static final UnitPref<Current> climberZeroCurrentCutoff =
+            ampsPref("Climber Zero Current", Units.Amps.of(80));
     public static final UnitPref<Velocity<Angle>> climberMotorSpeed =
             rotationsPerSecPref("Climber Motor Speed", Units.RotationsPerSecond.of(75));
-    public static final Pref<Double> climberZeroThreshold =
-            unitlessDoublePref("Climber Zero Threshold (Enc. Ticks)", 50);
-    public static final Pref<Double> climberMaximum = unitlessDoublePref("Climber Maximum (Enc. Ticks)", 400);
+    public static final UnitPref<Distance> climberMinimum = centimetersPref("Climber Minimum", Units.Centimeters.of(2));
+    public static final UnitPref<Distance> climberMaximum =
+            centimetersPref("Climber Maximum", Units.Centimeters.of(70));
 
     public static final UnitPref<Dimensionless> intakeRollerPower =
             getInstance().new UnitPref<Dimensionless>("Intake Roller Power", Units.Percent, Units.Percent.of(30));

@@ -27,8 +27,8 @@ public class ClimbCommand extends Command {
         double leftClimbRequest = input.getLeftClimbRequest();
         double rightClimbRequest = input.getRightClimbRequest();
 
-        climb.leftClimber.raise(leftClimbRequest);
-        climb.rightClimber.raise(rightClimbRequest);
+        climb.leftClimber.runWinch(leftClimbRequest);
+        climb.rightClimber.runWinch(rightClimbRequest);
     }
 
     @Override
