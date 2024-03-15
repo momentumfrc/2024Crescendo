@@ -56,7 +56,7 @@ public class Climber {
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .getEntry();
 
-        layout.addDouble("Position (cm)", () -> winch.getEncoder().getPosition());
+        layout.addDouble("Position (cm)", () -> encoder.getPosition().in(Units.Centimeters));
         layout.addDouble("Current (A)", () -> winch.getOutputCurrent());
     }
 
