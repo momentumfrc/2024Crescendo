@@ -185,6 +185,10 @@ public class ArmSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().armTab.add(this);
     }
 
+    public void setShoulderReverseLimitEnabled(boolean enabled) {
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kReverse, enabled);
+    }
+
     public void reZeroArm() {
         MoUtils.setupRelativeEncoder(
                 shoulderRelEncoder,

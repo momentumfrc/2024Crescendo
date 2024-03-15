@@ -48,6 +48,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final MutableMeasure<Current> mut_rollerCurrent = MutableMeasure.zero(Units.Amps);
 
     private SlewRateLimiter limiter;
+    private SlewRateLimiter reverseLimiter;
 
     public ShooterSubsystem() {
         super("Shooter");
@@ -83,6 +84,7 @@ public class ShooterSubsystem extends SubsystemBase {
         MoPrefs.flywheelSpindownRate.subscribe(
                 rate -> {
                     this.limiter = new SlewRateLimiter(Double.POSITIVE_INFINITY, -Math.abs(rate), 0);
+                    this.reverseLimiter = new SlewRateLimiter(Math.abs(rate), Double.NEGATIVE_INFINITY, 0);
                 },
                 true);
 
@@ -160,11 +162,23 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelLower.set(speed);
     }
 
-    public void setFlywheelSpeed(Measure<Velocity<Distance>> speed) {
+    private Measure<Velocity<Distance>> slewLimitVelocity(Measure<Velocity<Distance>> speed) {
+        SlewRateLimiter limiter;
+        if (getAvgFlywheelVelocity().lte(Units.MetersPerSecond.zero())) {
+            limiter = this.reverseLimiter;
+        } else {
+            limiter = this.limiter;
+        }
+
         double value = speed.in(Units.MetersPerSecond);
         double limited = limiter.calculate(value);
 
-        mut_flywheelSetpoint.mut_replace(limited, Units.MetersPerSecond);
+        return mut_flywheelSetpoint.mut_replace(limited, Units.MetersPerSecond);
+    }
+
+    public void setFlywheelSpeed(Measure<Velocity<Distance>> speed) {
+        var limited = slewLimitVelocity(speed);
+
         flywheelUpperVelocityPid.setVelocityReference(mut_flywheelSetpoint);
         flywheelLowerVelocityPid.setVelocityReference(mut_flywheelSetpoint);
     }

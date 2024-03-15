@@ -60,7 +60,15 @@ public class TeleopIntakeCommand extends Command {
      *
      * The boolean currentTrip ensures this.
      */
-    private void runIntakeRollerWithCurrentSense(boolean runIntake) {
+    private void runIntakeRollerWithCurrentSense(boolean runIntake, boolean runIntakeReverse) {
+
+        if (runIntakeReverse) {
+            intake.setIsHoldingNote(false);
+            currentSenseTimer.restart();
+            intake.intakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
+
+            return;
+        }
 
         if (runIntake && !currentTrip) {
             if (intake.getRollerCurrent().gte(MoPrefs.intakeCurrentSenseThreshold.get())) {
@@ -91,6 +99,7 @@ public class TeleopIntakeCommand extends Command {
         var moInput = inputSupplier.get();
         double deployAdjust = moInput.getIntakeAdjust();
         boolean runIntakeRequest = moInput.getIntake();
+        boolean runIntakeReverse = moInput.getReverseIntake();
         boolean saveSetpoint = moInput.getSaveIntakeSetpoint();
 
         IntakeSetpoint setpoint = IntakeSetpoint.STOW;
@@ -131,7 +140,7 @@ public class TeleopIntakeCommand extends Command {
             setpointPublisher.setString(setpoint.toString());
         }
 
-        runIntakeRollerWithCurrentSense(runIntake);
+        runIntakeRollerWithCurrentSense(runIntake, runIntakeReverse);
 
         if (saveSetpoint) {
             IntakeSetpointManager.getInstance().setSetpoint(setpoint, intake.getDeployPosition());
@@ -142,23 +151,33 @@ public class TeleopIntakeCommand extends Command {
         var moInput = inputSupplier.get();
         double deployAdjust = moInput.getIntakeAdjust();
         boolean runIntakeRequest = moInput.getIntake();
+        boolean runIntakeReverse = moInput.getReverseIntake();
 
         velocityRequest.mut_replace(MoPrefs.intakeDeployMaxSpeed.get());
         velocityRequest.mut_times(deployAdjust);
         intake.deployVelocity(velocityRequest);
 
-        runIntakeRollerWithCurrentSense(runIntakeRequest);
+        runIntakeRollerWithCurrentSense(runIntakeRequest, runIntakeReverse);
     }
 
     private void executeFallbackDirectPower() {
         var moInput = inputSupplier.get();
         double deployAdjust = moInput.getIntakeAdjust();
 
+        boolean runIntakeRequest = moInput.getIntake();
+        boolean runIntakeReverse = moInput.getReverseIntake();
+
         intake.deployFallbackDirectPower(deployAdjust);
 
         // Note: this is a fallback mode. We can't assume current sense is working. It's up to the driver to ensure they
         // don't shred the notes too much.
-        intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
+        if (runIntakeReverse) {
+            intake.intakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
+        } else if (runIntakeRequest) {
+            intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
+        } else {
+            intake.intakeDirectPower(0);
+        }
     }
 
     @Override

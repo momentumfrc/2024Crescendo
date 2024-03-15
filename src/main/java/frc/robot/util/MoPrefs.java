@@ -172,6 +172,12 @@ public class MoPrefs {
 
     public static final UnitPref<Angle> intakeHorizontal = rotationsPref("Intake Horizontal", Units.Rotations.of(0));
 
+    public static final UnitPref<Dimensionless> shooterRollerReversePower = getInstance()
+    .new UnitPref<Dimensionless>("Shooter Roller Reverse Power", Units.Percent, Units.Percent.of(60));
+
+    public static final UnitPref<Velocity<Distance>> shooterFlywheelReverseSpeed =
+            metersPerSecPref("Shooter Flywheel Reverse Speed", Units.MetersPerSecond.of(10));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

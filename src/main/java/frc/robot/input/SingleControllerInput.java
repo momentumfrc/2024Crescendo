@@ -84,13 +84,30 @@ public class SingleControllerInput implements MoInput {
     }
 
     @Override
-    public boolean getShouldShootSpeaker() {
-        return controller.getXButton() && controller.getPOV() == 0;
+    public boolean getShoot() {
+        return controller.getXButton();
     }
 
     @Override
-    public boolean getShouldShootAmp() {
-        return controller.getXButton() && controller.getPOV() == 180;
+    public MoInput.ShootTarget getShootTarget() {
+        int pov = controller.getPOV();
+        if (pov == 0) {
+            return MoInput.ShootTarget.SPEAKER;
+        } else if (pov == 180) {
+            return MoInput.ShootTarget.AMP;
+        } else {
+            return MoInput.ShootTarget.NONE;
+        }
+    }
+
+    public boolean getReverseShooter() {
+        // Not supported in single-controller mode
+        return false;
+    }
+
+    public boolean getReverseIntake() {
+        // Not supported in single-controller mode
+        return false;
     }
 
     @Override

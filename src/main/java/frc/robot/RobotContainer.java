@@ -34,6 +34,7 @@ import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
+import frc.robot.input.ShootTargetTriggers;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.AutoBuilderSubsystem;
@@ -62,13 +63,14 @@ public class RobotContainer {
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private ClimbCommand climbCommand = new ClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
-    private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter);
+    private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
+    private ShootTargetTriggers targetTriggers = new ShootTargetTriggers(this::getInput);
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
@@ -130,8 +132,8 @@ public class RobotContainer {
                 .getEntry();
 
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
-        shootSpeakerTrigger = new Trigger(() -> getInput().getShouldShootSpeaker());
-        shootAmpTrigger = new Trigger(() -> getInput().getShouldShootAmp());
+        shootSpeakerTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.SPEAKER));
+        shootAmpTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.AMP));
         reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
         rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
@@ -158,18 +160,21 @@ public class RobotContainer {
         shootSpeakerTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
                 .whileTrue(Commands.either(
-                        CompositeCommands.tuneShootSpeakerCommand(drive, this::getInput, arm, shooter, positioning),
-                        Commands.defer(
-                                () -> CompositeCommands.shootSpeakerCommand(
-                                        arm, drive, shooter, positioning, this::getInput),
-                                Set.of(arm, drive, shooter)),
-                        () -> tuneShooterAngleSubscriber.getBoolean(false)));
+                                CompositeCommands.tuneShootSpeakerCommand(
+                                        drive, this::getInput, arm, shooter, positioning),
+                                Commands.defer(
+                                        () -> CompositeCommands.shootSpeakerCommand(
+                                                arm, drive, shooter, positioning, this::getInput),
+                                        Set.of(arm, drive, shooter)),
+                                () -> tuneShooterAngleSubscriber.getBoolean(false))
+                        .withName("ShootSpeakerCommand"));
 
         shootAmpTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
                 .whileTrue(Commands.defer(
-                        () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
-                        Set.of(arm, drive, shooter)));
+                                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
+                                Set.of(arm, drive, shooter))
+                        .withName("ShootAmpCommand"));
 
         rezeroIntakeTrigger.onTrue(rezeroIntake);
 

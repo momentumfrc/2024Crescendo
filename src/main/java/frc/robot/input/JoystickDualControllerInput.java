@@ -97,18 +97,33 @@ public class JoystickDualControllerInput implements MoInput {
     }
 
     @Override
-    public boolean getShouldShootSpeaker() {
-        return armController.getXButton() && armController.getPOV() == 0;
+    public boolean getShoot() {
+        return armController.getXButton();
     }
 
     @Override
-    public boolean getShouldShootAmp() {
-        return armController.getXButton() && armController.getPOV() == 180;
+    public MoInput.ShootTarget getShootTarget() {
+        int pov = armController.getPOV();
+        if (pov == 0) {
+            return MoInput.ShootTarget.SPEAKER;
+        } else if (pov == 180) {
+            return MoInput.ShootTarget.AMP;
+        } else {
+            return MoInput.ShootTarget.NONE;
+        }
+    }
+
+    public boolean getReverseShooter() {
+        return armController.getXButton() && armController.getRightBumper();
+    }
+
+    public boolean getReverseIntake() {
+        return joystick.getRawButton(3);
     }
 
     @Override
     public boolean getIntake() {
-        return joystick.getRawButton(3);
+        return joystick.getRawButton(1);
     }
 
     @Override

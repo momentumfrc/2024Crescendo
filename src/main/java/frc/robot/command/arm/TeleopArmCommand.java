@@ -2,6 +2,7 @@ package frc.robot.command.arm;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.networktables.GenericPublisher;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.component.ArmSetpointManager;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
@@ -16,6 +17,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class TeleopArmCommand extends Command {
+    private static final double SHOULDER_HARD_STOP_OVERRIDE_TIMEOUT = 1;
+
     private static final ArmSetpoint DEFAULT_SETPOINT = ArmSetpoint.STOW;
 
     private final ArmSubsystem arms;
@@ -27,6 +30,10 @@ public class TeleopArmCommand extends Command {
     private SlewRateLimiter wristLimiter;
 
     private GenericPublisher setpointPublisher;
+
+    private boolean zeroArmPressed = false;
+    private boolean shoulderLimitOverride = false;
+    private Timer shoulderHardStopOverrideTimer = new Timer();
 
     public TeleopArmCommand(ArmSubsystem arms, Supplier<MoInput> inputSupplier) {
         this.arms = arms;
@@ -49,6 +56,9 @@ public class TeleopArmCommand extends Command {
 
     @Override
     public void initialize() {
+        zeroArmPressed = false;
+        shoulderLimitOverride = false;
+        shoulderHardStopOverrideTimer.restart();
         arms.reZeroArm();
     }
 
@@ -92,8 +102,25 @@ public class TeleopArmCommand extends Command {
         MoInput input = inputSupplier.get();
         var controlMode = arms.controlMode.getSelected();
 
+        // When re-zero is held, we disable the reverse limit. This is to account for if the robot was turned on with
+        // the arm up, so the driver can force it down to its proper zeroing position.
+        // Then, when re-zero is released, the zeroing actually happens.
         if (input.getReZeroArm()) {
-            arms.reZeroArm();
+            zeroArmPressed = true;
+            if (shoulderHardStopOverrideTimer.hasElapsed(SHOULDER_HARD_STOP_OVERRIDE_TIMEOUT)) {
+                if (!shoulderLimitOverride) {
+                    shoulderLimitOverride = true;
+                    arms.setShoulderReverseLimitEnabled(false);
+                }
+            }
+        } else {
+            if (zeroArmPressed) {
+                arms.setShoulderReverseLimitEnabled(true);
+                shoulderLimitOverride = false;
+                arms.reZeroArm();
+            }
+            zeroArmPressed = false;
+            shoulderHardStopOverrideTimer.restart();
         }
 
         if (controlMode != ArmControlMode.SMARTMOTION) {

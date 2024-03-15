@@ -45,7 +45,7 @@ public class CompositeCommands {
     }
 
     public static Command shootAmpCommand(ArmSubsystem arm, ShooterSubsystem shooter, PositioningSubsystem pos) {
-        var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
+        var flywheelSpeed = MoPrefs.flywheelAmpSetpoint.get();
         var rollerRunTime = MoPrefs.shooterRollerRunTime.get();
 
         var moveArmCommand = MoveArmCommand.forSetpoint(arm, ArmSetpoint.AMP);
