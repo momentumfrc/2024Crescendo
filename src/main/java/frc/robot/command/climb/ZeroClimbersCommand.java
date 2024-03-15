@@ -4,8 +4,10 @@
 
 package frc.robot.command.climb;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.component.Climber;
 import frc.robot.subsystem.ClimbSubsystem;
 import frc.robot.util.MoPrefs;
 
@@ -31,10 +33,24 @@ public class ZeroClimbersCommand extends Command {
         climb.rightClimber.enableWinchSoftLimitReverse(false);
     }
 
+    private static void zeroSide(double power, Climber climber, Timer currentTimer) {
+        if (climber.winch.getOutputCurrent()
+                >= MoPrefs.climberZeroCurrentCutoff.get().in(Units.Amps)) {
+            if (currentTimer.hasElapsed(MoPrefs.climberZeroTimeCutoff.get().in(Units.Seconds))) {
+                climber.encoder.setPosition(Units.Centimeters.of(0));
+                climber.hasZero.setBoolean(true);
+            }
+        } else {
+            currentTimer.restart();
+        }
+
+        climber.runWinch(-Math.abs(MoPrefs.intakeZeroPwr.get()));
+    }
+
     @Override
     public void execute() {
-        climb.leftClimber.zero(MoPrefs.climberZeroPwr.get(), leftCurrentTimer);
-        climb.rightClimber.zero(MoPrefs.climberZeroPwr.get(), rightCurrentTimer);
+        zeroSide(MoPrefs.climberZeroPwr.get(), climb.leftClimber, leftCurrentTimer);
+        zeroSide(MoPrefs.climberZeroPwr.get(), climb.rightClimber, rightCurrentTimer);
     }
 
     @Override

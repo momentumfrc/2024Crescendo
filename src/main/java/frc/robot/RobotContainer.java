@@ -26,7 +26,7 @@ import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
-import frc.robot.command.climb.ClimbCommand;
+import frc.robot.command.climb.TeleopClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
 import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
@@ -61,7 +61,7 @@ public class RobotContainer {
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
-    private ClimbCommand climbCommand = new ClimbCommand(climb, this::getInput);
+    private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);

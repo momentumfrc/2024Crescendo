@@ -8,11 +8,8 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import frc.robot.encoder.MoEncoder;
@@ -66,21 +63,6 @@ public class Climber {
 
     public void runWinch(double power) {
         this.winch.set(power);
-    }
-
-    public void zero(double power, Timer currentTimer) {
-        Measure<Current> current = Units.Amps.of(this.winch.getOutputCurrent());
-
-        if (current.gte(MoPrefs.climberZeroCurrentCutoff.get())) {
-            if (currentTimer.hasElapsed(MoPrefs.climberZeroTimeCutoff.get().in(Units.Seconds))) {
-                this.encoder.setPosition(Units.Centimeters.of(0));
-                this.hasZero.setBoolean(true);
-            }
-        } else {
-            currentTimer.restart();
-        }
-
-        this.runWinch(-Math.abs(MoPrefs.intakeZeroPwr.get()));
     }
 
     public void enableWinchSoftLimitReverse(boolean enable) {

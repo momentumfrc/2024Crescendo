@@ -9,11 +9,11 @@ import frc.robot.input.MoInput;
 import frc.robot.subsystem.ClimbSubsystem;
 import java.util.function.Supplier;
 
-public class ClimbCommand extends Command {
+public class TeleopClimbCommand extends Command {
     private ClimbSubsystem climb;
     private Supplier<MoInput> inputSupplier;
 
-    public ClimbCommand(ClimbSubsystem climb, Supplier<MoInput> inputSupplier) {
+    public TeleopClimbCommand(ClimbSubsystem climb, Supplier<MoInput> inputSupplier) {
         this.climb = climb;
         this.inputSupplier = inputSupplier;
 
