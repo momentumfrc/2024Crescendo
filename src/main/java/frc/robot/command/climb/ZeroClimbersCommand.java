@@ -34,11 +34,16 @@ public class ZeroClimbersCommand extends Command {
     }
 
     private static void zeroSide(double power, Climber climber, Timer currentTimer) {
+        if (climber.hasZero()) {
+            climber.runWinch(0);
+
+            return;
+        }
+
         if (climber.winch.getOutputCurrent()
                 >= MoPrefs.climberZeroCurrentCutoff.get().in(Units.Amps)) {
             if (currentTimer.hasElapsed(MoPrefs.climberZeroTimeCutoff.get().in(Units.Seconds))) {
-                climber.encoder.setPosition(Units.Centimeters.of(0));
-                climber.hasZero.setBoolean(true);
+                climber.setZero(MoPrefs.climberZeroPosition.get());
             }
         } else {
             currentTimer.restart();

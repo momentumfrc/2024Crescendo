@@ -144,12 +144,13 @@ public class MoPrefs {
     public static final Pref<Double> climberZeroPwr = unitlessDoublePref("Climber Zero Power", -0.3);
     public static final UnitPref<Time> climberZeroTimeCutoff = secondsPref("Climber Zero Time", Units.Seconds.of(0.25));
     public static final UnitPref<Current> climberZeroCurrentCutoff =
-            ampsPref("Climber Zero Current", Units.Amps.of(80));
+            ampsPref("Climber Zero Current", Units.Amps.of(15));
     public static final UnitPref<Velocity<Angle>> climberMotorSpeed =
             rotationsPerSecPref("Climber Motor Speed", Units.RotationsPerSecond.of(75));
-    public static final UnitPref<Distance> climberMinimum = centimetersPref("Climber Minimum", Units.Centimeters.of(2));
-    public static final UnitPref<Distance> climberMaximum =
-            centimetersPref("Climber Maximum", Units.Centimeters.of(70));
+    public static final UnitPref<Distance> climberZeroPosition =
+            centimetersPref("Climber Zero Pos.", Units.Centimeters.of(-1));
+    public static final UnitPref<Distance> climbMaxHeight =
+            centimetersPref("Climber Max Height", Units.Centimeters.of(70));
 
     public static final UnitPref<Dimensionless> intakeRollerPower =
             getInstance().new UnitPref<Dimensionless>("Intake Roller Power", Units.Percent, Units.Percent.of(30));
