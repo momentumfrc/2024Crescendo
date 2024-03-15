@@ -58,7 +58,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         super("Intake");
 
-        rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
+        rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushed);
         deployMtr = new CANSparkMax(Constants.INTAKE_DEPLOY.address(), MotorType.kBrushless);
 
         rollerMtr.restoreFactoryDefaults();
