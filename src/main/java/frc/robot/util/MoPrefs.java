@@ -74,6 +74,10 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> wristEncoderScale =
             encoderTicksPerRotationPref("Wrist Encoder Scale", MoUnits.EncoderTicksPerRotation.of(1));
 
+    // TODO: Determine this
+    public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> climberEncoderScale =
+            encoderTicksPerCentimeterPref("Climber Encoder Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
+
     public static final UnitPref<Angle> shoulderAbsZero =
             rotationsPref("Shoulder Absolute Zero", Units.Rotations.of(0));
     public static final UnitPref<Angle> wristAbsZero = rotationsPref("Wrist Absolute Zero", Units.Rotations.of(0));
@@ -135,14 +139,24 @@ public class MoPrefs {
     public static final UnitPref<Time> intakeCurrentSenseTime =
             secondsPref("Intake Current Sense Time", Units.Seconds.of(0.1));
     public static final UnitPref<Current> intakeCurrentSenseThreshold =
-            amperesPref("Intake Current Sense Threshold", Units.Amps.of(10));
+            ampsPref("Intake Current Sense Threshold", Units.Amps.of(10));
+
+    public static final Pref<Double> climberZeroPwr = unitlessDoublePref("Climber Zero Power", -0.3);
+    public static final UnitPref<Time> climberZeroTimeCutoff = secondsPref("Climber Zero Time", Units.Seconds.of(0.25));
+    public static final UnitPref<Current> climberZeroCurrentCutoff =
+            ampsPref("Climber Zero Current", Units.Amps.of(15));
+    public static final UnitPref<Velocity<Angle>> climberMotorSpeed =
+            rotationsPerSecPref("Climber Motor Speed", Units.RotationsPerSecond.of(75));
+    public static final UnitPref<Distance> climberZeroPosition =
+            centimetersPref("Climber Zero Pos.", Units.Centimeters.of(-1));
+    public static final UnitPref<Distance> climbMaxHeight =
+            centimetersPref("Climber Max Height", Units.Centimeters.of(70));
 
     public static final UnitPref<Dimensionless> intakeRollerPower =
             getInstance().new UnitPref<Dimensionless>("Intake Roller Power", Units.Percent, Units.Percent.of(30));
 
     public static final Pref<Double> intakeZeroPwr = unitlessDoublePref("Intake Zero Power", 0.2);
-    public static final UnitPref<Current> intakeZeroCurrentCutoff =
-            amperesPref("Intake Zero Current", Units.Amps.of(10));
+    public static final UnitPref<Current> intakeZeroCurrentCutoff = ampsPref("Intake Zero Current", Units.Amps.of(10));
     public static final UnitPref<Time> intakeZeroTimeCutoff = secondsPref("Intake Zero Time", Units.Seconds.of(0.1));
     public static final UnitPref<Angle> intakeZeroPosition =
             rotationsPref("Intake Zero Pos.", Units.Rotations.of(-0.05));
@@ -152,8 +166,7 @@ public class MoPrefs {
     public static final UnitPref<Dimensionless> handoffShooterRollerPower =
             getInstance().new UnitPref<>("Handoff Shooter Roller Power", Units.Percent, Units.Percent.of(40));
     public static final UnitPref<Time> handoffTimeCutoff = secondsPref("Handoff Time Cutoff", Units.Seconds.of(0.25));
-    public static final UnitPref<Current> handoffCurrentCutoff =
-            amperesPref("Handoff Current Cutoff", Units.Amps.of(10));
+    public static final UnitPref<Current> handoffCurrentCutoff = ampsPref("Handoff Current Cutoff", Units.Amps.of(10));
 
     public static final UnitPref<Dimensionless> intakeAdjustPower =
             getInstance().new UnitPref<Dimensionless>("Intake Adjust power", Units.Percent, Units.Percent.of(15));
@@ -329,6 +342,11 @@ public class MoPrefs {
         typePublisher.set("RobotPreferences");
     }
 
+    private static Pref<Boolean> booleanPref(String key, boolean defaultValue) {
+        return getInstance()
+        .new Pref<>(key, defaultValue, NetworkTableValue::getBoolean, NetworkTableEntry::setBoolean);
+    }
+
     private static Pref<Double> unitlessDoublePref(String key, double defaultValue) {
         return getInstance().new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
     }
@@ -381,7 +399,7 @@ public class MoPrefs {
         return getInstance().new UnitPref<>(key, Units.Seconds, defaultValue);
     }
 
-    private static UnitPref<Current> amperesPref(String key, Measure<Current> defaultValue) {
+    private static UnitPref<Current> ampsPref(String key, Measure<Current> defaultValue) {
         return getInstance().new UnitPref<>(key, Units.Amps, defaultValue);
     }
 }

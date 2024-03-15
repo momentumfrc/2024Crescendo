@@ -26,6 +26,8 @@ import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
+import frc.robot.command.climb.TeleopClimbCommand;
+import frc.robot.command.climb.ZeroClimbersCommand;
 import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
@@ -36,6 +38,7 @@ import frc.robot.input.ShootTargetTriggers;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.AutoBuilderSubsystem;
+import frc.robot.subsystem.ClimbSubsystem;
 import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
@@ -52,17 +55,20 @@ public class RobotContainer {
     private ArmSubsystem arm = new ArmSubsystem();
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
+    private ClimbSubsystem climb = new ClimbSubsystem();
     private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
+    private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
-    private ZeroIntakeCommand rezeroIntake = new ZeroIntakeCommand(intake);
+    private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
+    private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
     private ShootTargetTriggers targetTriggers = new ShootTargetTriggers(this::getInput);
@@ -77,7 +83,8 @@ public class RobotContainer {
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
-    private final Trigger rezeroIntakeTrigger;
+    private final Trigger reZeroIntakeTrigger;
+    private final Trigger reZeroClimbTrigger;
     private final Trigger handoffTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
@@ -128,13 +135,15 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.SPEAKER));
         shootAmpTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.AMP));
-        rezeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
+        reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
+        reZeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
         intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
+        climb.setDefaultCommand(climbCommand);
 
         CameraServer.startAutomaticCapture();
 
@@ -168,16 +177,24 @@ public class RobotContainer {
                                 Set.of(arm, drive, shooter))
                         .withName("ShootAmpCommand"));
 
-        rezeroIntakeTrigger.onTrue(rezeroIntake);
+        reZeroIntakeTrigger.onTrue(reZeroIntake);
 
         handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
+
+        reZeroClimbTrigger.onTrue(reZeroClimbers);
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
                 .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
 
-        (RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop()))
-                .and(() -> !intake.isDeployZeroed.getBoolean(false))
-                .onTrue(rezeroIntake);
+        RobotModeTriggers.autonomous()
+                .or(RobotModeTriggers.teleop())
+                .and(reZeroIntakeTrigger::getAsBoolean)
+                .onTrue(reZeroIntake);
+
+        RobotModeTriggers.autonomous()
+                .or(RobotModeTriggers.teleop())
+                .and(reZeroClimbTrigger::getAsBoolean)
+                .onTrue(reZeroClimbers);
 
         RobotModeTriggers.teleop()
                 .and(() -> shouldPlayEnableTone.getBoolean(false))

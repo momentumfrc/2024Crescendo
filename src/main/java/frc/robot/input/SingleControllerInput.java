@@ -137,4 +137,14 @@ public class SingleControllerInput implements MoInput {
     public boolean getHandoff() {
         return controller.getAButton();
     }
+
+    @Override
+    public double getLeftClimbRequest() {
+        return (controller.getPOV() == 90 ? -1 : 1) * controller.getRightTriggerAxis();
+    }
+
+    @Override
+    public double getRightClimbRequest() {
+        return (controller.getPOV() == 90 ? -1 : 1) * controller.getRightTriggerAxis();
+    }
 }

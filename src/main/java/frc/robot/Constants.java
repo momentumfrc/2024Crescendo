@@ -42,6 +42,9 @@ public class Constants {
     public static final CANAddress SHOOTER_FLYWHEEL_MTR_UPPER = new CANAddress(16);
     public static final CANAddress SHOOTER_FLYWHEEL_MTR_LOWER = new CANAddress(15);
 
+    public static final CANAddress CLIMBER_LEFT = new CANAddress(6);
+    public static final CANAddress CLIMBER_RIGHT = new CANAddress(17);
+
     public static final CANAddress INTAKE_ROLLER = new CANAddress(14);
     public static final CANAddress INTAKE_DEPLOY = new CANAddress(7);
 

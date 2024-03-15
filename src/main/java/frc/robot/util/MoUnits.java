@@ -29,6 +29,5 @@ public class MoUnits {
     public static Per<EncoderAngle, Distance> EncoderTicksPerCentimeter = EncoderTicks.per(Units.Centimeters);
     public static Per<EncoderAngle, Angle> EncoderTicksPerRotation = EncoderTicks.per(Units.Rotations);
     public static Per<EncoderAngle, Angle> EncoderTicksPerRadian = EncoderTicks.per(Units.Radians);
-
     public static Velocity<Distance> CentimetersPerSec = Units.Centimeters.per(Units.Second);
 }

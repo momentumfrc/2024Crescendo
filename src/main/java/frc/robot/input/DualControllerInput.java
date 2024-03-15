@@ -129,4 +129,14 @@ public class DualControllerInput implements MoInput {
     public boolean getHandoff() {
         return armController.getAButton();
     }
+
+    @Override
+    public double getLeftClimbRequest() {
+        return (armController.getPOV() == 90 ? -1 : 1) * armController.getLeftTriggerAxis();
+    }
+
+    @Override
+    public double getRightClimbRequest() {
+        return (armController.getPOV() == 90 ? -1 : 1) * armController.getRightTriggerAxis();
+    }
 }
