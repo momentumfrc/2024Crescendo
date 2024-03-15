@@ -64,6 +64,10 @@ public class Climber {
         return hasZero.getBoolean(false);
     }
 
+    public void invalidateZero() {
+        hasZero.setBoolean(false);
+    }
+
     public void setZero(Measure<Distance> pos) {
         hasZero.setBoolean(true);
         this.encoder.setPosition(pos);

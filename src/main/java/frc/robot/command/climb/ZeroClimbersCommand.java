@@ -30,7 +30,10 @@ public class ZeroClimbersCommand extends Command {
         rightCurrentTimer.reset();
 
         climb.leftClimber.enableWinchSoftLimitReverse(false);
+        climb.leftClimber.invalidateZero();
+
         climb.rightClimber.enableWinchSoftLimitReverse(false);
+        climb.rightClimber.invalidateZero();
     }
 
     private static void zeroSide(double power, Climber climber, Timer currentTimer) {

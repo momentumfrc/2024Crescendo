@@ -186,11 +186,13 @@ public class RobotContainer {
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
                 .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
 
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+        RobotModeTriggers.autonomous()
+                .or(RobotModeTriggers.teleop())
                 .and(reZeroIntakeTrigger::getAsBoolean)
                 .onTrue(reZeroIntake);
 
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+        RobotModeTriggers.autonomous()
+                .or(RobotModeTriggers.teleop())
                 .and(reZeroClimbTrigger::getAsBoolean)
                 .onTrue(reZeroClimbers);
 
