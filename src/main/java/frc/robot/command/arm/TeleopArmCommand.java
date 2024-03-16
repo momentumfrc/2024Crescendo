@@ -74,9 +74,9 @@ public class TeleopArmCommand extends Command {
         ArmMovementRequest requestedMovement = getMovementRequest(input);
         boolean shouldSaveSetpoint = input.getSaveArmSetpoint();
 
-        if (requestedSetpoint.isPresent()
-                && MoShuffleboard.getInstance().tuneSetpointSubscriber.getBoolean(false)) {
-            if (shouldSaveSetpoint) {
+        if (requestedSetpoint.isPresent()) {
+            if (shouldSaveSetpoint
+                    && MoShuffleboard.getInstance().tuneSetpointSubscriber.getBoolean(false)) {
                 ArmSetpointManager.getInstance().setSetpoint(requestedSetpoint.get(), arms.getArmPosition());
             } else {
                 smartMotionOverride = false;
