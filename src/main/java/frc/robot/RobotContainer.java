@@ -5,6 +5,8 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
@@ -60,7 +62,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
-    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning);
+    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, shooter);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
