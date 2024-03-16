@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.PathPlannerCommands;
@@ -22,8 +21,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-
 
 public class AutoBuilderSubsystem extends SubsystemBase {
     /**
@@ -163,39 +160,12 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                             .name())); // "No path defined for starting position " + currStartPos.toString());
         }
 
-        return taskTypeChooser.getSelected().commandModifier.apply(this, PathPlannerCommands.getFollowPathCommand(
-                drive, positioning, pathToFollow.get(), shouldAssumeRobotIsAtStart.getBoolean(false)));
-    }
-
-    @Override
-    public void periodic() {
-        /*
-        if (!shouldAssumeRobotIsAtStart.getBoolean(false) && positioning.hasInitialPosition()) {
-            StartPos currStartPos = null;
-            double currSmallestDist = Double.POSITIVE_INFINITY;
-            Pose2d robotPose = positioning.getRobotPose();
-            for (TaskType task : TaskType.values())
-                for (StartPos pos : StartPos.values()) {
-                    if (!hasPathFor(currTaskType, currStartPos) || pathMap.get(task).get(pos).isEmpty()) {
-                        continue;
-                    }
-
-                    PathPlannerPath path = pathMap.get(task).get(pos).get();
-                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-                        path = path.flipPath();
-                    }
-
-                    Pose2d posStartPose = path.getPreviewStartingHolonomicPose();
-                    double dist = posStartPose.getTranslation().getDistance(robotPose.getTranslation());
-                    if (currStartPos == null || dist < currSmallestDist) {
-                        currStartPos = pos;
-                        currSmallestDist = dist;
-                    }
-                }
-            }
-        } else {
-            currTaskType = taskTypeChooser.getSelected();
-            currStartPos = startPosChooser.getSelected();
-        } */
+        return taskTypeChooser
+                .getSelected()
+                .commandModifier
+                .apply(
+                        this,
+                        PathPlannerCommands.getFollowPathCommand(
+                                drive, positioning, pathToFollow.get(), shouldAssumeRobotIsAtStart.getBoolean(false)));
     }
 }

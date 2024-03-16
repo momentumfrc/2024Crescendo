@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
