@@ -179,6 +179,11 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Distance>> shooterFlywheelReverseSpeed =
             metersPerSecPref("Shooter Flywheel Reverse Speed", Units.MetersPerSecond.of(10));
 
+    public static final Pref<Double> backoffPower = unitlessDoublePref("Backoff Power", 0.2);
+    public static final Pref<Double> backoffZeroTolerance = unitlessDoublePref("Backoff Zero Tolerance", 0.1);
+    public static final Pref<Double> backoffTimeout = unitlessDoublePref("Backoff Timeout", 0.5);
+    public static final Pref<Double> backoffStartTime = unitlessDoublePref("Backoff Start Time", 0.1);
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;

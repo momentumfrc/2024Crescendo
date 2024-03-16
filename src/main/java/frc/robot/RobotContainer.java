@@ -30,6 +30,7 @@ import frc.robot.command.climb.TeleopClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
 import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
+import frc.robot.command.shooter.BackoffShooterCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
@@ -66,6 +67,8 @@ public class RobotContainer {
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
     private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
+
+    private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
 
     private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
@@ -180,6 +183,7 @@ public class RobotContainer {
         reZeroIntakeTrigger.onTrue(reZeroIntake);
 
         handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
+        handoffTrigger.onFalse(backoffShooterCommand);
 
         reZeroClimbTrigger.onTrue(reZeroClimbers);
 
