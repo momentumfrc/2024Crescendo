@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 public class MoShuffleboard {
     private static MoShuffleboard instance;
 
-    public static MoShuffleboard getInstance() {
+    public static synchronized MoShuffleboard getInstance() {
         if (instance == null) {
             instance = new MoShuffleboard();
         }
@@ -56,6 +56,8 @@ public class MoShuffleboard {
     public final GenericSubscriber tuneSetpointSubscriber;
 
     private MoShuffleboard() {
+        // Note: if you're getting an IllegalArgumentException here complaining about "title already in use",
+        // check that you're not calling MoShuffleboard.getInstance() from within this constructor!
         settingsTab = Shuffleboard.getTab("Settings");
         autoTab = Shuffleboard.getTab("Auto");
         driveTab = Shuffleboard.getTab("Drive");
@@ -63,8 +65,8 @@ public class MoShuffleboard {
         intakeTab = Shuffleboard.getTab("Intake");
         climberTab = Shuffleboard.getTab("Climber");
         shooterTab = Shuffleboard.getTab("Shooter");
-
         field = new Field2d();
+
         driveTab.add(field).withSize(5, 3);
 
         settingsTab.add("Sysid Mode", sysidMode);
