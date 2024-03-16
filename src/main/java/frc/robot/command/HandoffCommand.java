@@ -52,13 +52,13 @@ public class HandoffCommand extends Command {
 
         if (!arm.atPosition(armPos) || !intake.getDeployPosition().isNear(intakePos, intakeTolerance)) {
             shooter.setRollerVelocity(Units.MetersPerSecond.zero());
-            intake.intakeDirectPower(0);
+            intake.rollerIntakeDirectPower(0);
 
             return;
         }
 
         // At this point, the intake and arm are aligned.
-        intake.intakeDirectPower(-MoPrefs.handoffIntakeRollerPower.get().in(Units.Value));
+        intake.rollerIntakeDirectPower(-MoPrefs.handoffIntakeRollerPower.get().in(Units.Value));
 
         if (shooter.getRollerCurrent().gte(MoPrefs.handoffCurrentCutoff.get())) {
             if (currentSenseTimer.hasElapsed(MoPrefs.handoffTimeCutoff.get().in(Units.Seconds))) {

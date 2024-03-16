@@ -39,7 +39,7 @@ public class ZeroIntakeCommand extends Command {
             currentTimer.restart();
         }
 
-        intake.intakeDirectPower(0);
+        intake.rollerIntakeDirectPower(0);
         intake.deployFallbackDirectPower(-Math.abs(MoPrefs.intakeZeroPwr.get()));
     }
 

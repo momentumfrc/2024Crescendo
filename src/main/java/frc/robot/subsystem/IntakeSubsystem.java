@@ -169,7 +169,7 @@ public class IntakeSubsystem extends SubsystemBase {
         deploySmartmotionPID.setPositionReference(position);
     }
 
-    public void intakeDirectPower(double power) {
+    public void rollerIntakeDirectPower(double power) {
         rollerMtr.set(power);
     }
 

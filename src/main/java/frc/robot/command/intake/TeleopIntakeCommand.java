@@ -65,7 +65,7 @@ public class TeleopIntakeCommand extends Command {
         if (runIntakeReverse) {
             intake.setIsHoldingNote(false);
             currentSenseTimer.restart();
-            intake.intakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
+            intake.rollerIntakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
 
             return;
         }
@@ -87,9 +87,9 @@ public class TeleopIntakeCommand extends Command {
         }
 
         if (runIntake && !currentTrip) {
-            intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
+            intake.rollerIntakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
         } else {
-            intake.intakeDirectPower(0);
+            intake.rollerIntakeDirectPower(0);
         }
     }
 
@@ -172,11 +172,11 @@ public class TeleopIntakeCommand extends Command {
         // Note: this is a fallback mode. We can't assume current sense is working. It's up to the driver to ensure they
         // don't shred the notes too much.
         if (runIntakeReverse) {
-            intake.intakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
+            intake.rollerIntakeDirectPower(-MoPrefs.intakeRollerPower.get().in(Units.Value));
         } else if (runIntakeRequest) {
-            intake.intakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
+            intake.rollerIntakeDirectPower(MoPrefs.intakeRollerPower.get().in(Units.Value));
         } else {
-            intake.intakeDirectPower(0);
+            intake.rollerIntakeDirectPower(0);
         }
     }
 
