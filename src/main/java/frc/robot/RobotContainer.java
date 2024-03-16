@@ -68,7 +68,8 @@ public class RobotContainer {
     private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
-    private Command handoffCommand = new HandoffCommand(intake, shooter);
+    private Command handoffCommand =
+            new WaitForArmSetpointCommand(arm, ArmSetpoint.HANDOFF).andThen(new HandoffCommand(intake, shooter));
 
     private Command shootSpeakerCommand = new WaitForArmSetpointCommand(arm, ArmSetpoint.SPEAKER)
             .deadlineWith(new SpinupShooterCommand(shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get()))
