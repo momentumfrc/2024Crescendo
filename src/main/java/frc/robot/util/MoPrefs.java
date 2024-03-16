@@ -38,7 +38,9 @@ public class MoPrefs {
     public static final UnitPref<Velocity<Angle>> maxTurnSpeed =
             rotationsPerSecPref("Turn Max Speed", Units.RotationsPerSecond.of(3));
     public static final Pref<Double> driveDeadzone = unitlessDoublePref("Drive Deadzone", 0.05);
+    public static final Pref<Double> driveTurnDeadzone = unitlessDoublePref("Drive Turn Deadzone", 0.1);
     public static final Pref<Double> driveCurve = unitlessDoublePref("Drive Curve", 1);
+    public static final Pref<Double> driveTurnCurve = unitlessDoublePref("Drive Turn Curve", 2);
     public static Pref<Double> driveSlowSpeed = unitlessDoublePref("Drive Slow Speed", 0.5);
     public static Pref<Double> turnSlowSpeed = unitlessDoublePref("Turn Slow Speed", 0.25);
     public static Pref<Double> driveRampTime = unitlessDoublePref("Drive Ramp Time", 0.25);

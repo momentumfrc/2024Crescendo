@@ -41,7 +41,9 @@ public class JoystickDualControllerInput extends MoInput {
 
     @Override
     public double getTurnRequest() {
-        return applyInputTransforms(-1 * joystick.getZ() * getThrottle());
+        return MoUtils.curve(
+                MoUtils.deadzone(-1 * joystick.getZ() * getThrottle(), MoPrefs.driveTurnDeadzone.get()),
+                MoPrefs.driveTurnCurve.get());
     }
 
     @Override
