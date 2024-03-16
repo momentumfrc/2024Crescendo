@@ -109,7 +109,7 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     public boolean getReverseShooter() {
-        return armController.getXButton() && armController.getRightBumper();
+        return armController.getXButton() && armController.getAButton();
     }
 
     public boolean getReverseIntake() {
@@ -144,7 +144,7 @@ public class JoystickDualControllerInput extends MoInput {
 
     @Override
     public boolean getHandoff() {
-        return armController.getAButton();
+        return armController.getRightBumper();
     }
 
     @Override
