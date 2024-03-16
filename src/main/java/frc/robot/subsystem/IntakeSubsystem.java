@@ -68,6 +68,9 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMtr.setIdleMode(IdleMode.kCoast);
         deployMtr.setIdleMode(IdleMode.kBrake);
 
+        rollerMtr.setInverted(true);
+        deployMtr.setInverted(false);
+
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
 
         MoPrefs.intakeDeployScale.subscribe(scale -> deployEncoder.setConversionFactor(scale), true);
