@@ -148,13 +148,17 @@ public class JoystickDualControllerInput extends MoInput {
         return armController.getRightBumper();
     }
 
+    private boolean getClimbReverse() {
+        return armController.getLeftBumper();
+    }
+
     @Override
     public double getLeftClimbRequest() {
-        return (armController.getPOV() == 90 ? -1 : 1) * armController.getLeftTriggerAxis();
+        return (getClimbReverse() ? -1 : 1) * armController.getLeftTriggerAxis();
     }
 
     @Override
     public double getRightClimbRequest() {
-        return (armController.getPOV() == 90 ? -1 : 1) * armController.getRightTriggerAxis();
+        return (getClimbReverse() ? -1 : 1) * armController.getRightTriggerAxis();
     }
 }
