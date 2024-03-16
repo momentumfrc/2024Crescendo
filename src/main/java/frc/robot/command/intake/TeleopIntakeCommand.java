@@ -135,7 +135,7 @@ public class TeleopIntakeCommand extends Command {
             setpointPublisher.setString("OVERRIDE");
         } else {
             intake.deploySmartMotion(requestedPos);
-            runIntake = intake.getDeployPosition().isNear(requestedPos, tolerance);
+            runIntake = intake.getDeployPosition().isNear(requestedPos, tolerance) && setpoint == IntakeSetpoint.INTAKE;
 
             setpointPublisher.setString(setpoint.toString());
         }
