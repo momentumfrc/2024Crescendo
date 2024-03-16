@@ -178,12 +178,12 @@ public class RobotContainer {
 
         RobotModeTriggers.autonomous()
                 .or(RobotModeTriggers.teleop())
-                .and(reZeroIntakeTrigger::getAsBoolean)
+                .and(reZeroIntakeTrigger)
                 .onTrue(reZeroIntake);
 
         RobotModeTriggers.autonomous()
                 .or(RobotModeTriggers.teleop())
-                .and(reZeroClimbTrigger::getAsBoolean)
+                .and(reZeroClimbTrigger)
                 .onTrue(reZeroClimbers);
 
         RobotModeTriggers.teleop()
