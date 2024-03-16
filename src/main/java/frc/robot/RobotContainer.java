@@ -80,8 +80,7 @@ public class RobotContainer {
             .andThen(new ShootAmpCommand(shooter))
             .withName("ShootAmpCommand");
 
-    private Command shootShuttleCommand =
-            new WaitForArmSetpointCommand(arm, ArmSetpoint.SHUTTLE)
+    private Command shootShuttleCommand = new WaitForArmSetpointCommand(arm, ArmSetpoint.SHUTTLE)
             .deadlineWith(new SpinupShooterCommand(shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get()))
             .andThen(new ShootSpeakerCommand(shooter))
             .withName("ShootShuttleCommand");
