@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.command.HandoffCommand;
+import frc.robot.command.IntakeSourceCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.command.arm.TeleopArmCommand;
@@ -97,6 +98,7 @@ public class RobotContainer {
     private final Trigger reZeroIntakeTrigger;
     private final Trigger reZeroClimbTrigger;
     private final Trigger handoffTrigger;
+    private final Trigger intakeSourceTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -138,6 +140,8 @@ public class RobotContainer {
         reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
         reZeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
+        intakeSourceTrigger =
+                new Trigger(() -> getInput().getArmSetpoint().orElse(ArmSetpoint.STOW) == ArmSetpoint.SOURCE);
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -163,6 +167,9 @@ public class RobotContainer {
 
         handoffTrigger.and(() -> !tuneSetpointSubscriber.getBoolean(false)).whileTrue(handoffCommand);
         handoffTrigger.onFalse(backoffShooterCommand);
+
+        intakeSourceTrigger.whileTrue(new IntakeSourceCommand(shooter));
+        intakeSourceTrigger.onFalse(backoffShooterCommand);
 
         reZeroClimbTrigger.onTrue(reZeroClimbers);
 
