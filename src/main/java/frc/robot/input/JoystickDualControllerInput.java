@@ -12,7 +12,7 @@ import frc.robot.util.MoPrefs.Pref;
 import frc.robot.util.MoUtils;
 import java.util.Optional;
 
-public class JoystickDualControllerInput implements MoInput {
+public class JoystickDualControllerInput extends MoInput {
     private final Joystick joystick;
     private final XboxController armController;
 
@@ -62,18 +62,11 @@ public class JoystickDualControllerInput implements MoInput {
     }
 
     @Override
-    public Optional<ArmSetpoint> getArmSetpoint() {
+    public Optional<ArmSetpoint> getNonShootArmSetpoints() {
         if (armController.getBButton()) {
             return Optional.of(ArmSetpoint.STOW);
-        } else if (armController.getAButton()) {
+        } else if (armController.getRightBumper()) {
             return Optional.of(ArmSetpoint.HANDOFF);
-        } else if (armController.getXButton()) {
-            double pov = armController.getPOV();
-            if (pov == 0) {
-                return Optional.of(ArmSetpoint.SPEAKER);
-            } else if (pov == 180) {
-                return Optional.of(ArmSetpoint.AMP);
-            }
         } else if (armController.getYButton()) {
             return Optional.of(ArmSetpoint.SOURCE);
         }

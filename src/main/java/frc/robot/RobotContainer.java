@@ -8,7 +8,6 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.GenericSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -18,11 +17,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.command.CompositeCommands;
 import frc.robot.command.HandoffCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
 import frc.robot.command.arm.TeleopArmCommand;
+import frc.robot.command.arm.WaitForArmSetpointCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
 import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
@@ -32,10 +31,13 @@ import frc.robot.command.intake.TeleopIntakeCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.BackoffShooterCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
+import frc.robot.command.shooter.ShootAmpCommand;
+import frc.robot.command.shooter.ShootSpeakerCommand;
+import frc.robot.command.shooter.SpinupShooterCommand;
+import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
-import frc.robot.input.ShootTargetTriggers;
 import frc.robot.input.SingleControllerInput;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.AutoBuilderSubsystem;
@@ -44,8 +46,8 @@ import frc.robot.subsystem.DriveSubsystem;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
+import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
-import java.util.Set;
 
 public class RobotContainer {
     private AHRS gyro = new AHRS(SerialPort.Port.kMXP);
@@ -65,7 +67,17 @@ public class RobotContainer {
     private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
     private IdleShooterCommand idleShooterCommand = new IdleShooterCommand(shooter, this::getInput);
-    private HandoffCommand handoffCommand = new HandoffCommand(arm, intake, shooter);
+    private Command handoffCommand = new HandoffCommand(intake, shooter);
+
+    private Command shootSpeakerCommand = new WaitForArmSetpointCommand(arm, ArmSetpoint.SPEAKER)
+            .deadlineWith(new SpinupShooterCommand(shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get()))
+            .andThen(new ShootSpeakerCommand(shooter))
+            .withName("ShootSpeakerCommand");
+
+    private Command shootAmpCommand = new WaitForArmSetpointCommand(arm, ArmSetpoint.AMP)
+            .andThen(new ShootAmpCommand(shooter))
+            .withName("ShootAmpCommand");
+
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
@@ -74,13 +86,10 @@ public class RobotContainer {
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
 
     private SendableChooser<MoInput> inputChooser = new SendableChooser<>();
-    private ShootTargetTriggers targetTriggers = new ShootTargetTriggers(this::getInput);
 
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
     private final NetworkButton coastSwerveButton;
-
-    private final GenericSubscriber tuneShooterAngleSubscriber;
 
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
@@ -123,15 +132,9 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
-        tuneShooterAngleSubscriber = MoShuffleboard.getInstance()
-                .settingsTab
-                .add("Tune shooter angle?", false)
-                .withWidget(BuiltInWidgets.kToggleSwitch)
-                .getEntry();
-
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
-        shootSpeakerTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.SPEAKER));
-        shootAmpTrigger = new Trigger(targetTriggers.getTriggerForShootTarget(MoInput.ShootTarget.AMP));
+        shootSpeakerTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.SPEAKER);
+        shootAmpTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.AMP);
         reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
         reZeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
@@ -152,28 +155,9 @@ public class RobotContainer {
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
 
-        // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
-        // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
-        // right before we're about to execute the command.
         var tuneSetpointSubscriber = MoShuffleboard.getInstance().tuneSetpointSubscriber;
-        shootSpeakerTrigger
-                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
-                .whileTrue(Commands.either(
-                                CompositeCommands.tuneShootSpeakerCommand(
-                                        drive, this::getInput, arm, shooter, positioning),
-                                Commands.defer(
-                                        () -> CompositeCommands.shootSpeakerCommand(
-                                                arm, drive, shooter, positioning, this::getInput),
-                                        Set.of(arm, drive, shooter)),
-                                () -> tuneShooterAngleSubscriber.getBoolean(false))
-                        .withName("ShootSpeakerCommand"));
-
-        shootAmpTrigger
-                .and(() -> !tuneSetpointSubscriber.getBoolean(false))
-                .whileTrue(Commands.defer(
-                                () -> CompositeCommands.shootAmpCommand(arm, shooter, positioning),
-                                Set.of(arm, drive, shooter))
-                        .withName("ShootAmpCommand"));
+        shootSpeakerTrigger.whileTrue(shootSpeakerCommand);
+        shootAmpTrigger.whileTrue(shootAmpCommand);
 
         reZeroIntakeTrigger.onTrue(reZeroIntake);
 

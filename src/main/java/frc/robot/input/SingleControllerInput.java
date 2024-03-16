@@ -14,7 +14,7 @@ import frc.robot.util.MoPrefs.Pref;
 import frc.robot.util.MoUtils;
 import java.util.Optional;
 
-public class SingleControllerInput implements MoInput {
+public class SingleControllerInput extends MoInput {
     private final XboxController controller;
 
     private Pref<Double> driveDeadzone = MoPrefs.driveDeadzone;
@@ -55,16 +55,11 @@ public class SingleControllerInput implements MoInput {
     }
 
     @Override
-    public Optional<ArmSetpoint> getArmSetpoint() {
+    public Optional<ArmSetpoint> getNonShootArmSetpoints() {
         if (controller.getBButton()) {
             return Optional.of(ArmSetpoint.STOW);
         } else if (controller.getAButton()) {
             return Optional.of(ArmSetpoint.HANDOFF);
-        } else if (controller.getXButton()) {
-            double pov = controller.getPOV();
-            if (pov == 180) {
-                return Optional.of(ArmSetpoint.AMP);
-            }
         } else if (controller.getYButton()) {
             return Optional.of(ArmSetpoint.SOURCE);
         }

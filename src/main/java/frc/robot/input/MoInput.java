@@ -10,7 +10,7 @@ import frc.robot.subsystem.ArmSubsystem.ArmMovementRequest;
 import java.util.Optional;
 
 /** Accesses the state of robot input */
-public interface MoInput {
+public abstract class MoInput {
 
     public enum ShootTarget {
         SPEAKER,
@@ -18,41 +18,75 @@ public interface MoInput {
         NONE
     };
 
-    Vec2 getMoveRequest();
+    protected abstract Optional<ArmSetpoint> getNonShootArmSetpoints();
 
-    double getTurnRequest();
+    public final Optional<ArmSetpoint> getArmSetpoint() {
+        var nonShootSetpoint = getNonShootArmSetpoints();
+        if (nonShootSetpoint.isPresent()) {
+            return nonShootSetpoint;
+        }
 
-    public boolean getShouldUseSlowSpeed();
+        var shootTarget = getShootTargetDebounced();
+        if (shootTarget == ShootTarget.SPEAKER) {
+            return Optional.of(ArmSetpoint.SPEAKER);
+        } else if (shootTarget == ShootTarget.AMP) {
+            return Optional.of(ArmSetpoint.AMP);
+        } else {
+            return Optional.empty();
+        }
+    }
 
-    public boolean getReZeroGyro();
+    protected abstract boolean getShoot();
 
-    public ArmMovementRequest getArmMovementRequest();
+    protected abstract ShootTarget getShootTarget();
 
-    public Optional<ArmSetpoint> getArmSetpoint();
+    private MoInput.ShootTarget lastTarget = MoInput.ShootTarget.NONE;
 
-    public boolean getSaveArmSetpoint();
+    public final ShootTarget getShootTargetDebounced() {
+        boolean shoot = getShoot();
+        MoInput.ShootTarget curTarget = getShootTarget();
 
-    public boolean getShoot();
+        if (!shoot) {
+            lastTarget = MoInput.ShootTarget.NONE;
+            return lastTarget;
+        }
 
-    public ShootTarget getShootTarget();
+        if (curTarget != MoInput.ShootTarget.NONE) {
+            lastTarget = curTarget;
+        }
 
-    public boolean getReverseShooter();
+        return lastTarget;
+    }
 
-    public boolean getRunSysId();
+    public abstract Vec2 getMoveRequest();
 
-    public boolean getReZeroArm();
+    public abstract double getTurnRequest();
 
-    public boolean getIntake();
+    public abstract boolean getShouldUseSlowSpeed();
 
-    public boolean getReverseIntake();
+    public abstract boolean getReZeroGyro();
 
-    public double getIntakeAdjust();
+    public abstract ArmMovementRequest getArmMovementRequest();
 
-    public boolean getSaveIntakeSetpoint();
+    public abstract boolean getSaveArmSetpoint();
 
-    public boolean getHandoff();
+    public abstract boolean getReverseShooter();
 
-    public double getLeftClimbRequest();
+    public abstract boolean getRunSysId();
 
-    public double getRightClimbRequest();
+    public abstract boolean getReZeroArm();
+
+    public abstract boolean getIntake();
+
+    public abstract boolean getReverseIntake();
+
+    public abstract double getIntakeAdjust();
+
+    public abstract boolean getSaveIntakeSetpoint();
+
+    public abstract boolean getHandoff();
+
+    public abstract double getLeftClimbRequest();
+
+    public abstract double getRightClimbRequest();
 }

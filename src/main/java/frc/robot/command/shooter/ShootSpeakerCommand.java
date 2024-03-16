@@ -1,20 +1,15 @@
 package frc.robot.command.shooter;
 
 import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
-import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
 
-public class ShootShooterCommand extends Command {
+public class ShootSpeakerCommand extends Command {
     private final ShooterSubsystem shooter;
-    private final Measure<Time> rollerFeedTime;
-    private final Measure<Velocity<Distance>> flywheelSpeed;
 
     private MutableMeasure<Distance> startRollerPos = MutableMeasure.zero(Units.Centimeters);
 
@@ -22,11 +17,8 @@ public class ShootShooterCommand extends Command {
 
     private Timer timer = new Timer();
 
-    public ShootShooterCommand(
-            ShooterSubsystem shooter, Measure<Time> rollerFeedTime, Measure<Velocity<Distance>> flywheelSpeed) {
+    public ShootSpeakerCommand(ShooterSubsystem shooter) {
         this.shooter = shooter;
-        this.rollerFeedTime = rollerFeedTime;
-        this.flywheelSpeed = flywheelSpeed;
 
         addRequirements(shooter);
     }
@@ -41,6 +33,7 @@ public class ShootShooterCommand extends Command {
 
     @Override
     public void execute() {
+        var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
         shooter.setFlywheelSpeed(flywheelSpeed);
 
         double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
@@ -58,6 +51,7 @@ public class ShootShooterCommand extends Command {
 
     @Override
     public boolean isFinished() {
+        var rollerFeedTime = MoPrefs.shooterRollerRunTime.get();
         return upToSpeed && timer.hasElapsed(rollerFeedTime.in(Units.Seconds));
     }
 }

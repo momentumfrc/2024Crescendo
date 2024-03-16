@@ -8,17 +8,18 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
+import java.util.function.Supplier;
 
 public class SpinupShooterCommand extends Command {
     private final ShooterSubsystem shooter;
 
-    private final Measure<Velocity<Distance>> flywheelSpeed;
+    private final Supplier<Measure<Velocity<Distance>>> flywheelSpeedSupplier;
     private final MutableMeasure<Distance> rollerPos = MutableMeasure.zero(Units.Centimeters);
 
-    public SpinupShooterCommand(ShooterSubsystem shooter, Measure<Velocity<Distance>> flywheelSpeed) {
+    public SpinupShooterCommand(ShooterSubsystem shooter, Supplier<Measure<Velocity<Distance>>> flywheelSpeedSupplier) {
         this.shooter = shooter;
 
-        this.flywheelSpeed = flywheelSpeed;
+        this.flywheelSpeedSupplier = flywheelSpeedSupplier;
 
         addRequirements(shooter);
     }
@@ -31,12 +32,12 @@ public class SpinupShooterCommand extends Command {
     @Override
     public void execute() {
         shooter.setRollerPosition(rollerPos);
-        shooter.setFlywheelSpeed(flywheelSpeed);
+        shooter.setFlywheelSpeed(flywheelSpeedSupplier.get());
     }
 
     public boolean onTarget() {
         double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
 
-        return shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh);
+        return shooter.getAvgFlywheelVelocity().isNear(flywheelSpeedSupplier.get(), thresh);
     }
 }

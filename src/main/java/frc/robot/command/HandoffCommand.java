@@ -1,22 +1,15 @@
 package frc.robot.command;
 
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.component.ArmSetpointManager;
-import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.component.IntakeSetpointManager;
 import frc.robot.component.IntakeSetpointManager.IntakeSetpoint;
-import frc.robot.subsystem.ArmSubsystem;
-import frc.robot.subsystem.ArmSubsystem.ArmPosition;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
 import frc.robot.util.MoPrefs;
 
 public class HandoffCommand extends Command {
-    private final ArmSubsystem arm;
     private final IntakeSubsystem intake;
     private final ShooterSubsystem shooter;
 
@@ -24,12 +17,11 @@ public class HandoffCommand extends Command {
 
     private boolean currentTrip = false;
 
-    public HandoffCommand(ArmSubsystem arm, IntakeSubsystem intake, ShooterSubsystem shooter) {
-        this.arm = arm;
+    public HandoffCommand(IntakeSubsystem intake, ShooterSubsystem shooter) {
         this.intake = intake;
         this.shooter = shooter;
 
-        addRequirements(arm, intake, shooter);
+        addRequirements(shooter);
     }
 
     @Override
@@ -42,27 +34,25 @@ public class HandoffCommand extends Command {
     public void execute() {
         shooter.setFlywheelSpeed(Units.MetersPerSecond.zero());
 
-        ArmPosition armPos = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.HANDOFF);
-        Measure<Angle> intakePos = IntakeSetpointManager.getInstance().getSetpoint(IntakeSetpoint.HANDOFF);
+        var intakeHandoffPos = IntakeSetpointManager.getInstance().getSetpoint(IntakeSetpoint.HANDOFF);
+        double intakeVar = MoPrefs.intakeSetpointVarianceThreshold.get().in(Units.Value);
 
-        arm.adjustSmartPosition(armPos);
-        intake.deploySmartMotion(intakePos);
+        intake.deploySmartMotion(intakeHandoffPos);
 
-        double intakeTolerance = MoPrefs.intakeSetpointVarianceThreshold.get().in(Units.Value);
-
-        if (!arm.atPosition(armPos) || !intake.getDeployPosition().isNear(intakePos, intakeTolerance)) {
-            shooter.setRollerVelocity(Units.MetersPerSecond.zero());
+        if (!intake.getDeployPosition().isNear(intakeHandoffPos, intakeVar)) {
             intake.rollerIntakeDirectPower(0);
-
+            shooter.setRollerVelocity(Units.MetersPerSecond.zero());
             return;
         }
 
-        // At this point, the intake and arm are aligned.
+        // At this point the Arm, Intake, and Shooter are aligned!
+
         intake.rollerIntakeDirectPower(-MoPrefs.handoffIntakeRollerPower.get().in(Units.Value));
 
         if (shooter.getRollerCurrent().gte(MoPrefs.handoffCurrentCutoff.get())) {
             if (currentSenseTimer.hasElapsed(MoPrefs.handoffTimeCutoff.get().in(Units.Seconds))) {
                 currentTrip = true;
+                intake.setIsHoldingNote(false);
             }
         } else {
             currentSenseTimer.restart();
