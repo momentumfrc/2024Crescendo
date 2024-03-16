@@ -7,7 +7,6 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
@@ -41,7 +40,6 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax rollerMtr;
     private final CANSparkMax deployMtr;
 
-    private final MoEncoder<Distance> rollerEncoder;
     private final MoEncoder<Angle> deployEncoder;
 
     private final MoSparkMaxArmPID deployVelocityPID;
@@ -70,10 +68,8 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMtr.setIdleMode(IdleMode.kCoast);
         deployMtr.setIdleMode(IdleMode.kBrake);
 
-        rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Centimeters);
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
 
-        MoPrefs.intakeRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
         MoPrefs.intakeDeployScale.subscribe(scale -> deployEncoder.setConversionFactor(scale), true);
 
         deployMtr.setSoftLimit(SoftLimitDirection.kReverse, 0);
@@ -149,9 +145,6 @@ public class IntakeSubsystem extends SubsystemBase {
         return deployEncoder.getPosition();
     }
 
-    public Measure<Distance> getRollerPosition() {
-        return rollerEncoder.getPosition();
-    }
 
     public Measure<Current> getRollerCurrent() {
         return mut_intakeRollerCurrent.mut_replace(rollerMtr.getOutputCurrent(), Units.Amps);
