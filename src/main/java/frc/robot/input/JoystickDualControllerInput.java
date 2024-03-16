@@ -83,7 +83,8 @@ public class JoystickDualControllerInput extends MoInput {
 
     @Override
     public boolean getRunSysId() {
-        return armController.getLeftBumper();
+        // No sysid in comp
+        return false;
     }
 
     @Override
