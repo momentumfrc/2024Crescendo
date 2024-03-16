@@ -20,8 +20,8 @@ public class ClimbSubsystem extends SubsystemBase {
         var leftSparkMax = new CANSparkMax(Constants.CLIMBER_LEFT.address(), CANSparkMax.MotorType.kBrushless);
         var rightSparkMax = new CANSparkMax(Constants.CLIMBER_RIGHT.address(), CANSparkMax.MotorType.kBrushless);
 
-        leftClimber = new Climber("Climber Left", leftSparkMax);
-        rightClimber = new Climber("Climber Right", rightSparkMax);
+        leftClimber = new Climber("Climber Left", leftSparkMax, false);
+        rightClimber = new Climber("Climber Right", rightSparkMax, true);
 
         MoShuffleboard.getInstance().climberTab.add(this);
     }

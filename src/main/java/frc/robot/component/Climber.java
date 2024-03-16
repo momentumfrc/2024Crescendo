@@ -27,9 +27,11 @@ public class Climber {
 
     public final GenericEntry hasZero;
 
-    public Climber(String name, CANSparkMax winch) {
+    public Climber(String name, CANSparkMax winch, boolean inverted) {
         this.winch = winch;
         winch.restoreFactoryDefaults();
+
+        winch.setInverted(inverted);
 
         this.encoder = MoEncoder.forSparkRelative(winch.getEncoder(), Units.Centimeters);
 
