@@ -20,7 +20,7 @@ import frc.robot.util.MoShuffleboard;
 
 /* A single side climber */
 public class Climber {
-    private static final Measure<Current> CLIMBER_CURRENT_LIMIT = Units.Amps.of(50);
+    private static final Measure<Current> CLIMBER_CURRENT_LIMIT = Units.Amps.of(25);
 
     public final CANSparkMax winch;
     public final MoEncoder<Distance> encoder;
