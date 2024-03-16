@@ -148,7 +148,6 @@ public class IntakeSubsystem extends SubsystemBase {
         return deployEncoder.getPosition();
     }
 
-
     public Measure<Current> getRollerCurrent() {
         return mut_intakeRollerCurrent.mut_replace(rollerMtr.getOutputCurrent(), Units.Amps);
     }

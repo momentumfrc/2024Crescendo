@@ -5,8 +5,10 @@
 package frc.robot.util;
 
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.GenericSubscriber;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -51,6 +53,8 @@ public class MoShuffleboard {
     private final GenericEntry voltRampEntry;
     private final GenericEntry voltEntry;
 
+    public final GenericSubscriber tuneSetpointSubscriber;
+
     private MoShuffleboard() {
         settingsTab = Shuffleboard.getTab("Settings");
         autoTab = Shuffleboard.getTab("Auto");
@@ -71,6 +75,11 @@ public class MoShuffleboard {
                 .withProperties(Map.of("Label position", "RIGHT"));
         voltRampEntry = sysidGroup.add("Volts Ramp", 1.5).getEntry();
         voltEntry = sysidGroup.add("Volts Step", 2).getEntry();
+
+        tuneSetpointSubscriber = settingsTab
+                .add("Tune Setpoints?", false)
+                .withWidget(BuiltInWidgets.kToggleSwitch)
+                .getEntry();
     }
 
     public SysIdRoutine.Config getSysidConfig() {

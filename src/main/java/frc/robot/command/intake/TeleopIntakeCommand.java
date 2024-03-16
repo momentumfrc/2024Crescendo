@@ -142,7 +142,7 @@ public class TeleopIntakeCommand extends Command {
 
         runIntakeRollerWithCurrentSense(runIntake, runIntakeReverse);
 
-        if (saveSetpoint) {
+        if (saveSetpoint && MoShuffleboard.getInstance().tuneSetpointSubscriber.getBoolean(false)) {
             IntakeSetpointManager.getInstance().setSetpoint(setpoint, intake.getDeployPosition());
         }
     }

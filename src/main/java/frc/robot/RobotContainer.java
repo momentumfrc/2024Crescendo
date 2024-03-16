@@ -80,7 +80,6 @@ public class RobotContainer {
     private final NetworkButton calibrateTurnButton;
     private final NetworkButton coastSwerveButton;
 
-    private final GenericSubscriber tuneSetpointSubscriber;
     private final GenericSubscriber tuneShooterAngleSubscriber;
 
     private final Trigger runSysidTrigger;
@@ -124,11 +123,6 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
-        tuneSetpointSubscriber = MoShuffleboard.getInstance()
-                .settingsTab
-                .add("Tune Arm Setpoints?", false)
-                .withWidget(BuiltInWidgets.kToggleSwitch)
-                .getEntry();
         tuneShooterAngleSubscriber = MoShuffleboard.getInstance()
                 .settingsTab
                 .add("Tune shooter angle?", false)
@@ -161,6 +155,7 @@ public class RobotContainer {
         // Need to use deferred commands since the setpoints are passed in as constructor parameters but they might
         // change during operation. So we use DeferredCommand to only construct the command using the latest MoPrefs
         // right before we're about to execute the command.
+        var tuneSetpointSubscriber = MoShuffleboard.getInstance().tuneSetpointSubscriber;
         shootSpeakerTrigger
                 .and(() -> !tuneSetpointSubscriber.getBoolean(false))
                 .whileTrue(Commands.either(
