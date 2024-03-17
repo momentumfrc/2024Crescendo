@@ -87,6 +87,8 @@ public class DualControllerInput extends MoInput {
             return MoInput.ShootTarget.SPEAKER;
         } else if (pov == 180) {
             return MoInput.ShootTarget.AMP;
+        } else if (pov == 90) {
+            return MoInput.ShootTarget.SHUTTLE;
         } else {
             return MoInput.ShootTarget.NONE;
         }
