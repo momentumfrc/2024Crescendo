@@ -86,6 +86,9 @@ public class RobotContainer {
             .andThen(new ShootAmpCommand(shooter))
             .withName("ShootAmpCommand");
 
+    // Shooting to shuttle uses same logic as shooting in speaker
+    private Command shootShuttleCommand = shootSpeakerCommand;
+
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
@@ -106,6 +109,7 @@ public class RobotContainer {
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
     private final Trigger shootAmpTrigger;
+    private final Trigger shootShuttleTrigger;
     private final Trigger reZeroIntakeTrigger;
     private final Trigger reZeroClimbTrigger;
     private final Trigger handoffTrigger;
@@ -155,6 +159,7 @@ public class RobotContainer {
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.SPEAKER);
         shootAmpTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.AMP);
+        shootShuttleTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.SHUTTLE);
         reZeroClimbTrigger = new Trigger(() -> !climb.bothZeroed());
         reZeroIntakeTrigger = new Trigger(() -> !intake.isDeployZeroed.getBoolean(false));
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
@@ -218,6 +223,7 @@ public class RobotContainer {
         var tuneSetpointSubscriber = MoShuffleboard.getInstance().tuneSetpointSubscriber;
         shootSpeakerTrigger.whileTrue(shootSpeakerCommand);
         shootAmpTrigger.whileTrue(shootAmpCommand);
+        shootShuttleTrigger.whileTrue(shootShuttleCommand);
 
         reZeroIntakeTrigger.onTrue(reZeroIntake);
 

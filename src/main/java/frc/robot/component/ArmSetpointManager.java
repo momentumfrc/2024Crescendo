@@ -14,7 +14,8 @@ public class ArmSetpointManager {
         HANDOFF,
         SPEAKER,
         AMP,
-        SOURCE
+        SOURCE,
+        SHUTTLE
     };
 
     private static ArmSetpointManager instance;
