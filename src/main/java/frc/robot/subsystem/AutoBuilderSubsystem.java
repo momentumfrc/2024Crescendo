@@ -39,7 +39,8 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
     private enum TaskType {
         LEAVE((s, c) -> c),
-        SHOOT((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER).andThen(new ShootSpeakerCommand(s.shooter).andThen(c)));
+        SHOOT((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER)
+                .andThen(new ShootSpeakerCommand(s.shooter).andThen(c)));
 
         BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
 
