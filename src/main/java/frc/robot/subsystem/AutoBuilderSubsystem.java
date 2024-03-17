@@ -68,7 +68,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                 .getEntry();
 
         autoChooser = AutoBuilder.buildAutoChooser();
-        autoTab.add("PP Auto", autoChooser).withSize(4, 1).withPosition(0, 1);
+        autoTab.add("PP Auto", autoChooser).withSize(2, 1).withPosition(1, 1);
 
         posePresetChooser = MoShuffleboard.enumToChooser(StartPosePreset.class);
         posePresetChooser.onChange(preset -> this.flipAndSetStartPose(preset.pose));
