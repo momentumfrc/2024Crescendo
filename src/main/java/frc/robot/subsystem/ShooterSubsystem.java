@@ -12,6 +12,7 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -50,6 +51,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private SlewRateLimiter limiter;
     private SlewRateLimiter reverseLimiter;
 
+    private Timer burnFlashDebounce = new Timer();
+
     public ShooterSubsystem() {
         super("Shooter");
 
@@ -72,6 +75,8 @@ public class ShooterSubsystem extends SubsystemBase {
         rollerEncoder = MoEncoder.forSparkRelative(roller.getEncoder(), Units.Centimeter);
         flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Meter);
         flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Meter);
+
+        burnFlashDebounce.restart();
 
         MoPrefs.shooterRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
         MoPrefs.shooterFlywheelScale.subscribe(
@@ -209,6 +214,17 @@ public class ShooterSubsystem extends SubsystemBase {
                                     .linearVelocity(flywheelUpperEncoder.getVelocity());
                         },
                         this));
+    }
+
+    public void burnFlash() {
+        if(!burnFlashDebounce.hasElapsed(10)) {
+            System.out.println("SHOULD NOT BURN FLASH THIS FREQUENLTY");
+            return;
+        }
+        flywheelLower.burnFlash();
+        flywheelUpper.burnFlash();
+        roller.burnFlash();
+        burnFlashDebounce.restart();
     }
 
     public SysIdRoutine getFlywheelLowerRoutine() {

@@ -92,6 +92,7 @@ public class RobotContainer {
     private final NetworkButton calibrateDriveButton;
     private final NetworkButton calibrateTurnButton;
     private final NetworkButton coastSwerveButton;
+    private final NetworkButton burnFlashButton;
 
     private final Trigger runSysidTrigger;
     private final Trigger shootSpeakerTrigger;
@@ -135,6 +136,13 @@ public class RobotContainer {
         coastSwerveEntry.setDefault(false);
         coastSwerveButton = new NetworkButton(coastSwerveEntry);
 
+        BooleanEntry burnFlashEntry = NetworkTableInstance.getDefault()
+                .getTable("Settings")
+                .getBooleanTopic("Burn Flash")
+                .getEntry(false);
+        burnFlashEntry.setDefault(false);
+        burnFlashButton = new NetworkButton(burnFlashEntry);
+
         runSysidTrigger = new Trigger(() -> getInput().getRunSysId());
         shootSpeakerTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.SPEAKER);
         shootAmpTrigger = new Trigger(() -> getInput().getShootTargetDebounced() == MoInput.ShootTarget.AMP);
@@ -159,6 +167,7 @@ public class RobotContainer {
         calibrateDriveButton.onTrue(new CalibrateSwerveDriveCommand(drive));
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
+        burnFlashButton.onTrue(Commands.runOnce(() -> {shooter.burnFlash();}));
 
         var tuneSetpointSubscriber = MoShuffleboard.getInstance().tuneSetpointSubscriber;
         shootSpeakerTrigger.whileTrue(shootSpeakerCommand);
