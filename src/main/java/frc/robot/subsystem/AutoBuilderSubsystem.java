@@ -14,7 +14,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.command.arm.MoveArmCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
+import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.PathPlannerCommands;
 import java.util.EnumMap;
@@ -37,7 +39,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
     private enum TaskType {
         LEAVE((s, c) -> c),
-        SHOOT((s, c) -> new ShootSpeakerCommand(s.shooter).andThen(c));
+        SHOOT((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER).andThen(new ShootSpeakerCommand(s.shooter).andThen(c)));
 
         BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
 
@@ -54,6 +56,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
     private EnumMap<TaskType, EnumMap<StartPos, Optional<PathPlannerPath>>> pathMap;
 
     private PositioningSubsystem positioning;
+    private ArmSubsystem arm;
     private ShooterSubsystem shooter;
 
     private Optional<PathPlannerPath> tryLoadPath(String path) {
@@ -66,10 +69,11 @@ public class AutoBuilderSubsystem extends SubsystemBase {
         return Optional.empty();
     }
 
-    public AutoBuilderSubsystem(PositioningSubsystem positioning, ShooterSubsystem shooter) {
+    public AutoBuilderSubsystem(PositioningSubsystem positioning, ArmSubsystem arm, ShooterSubsystem shooter) {
         super("Auto Builder");
 
         this.positioning = positioning;
+        this.arm = arm;
         this.shooter = shooter;
 
         masterAutoSwitch = MoShuffleboard.getInstance()
