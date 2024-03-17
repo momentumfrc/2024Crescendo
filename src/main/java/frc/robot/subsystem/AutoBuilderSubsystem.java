@@ -1,10 +1,11 @@
 package frc.robot.subsystem;
 
-import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.GeometryUtil;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -13,164 +14,102 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.command.arm.MoveArmCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.util.MoShuffleboard;
-import frc.robot.util.PathPlannerCommands;
-import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiFunction;
 
 public class AutoBuilderSubsystem extends SubsystemBase {
-    /**
-     * If the robot is within this distance of the starting point of any configured path, it will try to use that path
-     * for autonomous.
-     */
-    private static final Measure<Distance> INITIAL_POSE_RANGE = Units.Meters.of(2);
+    private static final ReplanningConfig DEFAULT_REPLANNING_CONFIG = new ReplanningConfig(false, false);
 
-    private enum StartPos {
-        LEFT,
-        CENTER,
-        RIGHT
+    // All poses are against the blue alliance back wall
+    private enum StartPosePreset {
+        AMP(0.53, 7.00, 0), // Lined up with the alliance-side note closest to the judges' side of the field
+        CENTER(0.53, 4.08, 0), // Lined up with the alliance-side note in front of the stage's front leg
+        SOURCE(0.53, 2.41, 0); // Lined up with the fourth center-field note away from the judges
+
+        Pose2d pose;
+
+        /**
+         * Get these values from PathPlanner's preview start pose, when making a path
+         */
+        StartPosePreset(double x, double y, double heading) {
+            this.pose = new Pose2d(Units.Meters.of(x), Units.Meters.of(y), new Rotation2d(Units.Degrees.of(heading)));
+        }
     };
 
-    private enum TaskType {
-        LEAVE((s, c) -> c),
-        SHOOT((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER)
-                .andThen(new ShootSpeakerCommand(s.shooter).andThen(c)));
-
-        BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
-
-        TaskType(BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier) {
-            this.commandModifier = commandModifier;
-        }
-    }
-
-    private SendableChooser<TaskType> taskTypeChooser;
-    private SendableChooser<StartPos> startPosChooser;
-    private GenericEntry shouldAssumeRobotIsAtStart;
     private GenericEntry masterAutoSwitch;
+    private GenericEntry overridePoseSwitch;
+    private SendableChooser<Command> autoChooser;
+    private SendableChooser<StartPosePreset> posePresetChooser;
+    private Pose2d startPose = new Pose2d(0, 0, new Rotation2d(0));
 
-    private EnumMap<TaskType, EnumMap<StartPos, Optional<PathPlannerPath>>> pathMap;
-
-    private PositioningSubsystem positioning;
-    private ArmSubsystem arm;
-    private ShooterSubsystem shooter;
-
-    private Optional<PathPlannerPath> tryLoadPath(String path) {
-        try {
-            return Optional.of(PathPlannerPath.fromPathFile(path));
-        } catch (RuntimeException e) {
-            DriverStation.reportError(
-                    String.format("Error loading path %s: %s", path, e.getLocalizedMessage()), e.getStackTrace());
-        }
-        return Optional.empty();
-    }
-
-    public AutoBuilderSubsystem(PositioningSubsystem positioning, ArmSubsystem arm, ShooterSubsystem shooter) {
+    public AutoBuilderSubsystem(PositioningSubsystem positioning, DriveSubsystem drive) {
         super("Auto Builder");
 
-        this.positioning = positioning;
-        this.arm = arm;
-        this.shooter = shooter;
+        var autoTab = MoShuffleboard.getInstance().autoTab;
 
-        masterAutoSwitch = MoShuffleboard.getInstance()
-                .autoTab
-                .add("Master Autonomous Switch", true)
+        masterAutoSwitch = autoTab.add("Master Autonomous Switch", true)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
-                .withSize(4, 1)
+                .withSize(3, 1)
                 .withPosition(0, 0)
                 .getEntry();
 
-        taskTypeChooser = MoShuffleboard.enumToChooser(TaskType.class);
-        startPosChooser = MoShuffleboard.enumToChooser(StartPos.class);
-
-        var autoPathTypeLayout = MoShuffleboard.getInstance()
-                .climberTab
-                .getLayout("Auto Path Settings", BuiltInLayouts.kList)
-                .withSize(1, 2);
-
-        autoPathTypeLayout.add("Task Type", taskTypeChooser);
-        autoPathTypeLayout.add("Start Pos", startPosChooser);
-
-        shouldAssumeRobotIsAtStart = MoShuffleboard.getInstance()
-                .autoTab
-                .add("Assume Robot at Start Pos?", false)
+        overridePoseSwitch = autoTab.add("Override Start Pose?", true)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
-                .withSize(2, 1)
-                .withPosition(1, 1)
+                .withSize(1, 1)
+                .withPosition(1, 0)
                 .getEntry();
 
-        pathMap = new EnumMap<>(TaskType.class);
+        autoChooser = AutoBuilder.buildAutoChooser();
+        autoTab.add("PP Auto", autoChooser).withSize(2, 1).withPosition(1, 1);
 
-        for (var taskType : TaskType.values()) {
-            var posMap = new EnumMap<StartPos, Optional<PathPlannerPath>>(StartPos.class);
+        posePresetChooser = MoShuffleboard.enumToChooser(StartPosePreset.class);
+        posePresetChooser.onChange(preset -> this.flipAndSetStartPose(preset.pose));
+        autoTab.add("Start Pose Preset", posePresetChooser)
+                .withSize(1, 2)
+                .withPosition(4, 0)
+                .withWidget(BuiltInWidgets.kSplitButtonChooser);
 
-            for (var startPos : StartPos.values()) {
-                posMap.put(startPos, tryLoadPath(String.format("%s %s", taskType.name(), startPos.name())));
-            }
-
-            pathMap.put(taskType, posMap);
-        }
-
-        var alignmentGroup = MoShuffleboard.getInstance()
-                .autoTab
-                .getLayout("Starting Position Alignment", BuiltInLayouts.kList)
+        var poseViewLayout = autoTab.getLayout("Start Pose Override", BuiltInLayouts.kList)
+                .withProperties(Map.of("Label position", "LEFT"))
                 .withSize(2, 2)
-                .withPosition(0, 2)
-                .withProperties(Map.of("Label position", "LEFT"));
-        alignmentGroup.addDouble("Distance", () -> getStartingPose()
-                .map(pose -> positioning.getRobotPose().getTranslation().getDistance(pose.getTranslation()))
-                .orElse(0.0));
-        alignmentGroup.addDouble("X", () -> getStartingPose()
-                .map(pose -> pose.getTranslation().getX()
-                        - positioning.getRobotPose().getTranslation().getX())
-                .orElse(0.0));
-        alignmentGroup.addDouble("Y", () -> getStartingPose()
-                .map(pose -> pose.getTranslation().getY()
-                        - positioning.getRobotPose().getY())
-                .orElse(0.0));
+                .withPosition(5, 0);
+        poseViewLayout.addDouble("X", () -> this.startPose.getX());
+        poseViewLayout.addDouble("Y", () -> this.startPose.getY());
+        poseViewLayout.addDouble("Rot", () -> this.startPose.getRotation().getDegrees());
+
+        AutoBuilder.configureRamsete(
+                positioning::getRobotPose,
+                positioning::setRobotPose,
+                drive::getRobotRelativeSpeeds,
+                drive::driveRobotRelativeSpeeds,
+                DEFAULT_REPLANNING_CONFIG,
+                AutoBuilderSubsystem::flipPath,
+                drive);
     }
 
-    private Optional<PathPlannerPath> getPathToFollow() {
-        return pathMap.get(taskTypeChooser.getSelected()).get(startPosChooser.getSelected());
+    public static boolean flipPath() {
+        return DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false);
     }
 
-    private Optional<Pose2d> getStartingPose() {
-        return getPathToFollow().map(curr -> {
-            PathPlannerPath path = curr;
-            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-                path = path.flipPath();
-            }
-
-            return path.getPreviewStartingHolonomicPose();
-        });
+    private void flipAndSetStartPose(Pose2d pose) {
+        this.startPose = flipPath() ? GeometryUtil.flipFieldPose(pose) : pose;
     }
 
-    public Command getAutonomousCommand(DriveSubsystem drive) {
+    public Command getAutonomousCommand(PositioningSubsystem positioning) {
         if (!masterAutoSwitch.getBoolean(true)) {
             return Commands.print("Autonomous disabled via shuffleboard");
         }
 
-        Optional<PathPlannerPath> pathToFollow = getPathToFollow();
-        if (pathToFollow.isEmpty()) {
-            return Commands.print(String.format(
-                    "No path defined for %s %s",
-                    taskTypeChooser.getSelected().name(),
-                    startPosChooser
-                            .getSelected()
-                            .name())); // "No path defined for starting position " + currStartPos.toString());
+        if (overridePoseSwitch.getBoolean(true)) {
+            return new InstantCommand(() -> positioning.setRobotPose(this.startPose))
+                    .andThen(autoChooser.getSelected());
         }
 
-        return taskTypeChooser
-                .getSelected()
-                .commandModifier
-                .apply(
-                        this,
-                        PathPlannerCommands.getFollowPathCommand(
-                                drive, positioning, pathToFollow.get(), shouldAssumeRobotIsAtStart.getBoolean(false)));
+        return autoChooser.getSelected();
     }
 }

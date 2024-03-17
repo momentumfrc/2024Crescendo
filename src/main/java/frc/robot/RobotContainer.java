@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -21,6 +23,7 @@ import frc.robot.command.HandoffCommand;
 import frc.robot.command.IntakeSourceCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.command.arm.MoveArmCommand;
 import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.arm.WaitForArmSetpointCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
@@ -60,7 +63,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
-    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, arm, shooter);
+    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, drive);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
@@ -159,15 +162,29 @@ public class RobotContainer {
         intakeSourceTrigger =
                 new Trigger(() -> getInput().getArmSetpoint().orElse(ArmSetpoint.STOW) == ArmSetpoint.SOURCE);
 
+        configureCommands();
+
+        CameraServer.startAutomaticCapture();
+
+        configureBindings();
+    }
+
+    private void configureCommands() {
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
         intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
         climb.setDefaultCommand(climbCommand);
 
-        CameraServer.startAutomaticCapture();
-
-        configureBindings();
+        NamedCommands.registerCommand(
+                "shootSpeaker",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.SPEAKER)
+                        .andThen(shootSpeakerCommand)
+                        .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
+        NamedCommands.registerCommand(
+                "handoff", handoffCommand.andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
+        NamedCommands.registerCommand(
+                "resetFwd", new InstantCommand(() -> positioning.resetFieldOrientedFwd(), positioning));
     }
 
     private void configureBindings() {
@@ -216,6 +233,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return autoBuilder.getAutonomousCommand(drive);
+        return autoBuilder.getAutonomousCommand(positioning);
     }
 }
