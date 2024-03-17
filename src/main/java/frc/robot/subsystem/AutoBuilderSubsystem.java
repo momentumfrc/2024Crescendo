@@ -14,11 +14,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.util.MoShuffleboard;
 import frc.robot.util.PathPlannerCommands;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 public class AutoBuilderSubsystem extends SubsystemBase {
     /**
@@ -33,15 +35,26 @@ public class AutoBuilderSubsystem extends SubsystemBase {
         RIGHT
     };
 
+    private enum TaskType {
+        LEAVE((s, c) -> c),
+        SHOOT((s, c) -> new ShootSpeakerCommand(s.shooter).andThen(c));
+
+        BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
+
+        TaskType(BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier) {
+            this.commandModifier = commandModifier;
+        }
+    }
+
+    private SendableChooser<TaskType> taskTypeChooser;
     private SendableChooser<StartPos> startPosChooser;
     private GenericEntry shouldAssumeRobotIsAtStart;
     private GenericEntry masterAutoSwitch;
 
-    private EnumMap<StartPos, Optional<PathPlannerPath>> leavePathMap;
+    private EnumMap<TaskType, EnumMap<StartPos, Optional<PathPlannerPath>>> pathMap;
 
     private PositioningSubsystem positioning;
-
-    private StartPos currStartPos = StartPos.LEFT;
+    private ShooterSubsystem shooter;
 
     private Optional<PathPlannerPath> tryLoadPath(String path) {
         try {
@@ -53,10 +66,11 @@ public class AutoBuilderSubsystem extends SubsystemBase {
         return Optional.empty();
     }
 
-    public AutoBuilderSubsystem(PositioningSubsystem positioning) {
+    public AutoBuilderSubsystem(PositioningSubsystem positioning, ShooterSubsystem shooter) {
         super("Auto Builder");
 
         this.positioning = positioning;
+        this.shooter = shooter;
 
         masterAutoSwitch = MoShuffleboard.getInstance()
                 .autoTab
@@ -66,12 +80,16 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                 .withPosition(0, 0)
                 .getEntry();
 
+        taskTypeChooser = MoShuffleboard.enumToChooser(TaskType.class);
         startPosChooser = MoShuffleboard.enumToChooser(StartPos.class);
-        MoShuffleboard.getInstance()
-                .autoTab
-                .add("Start Pos Override", startPosChooser)
-                .withSize(1, 1)
-                .withPosition(3, 1);
+
+        var autoPathTypeLayout = MoShuffleboard.getInstance()
+                .climberTab
+                .getLayout("Auto Path Settings", BuiltInLayouts.kList)
+                .withSize(1, 2);
+
+        autoPathTypeLayout.add("Task Type", taskTypeChooser);
+        autoPathTypeLayout.add("Start Pos", startPosChooser);
 
         shouldAssumeRobotIsAtStart = MoShuffleboard.getInstance()
                 .autoTab
@@ -81,16 +99,17 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                 .withPosition(1, 1)
                 .getEntry();
 
-        leavePathMap = new EnumMap<>(StartPos.class);
-        leavePathMap.put(StartPos.LEFT, tryLoadPath("LEAVE LEFT"));
-        leavePathMap.put(StartPos.CENTER, tryLoadPath("LEAVE CENTER"));
-        leavePathMap.put(StartPos.RIGHT, tryLoadPath("LEAVE RIGHT"));
+        pathMap = new EnumMap<>(TaskType.class);
 
-        MoShuffleboard.getInstance()
-                .autoTab
-                .addString("Curr Start Pos", () -> this.currStartPos.toString())
-                .withSize(1, 1)
-                .withPosition(0, 1);
+        for (var taskType : TaskType.values()) {
+            var posMap = new EnumMap<StartPos, Optional<PathPlannerPath>>(StartPos.class);
+
+            for (var startPos : StartPos.values()) {
+                posMap.put(startPos, tryLoadPath(String.format("%s %s", taskType.name(), startPos.name())));
+            }
+
+            pathMap.put(taskType, posMap);
+        }
 
         var alignmentGroup = MoShuffleboard.getInstance()
                 .autoTab
@@ -112,7 +131,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
     }
 
     private Optional<PathPlannerPath> getPathToFollow() {
-        return leavePathMap.get(currStartPos);
+        return pathMap.get(taskTypeChooser.getSelected()).get(startPosChooser.getSelected());
     }
 
     private Optional<Pose2d> getStartingPose() {
@@ -133,38 +152,20 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
         Optional<PathPlannerPath> pathToFollow = getPathToFollow();
         if (pathToFollow.isEmpty()) {
-            return Commands.print("No path defined for starting position " + currStartPos.toString());
+            return Commands.print(String.format(
+                    "No path defined for %s %s",
+                    taskTypeChooser.getSelected().name(),
+                    startPosChooser
+                            .getSelected()
+                            .name())); // "No path defined for starting position " + currStartPos.toString());
         }
 
-        return PathPlannerCommands.getFollowPathCommand(
-                drive, positioning, pathToFollow.get(), shouldAssumeRobotIsAtStart.getBoolean(false));
-    }
-
-    @Override
-    public void periodic() {
-        if (!shouldAssumeRobotIsAtStart.getBoolean(false) && positioning.hasInitialPosition()) {
-            StartPos currStartPos = null;
-            double currSmallestDist = Double.POSITIVE_INFINITY;
-            Pose2d robotPose = positioning.getRobotPose();
-            for (StartPos pos : StartPos.values()) {
-                if (!leavePathMap.containsKey(pos) || leavePathMap.get(pos).isEmpty()) {
-                    continue;
-                }
-
-                PathPlannerPath path = leavePathMap.get(pos).get();
-                if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-                    path = path.flipPath();
-                }
-
-                Pose2d posStartPose = path.getPreviewStartingHolonomicPose();
-                double dist = posStartPose.getTranslation().getDistance(robotPose.getTranslation());
-                if (currStartPos == null || dist < currSmallestDist) {
-                    currStartPos = pos;
-                    currSmallestDist = dist;
-                }
-            }
-        } else {
-            currStartPos = startPosChooser.getSelected();
-        }
+        return taskTypeChooser
+                .getSelected()
+                .commandModifier
+                .apply(
+                        this,
+                        PathPlannerCommands.getFollowPathCommand(
+                                drive, positioning, pathToFollow.get(), shouldAssumeRobotIsAtStart.getBoolean(false)));
     }
 }
