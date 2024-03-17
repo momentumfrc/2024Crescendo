@@ -80,8 +80,11 @@ public class RobotContainer {
             .andThen(new ShootAmpCommand(shooter))
             .withName("ShootAmpCommand");
 
-    // Shooting to shuttle uses same logic as shooting in speaker
-    private Command shootShuttleCommand = shootSpeakerCommand;
+    private Command shootShuttleCommand =
+            new WaitForArmSetpointCommand(arm, ArmSetpoint.SHUTTLE)
+            .deadlineWith(new SpinupShooterCommand(shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get()))
+            .andThen(new ShootSpeakerCommand(shooter))
+            .withName("ShootShuttleCommand");
 
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
