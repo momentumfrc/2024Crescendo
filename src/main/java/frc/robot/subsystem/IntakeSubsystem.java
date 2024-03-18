@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.GenericPublisher;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
@@ -47,6 +48,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final GenericEntry isDeployZeroed;
     private final GenericEntry isHoldingNote;
+
+    public final GenericPublisher setpointPublisher;
 
     public final SendableChooser<IntakeControlMode> controlMode;
 
@@ -108,6 +111,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
+
+        setpointPublisher = MoShuffleboard.getInstance()
+                .intakeTab
+                .add("Setpoint", "UNKNOWN")
+                .getEntry();
 
         isHoldingNote = MoShuffleboard.getInstance()
                 .intakeTab

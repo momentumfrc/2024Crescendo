@@ -167,7 +167,9 @@ public class RobotContainer {
         calibrateDriveButton.onTrue(new CalibrateSwerveDriveCommand(drive));
         calibrateTurnButton.whileTrue(new CalibrateSwerveTurnCommand(drive, this::getInput));
         coastSwerveButton.whileTrue(new CoastSwerveDriveCommand(drive));
-        burnFlashButton.onTrue(Commands.runOnce(() -> {shooter.burnFlash();}));
+        burnFlashButton.onTrue(Commands.runOnce(() -> {
+            shooter.burnFlash();
+        }));
 
         var tuneSetpointSubscriber = MoShuffleboard.getInstance().tuneSetpointSubscriber;
         shootSpeakerTrigger.whileTrue(shootSpeakerCommand);

@@ -217,7 +217,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void burnFlash() {
-        if(!burnFlashDebounce.hasElapsed(10)) {
+        if (!burnFlashDebounce.hasElapsed(10)) {
             System.out.println("SHOULD NOT BURN FLASH THIS FREQUENLTY");
             return;
         }
