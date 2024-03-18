@@ -1,6 +1,5 @@
 package frc.robot.command.intake;
 
-import edu.wpi.first.networktables.GenericPublisher;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
@@ -26,8 +25,6 @@ public class TeleopIntakeCommand extends Command {
     private final Timer smartMotionOverrideTimer = new Timer();
     private final Timer currentSenseTimer = new Timer();
 
-    private final GenericPublisher setpointPublisher;
-
     private boolean smartMotionOverride = false;
     private boolean currentTrip = false;
 
@@ -36,11 +33,6 @@ public class TeleopIntakeCommand extends Command {
     public TeleopIntakeCommand(IntakeSubsystem intake, Supplier<MoInput> inputSupplier) {
         this.intake = intake;
         this.inputSupplier = inputSupplier;
-
-        setpointPublisher = MoShuffleboard.getInstance()
-                .intakeTab
-                .add("Setpoint", "UNKNOWN")
-                .getEntry();
 
         addRequirements(intake);
     }
@@ -132,12 +124,12 @@ public class TeleopIntakeCommand extends Command {
 
             runIntake = runIntakeRequest;
 
-            setpointPublisher.setString("OVERRIDE");
+            intake.setpointPublisher.setString("OVERRIDE");
         } else {
             intake.deploySmartMotion(requestedPos);
             runIntake = intake.getDeployPosition().isNear(requestedPos, tolerance) && setpoint == IntakeSetpoint.INTAKE;
 
-            setpointPublisher.setString(setpoint.toString());
+            intake.setpointPublisher.setString(setpoint.toString());
         }
 
         runIntakeRollerWithCurrentSense(runIntake, runIntakeReverse);
@@ -185,7 +177,7 @@ public class TeleopIntakeCommand extends Command {
         var controlMode = intake.controlMode.getSelected();
 
         if (controlMode != IntakeControlMode.SMARTMOTION) {
-            setpointPublisher.setString(controlMode.toString());
+            intake.setpointPublisher.setString(controlMode.toString());
         }
 
         switch (controlMode) {
@@ -205,6 +197,6 @@ public class TeleopIntakeCommand extends Command {
     public void end(boolean interrupted) {
         smartMotionOverrideTimer.stop();
         currentSenseTimer.stop();
-        setpointPublisher.setString("UNKNOWN");
+        intake.setpointPublisher.setString("UNKNOWN");
     }
 }
