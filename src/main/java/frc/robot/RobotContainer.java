@@ -30,7 +30,10 @@ import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.climb.TeleopClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
+import frc.robot.command.intake.MoveIntakeCommand;
+import frc.robot.command.intake.RunIntakeUntilNoteCommand;
 import frc.robot.command.intake.TeleopIntakeCommand;
+import frc.robot.command.intake.WaitForIntakeSetpointCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.BackoffShooterCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
@@ -38,6 +41,7 @@ import frc.robot.command.shooter.ShootAmpCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.command.shooter.SpinupShooterCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
+import frc.robot.component.IntakeSetpointManager.IntakeSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
@@ -178,15 +182,26 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "shootSpeaker",
                 MoveArmCommand.forSetpoint(arm, ArmSetpoint.SPEAKER)
-                        .alongWith(shootSpeakerCommand)
-                        .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW))
-                        .andThen(Commands.runOnce(
-                                () -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED), shooter)));
+                        .raceWith(shootSpeakerCommand
+                                .andThen(
+                                        Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED)))
+                                .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)
+                                        .raceWith(new WaitForArmSetpointCommand(arm, ArmSetpoint.STOW)))));
+
+        NamedCommands.registerCommand(
+                "intakeGround",
+                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.INTAKE)
+                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.INTAKE)
+                                .andThen(new RunIntakeUntilNoteCommand(intake)))
+                        .andThen(MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.HANDOFF)
+                                .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.HANDOFF))));
+
         NamedCommands.registerCommand(
                 "handoff",
                 MoveArmCommand.forSetpoint(arm, ArmSetpoint.HANDOFF)
                         .alongWith(handoffCommand)
                         .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
+
         NamedCommands.registerCommand(
                 "resetFwd", Commands.runOnce(() -> positioning.resetFieldOrientedFwd(), positioning));
     }
