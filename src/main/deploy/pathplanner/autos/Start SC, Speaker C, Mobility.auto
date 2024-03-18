@@ -1,12 +1,6 @@
 {
   "version": 1.0,
-  "startingPose": {
-    "position": {
-      "x": 0.5089169846192605,
-      "y": 7.0
-    },
-    "rotation": 0
-  },
+  "startingPose": null,
   "command": {
     "type": "sequential",
     "data": {
@@ -14,7 +8,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "To Center Speaker"
+            "pathName": "Start SC, Speaker C"
           }
         },
         {
@@ -26,7 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "To Mobility Zone"
+            "pathName": "Speaker C, Mobility"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "resetFwd"
           }
         }
       ]
