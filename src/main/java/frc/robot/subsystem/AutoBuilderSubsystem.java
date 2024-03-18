@@ -29,7 +29,10 @@ public class AutoBuilderSubsystem extends SubsystemBase {
     private enum StartPosePreset {
         AMP(0.53, 7.00, 0), // Lined up with the alliance-side note closest to the judges' side of the field
         CENTER(0.53, 4.08, 0), // Lined up with the alliance-side note in front of the stage's front leg
-        SOURCE(0.53, 2.41, 0); // Lined up with the fourth center-field note away from the judges
+        SOURCE(0.53, 2.41, 0), // Lined up with the fourth center-field note away from the judges
+        SPEAKER_AMP_SIDE(0.73, 6.70, 60),
+        SPEAKER_CENTER(1.38, 5.54, 0),
+        SPEAKER_SOURCE_SIDE(0.73, 4.39, -60);
 
         Pose2d pose;
 

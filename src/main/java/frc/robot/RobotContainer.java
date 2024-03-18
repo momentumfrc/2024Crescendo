@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -179,12 +178,17 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "shootSpeaker",
                 MoveArmCommand.forSetpoint(arm, ArmSetpoint.SPEAKER)
-                        .andThen(shootSpeakerCommand)
+                        .alongWith(shootSpeakerCommand)
+                        .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW))
+                        .andThen(Commands.runOnce(
+                                () -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED), shooter)));
+        NamedCommands.registerCommand(
+                "handoff",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.HANDOFF)
+                        .alongWith(handoffCommand)
                         .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
         NamedCommands.registerCommand(
-                "handoff", handoffCommand.andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
-        NamedCommands.registerCommand(
-                "resetFwd", new InstantCommand(() -> positioning.resetFieldOrientedFwd(), positioning));
+                "resetFwd", Commands.runOnce(() -> positioning.resetFieldOrientedFwd(), positioning));
     }
 
     private void configureBindings() {
