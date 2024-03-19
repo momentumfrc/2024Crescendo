@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -48,6 +49,8 @@ public class AutoBuilderSubsystem extends SubsystemBase {
     private GenericEntry overridePoseSwitch;
     private SendableChooser<Command> autoChooser;
     private SendableChooser<StartPosePreset> posePresetChooser;
+    private Field2d posePreviewField = new Field2d();
+
     private Pose2d startPose = new Pose2d(0, 0, new Rotation2d(0));
 
     public AutoBuilderSubsystem(PositioningSubsystem positioning, DriveSubsystem drive) {
@@ -55,35 +58,39 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
         var autoTab = MoShuffleboard.getInstance().autoTab;
 
-        masterAutoSwitch = autoTab.add("Master Autonomous Switch", true)
+        masterAutoSwitch = autoTab.add("Master Auto Switch", true)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
-                .withSize(3, 1)
+                .withSize(2, 1)
                 .withPosition(0, 0)
                 .getEntry();
 
         overridePoseSwitch = autoTab.add("Override Start Pose?", true)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
-                .withSize(1, 1)
-                .withPosition(1, 0)
+                .withSize(2, 1)
+                .withPosition(2, 0)
                 .getEntry();
 
         autoChooser = AutoBuilder.buildAutoChooser();
-        autoTab.add("PP Auto", autoChooser).withSize(2, 1).withPosition(1, 1);
+        autoTab.add("PP Auto", autoChooser).withSize(4, 1).withPosition(0, 1);
 
         posePresetChooser = MoShuffleboard.enumToChooser(StartPosePreset.class);
         posePresetChooser.onChange(preset -> this.flipAndSetStartPose(preset.pose));
         autoTab.add("Start Pose Preset", posePresetChooser)
-                .withSize(1, 2)
+                .withSize(1, 3)
                 .withPosition(4, 0)
                 .withWidget(BuiltInWidgets.kSplitButtonChooser);
 
         var poseViewLayout = autoTab.getLayout("Start Pose Override", BuiltInLayouts.kList)
                 .withProperties(Map.of("Label position", "LEFT"))
-                .withSize(2, 2)
-                .withPosition(5, 0);
+                .withSize(1, 2)
+                .withPosition(4, 3);
         poseViewLayout.addDouble("X", () -> this.startPose.getX());
         poseViewLayout.addDouble("Y", () -> this.startPose.getY());
         poseViewLayout.addDouble("Rot", () -> this.startPose.getRotation().getDegrees());
+
+        autoTab.add("Start Pose Override Field View", posePreviewField)
+                .withSize(4, 3)
+                .withPosition(0, 2);
 
         AutoBuilder.configureRamsete(
                 positioning::getRobotPose,
@@ -101,6 +108,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
     private void flipAndSetStartPose(Pose2d pose) {
         this.startPose = flipPath() ? GeometryUtil.flipFieldPose(pose) : pose;
+        this.posePreviewField.setRobotPose(this.startPose);
     }
 
     public Command getAutonomousCommand(PositioningSubsystem positioning) {

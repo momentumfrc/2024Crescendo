@@ -1,0 +1,94 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Start SC, Speaker C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker C, NA2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Start SC, Speaker C"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeToHandoff"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "handoff"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker C, Mobility"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "resetFwd"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Two Note",
+  "choreoAuto": false
+}
