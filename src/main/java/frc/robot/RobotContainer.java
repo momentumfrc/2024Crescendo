@@ -90,6 +90,9 @@ public class RobotContainer {
 
     private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
 
+    private Command autoStowArmCommand = MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)
+            .raceWith(new WaitForArmSetpointCommand(arm, ArmSetpoint.STOW));
+
     private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
 
@@ -175,25 +178,30 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "shootSpeaker",
                 MoveArmCommand.forSetpoint(arm, ArmSetpoint.SPEAKER)
-                        .raceWith(shootSpeakerCommand
-                                .andThen(
-                                        Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED)))
-                                .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)
-                                        .raceWith(new WaitForArmSetpointCommand(arm, ArmSetpoint.STOW)))));
+                        .raceWith(shootSpeakerCommand.andThen(
+                                Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED))))
+                        .andThen(autoStowArmCommand));
 
         NamedCommands.registerCommand(
                 "intakeGround",
                 MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.INTAKE)
                         .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.INTAKE)
-                                .andThen(new RunIntakeUntilNoteCommand(intake)))
-                        .andThen(MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.HANDOFF)
-                                .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.HANDOFF))));
+                                .andThen(new RunIntakeUntilNoteCommand(intake))));
+
+        NamedCommands.registerCommand(
+                "intakeToHandoff",
+                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.HANDOFF)
+                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.HANDOFF)));
 
         NamedCommands.registerCommand(
                 "handoff",
                 MoveArmCommand.forSetpoint(arm, ArmSetpoint.HANDOFF)
-                        .alongWith(handoffCommand)
-                        .andThen(MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)));
+                        .raceWith(handoffCommand)
+                        .andThen(autoStowArmCommand.alongWith(
+                                backoffShooterCommand,
+                                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.STOW)
+                                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.STOW)),
+                                Commands.runOnce(() -> intake.setIsHoldingNote(false), intake))));
 
         NamedCommands.registerCommand(
                 "resetFwd", Commands.runOnce(() -> positioning.resetFieldOrientedFwd(), positioning));

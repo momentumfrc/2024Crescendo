@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.56734614062348,
+      "y": 6.74856751848735
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Mobility C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "resetFwd"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Mobility Only",
+  "choreoAuto": false
+}

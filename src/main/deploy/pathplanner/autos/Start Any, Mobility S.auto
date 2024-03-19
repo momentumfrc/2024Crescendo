@@ -8,19 +8,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start SC, Speaker S"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootSpeaker"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Speaker S, Mobility"
+            "pathName": "Mobility S"
           }
         },
         {
@@ -32,6 +20,6 @@
       ]
     }
   },
-  "folder": "One Note",
+  "folder": "Mobility Only",
   "choreoAuto": false
 }
