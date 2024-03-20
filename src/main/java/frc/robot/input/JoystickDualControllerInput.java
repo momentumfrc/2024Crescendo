@@ -47,6 +47,11 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     @Override
+    public boolean getUseAbsoluteRotation() {
+        return joystick.getRawButton(2);
+    }
+
+    @Override
     public boolean getShouldUseSlowSpeed() {
         // No explicit slow speed since we have the throttle.
         return false;
