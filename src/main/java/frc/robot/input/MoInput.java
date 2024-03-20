@@ -62,6 +62,10 @@ public abstract class MoInput {
 
     public abstract double getTurnRequest();
 
+    public boolean getUseAbsoluteRotation() {
+        return false;
+    }
+
     public abstract boolean getShouldUseSlowSpeed();
 
     public abstract boolean getReZeroGyro();
