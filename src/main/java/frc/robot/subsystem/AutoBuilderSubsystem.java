@@ -17,9 +17,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.command.arm.MoveArmCommand;
-import frc.robot.command.shooter.ShootSpeakerCommand;
-import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.util.MoShuffleboard;
 import java.util.Map;
 
