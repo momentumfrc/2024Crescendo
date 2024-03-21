@@ -190,6 +190,13 @@ public class RobotContainer {
                         .andThen(autoStowArmCommand));
 
         NamedCommands.registerCommand(
+                "shootShuttle",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.SHUTTLE)
+                        .raceWith(shootShuttleCommand.andThen(
+                                Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED))))
+                        .andThen(autoStowArmCommand));
+
+        NamedCommands.registerCommand(
                 "intakeGround",
                 MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.INTAKE)
                         .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.INTAKE)
