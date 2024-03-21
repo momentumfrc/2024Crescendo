@@ -98,7 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     public boolean doResetEncoders = true;
 
-    private LinearFilter desiredOffsetFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
+    private LinearFilter headingFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
     public DriveSubsystem(AHRS gyro) {
         super("Drive");
@@ -244,16 +244,12 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void driveCartesianPointAt(
-            double fwdRequest, double leftRequest, Rotation2d fieldOrientedDriveAngle, Rotation2d desiredOffset) {
+            double fwdRequest, double leftRequest, Rotation2d currentHeading, Rotation2d desiredHeading) {
+        Rotation2d filteredHeading = Rotation2d.fromRadians(headingFilter.calculate(currentHeading.getRotations()));
 
-        Rotation2d offset = Rotation2d.fromRotations(desiredOffsetFilter.calculate(desiredOffset.getRotations()));
+        double turnRequest = headingController.calculate(filteredHeading.getRadians(), desiredHeading.getRadians());
 
-        Rotation2d currentHeading = getCurrHeading();
-        Rotation2d desiredHeading = currentHeading.plus(offset);
-
-        double turnRequest = headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
-
-        driveCartesian(fwdRequest, leftRequest, turnRequest, fieldOrientedDriveAngle);
+        driveCartesian(fwdRequest, leftRequest, turnRequest, currentHeading);
     }
 
     public void driveRobotRelativeSpeeds(ChassisSpeeds speeds) {

@@ -15,6 +15,7 @@ public abstract class MoInput {
     public enum ShootTarget {
         SPEAKER,
         AMP,
+        SHUTTLE,
         NONE
     };
 
@@ -31,6 +32,8 @@ public abstract class MoInput {
             return Optional.of(ArmSetpoint.SPEAKER);
         } else if (shootTarget == ShootTarget.AMP) {
             return Optional.of(ArmSetpoint.AMP);
+        } else if (shootTarget == ShootTarget.SHUTTLE) {
+            return Optional.of(ArmSetpoint.SHUTTLE);
         } else {
             return Optional.empty();
         }
@@ -61,6 +64,10 @@ public abstract class MoInput {
     public abstract Vec2 getMoveRequest();
 
     public abstract double getTurnRequest();
+
+    public boolean getUseAbsoluteRotation() {
+        return false;
+    }
 
     public abstract boolean getShouldUseSlowSpeed();
 

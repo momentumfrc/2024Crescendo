@@ -47,6 +47,11 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     @Override
+    public boolean getUseAbsoluteRotation() {
+        return joystick.getRawButton(2);
+    }
+
+    @Override
     public boolean getShouldUseSlowSpeed() {
         // No explicit slow speed since we have the throttle.
         return false;
@@ -104,6 +109,8 @@ public class JoystickDualControllerInput extends MoInput {
             return MoInput.ShootTarget.SPEAKER;
         } else if (pov == 180) {
             return MoInput.ShootTarget.AMP;
+        } else if (pov == 90) {
+            return MoInput.ShootTarget.SHUTTLE;
         } else {
             return MoInput.ShootTarget.NONE;
         }

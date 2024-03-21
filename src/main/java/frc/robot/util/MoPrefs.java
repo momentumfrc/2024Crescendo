@@ -186,6 +186,9 @@ public class MoPrefs {
     public static final Pref<Double> backoffTimeout = unitlessDoublePref("Backoff Timeout", 0.5);
     public static final Pref<Double> backoffStartTime = unitlessDoublePref("Backoff Start Time", 0.1);
 
+    public static final UnitPref<Angle> absoluteRotationRange =
+            rotationsPref("Drive Absolute Turning Range", Units.Rotations.of(0.5));
+
     public final class UnitPref<U extends Unit<U>> {
         private final Pref<Double> basePref;
         private final U storeUnits;
