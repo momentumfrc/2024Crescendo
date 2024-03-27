@@ -30,8 +30,10 @@ public class PositioningSubsystem extends SubsystemBase {
      */
     private static final double POSITION_MAX_ACCEPTABLE_UPDATE_DELTA = 5;
 
-    /** The limelight. Should be used by auto scoring commands for fine targeting. */
-    public final Limelight limelight = new Limelight();
+    /** The limelights. Should be used by auto scoring commands for fine targeting. */
+    public final Limelight rearLimelight = new Limelight("limelightRear");
+
+    public final Limelight frontLimelight = new Limelight("limelightFront");
 
     private Pose2d robotPose = new Pose2d();
 
@@ -135,9 +137,9 @@ public class PositioningSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        limelight.periodic();
+        rearLimelight.periodic();
 
-        limelight.getRobotPose().ifPresent(pose -> {
+        rearLimelight.getRobotPose().ifPresent(pose -> {
             if (!shouldUseAprilTags.getBoolean(true)) {
                 return;
             }
@@ -151,5 +153,7 @@ public class PositioningSubsystem extends SubsystemBase {
         field.setRobotPose(getRobotPose());
 
         if (fieldOrientedDriveMode.getSelected() != FieldOrientedDriveMode.GYRO) resetFieldOrientedFwd();
+
+        frontLimelight.periodic();
     }
 }
