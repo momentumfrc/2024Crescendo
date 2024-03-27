@@ -168,4 +168,9 @@ public class JoystickDualControllerInput extends MoInput {
     public double getRightClimbRequest() {
         return (getClimbReverse() ? -1 : 1) * armController.getRightTriggerAxis();
     }
+
+    @Override
+    public boolean getShouldTargetNote() {
+        return joystick.getRawButton(4);
+    }
 }

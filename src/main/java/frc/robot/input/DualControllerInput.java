@@ -136,4 +136,9 @@ public class DualControllerInput extends MoInput {
     public double getRightClimbRequest() {
         return (armController.getPOV() == 90 ? -1 : 1) * armController.getRightTriggerAxis();
     }
+
+    @Override
+    public boolean getShouldTargetNote() {
+        return false; // Not implemented
+    }
 }
