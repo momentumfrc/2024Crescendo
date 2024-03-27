@@ -10,7 +10,6 @@ import com.momentum4999.motune.PIDTuner;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -97,8 +96,6 @@ public class DriveSubsystem extends SubsystemBase {
     private final AHRS gyro;
 
     public boolean doResetEncoders = true;
-
-    private LinearFilter headingFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
     public DriveSubsystem(AHRS gyro) {
         super("Drive");
@@ -245,9 +242,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void driveCartesianPointAt(
             double fwdRequest, double leftRequest, Rotation2d currentHeading, Rotation2d desiredHeading) {
-        Rotation2d filteredHeading = Rotation2d.fromRadians(headingFilter.calculate(currentHeading.getRotations()));
 
-        double turnRequest = headingController.calculate(filteredHeading.getRadians(), desiredHeading.getRadians());
+        double turnRequest = headingController.calculate(currentHeading.getRadians(), desiredHeading.getRadians());
 
         driveCartesian(fwdRequest, leftRequest, turnRequest, currentHeading);
     }
