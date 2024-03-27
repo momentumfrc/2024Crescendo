@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.GenericEntry;
@@ -21,6 +22,7 @@ import frc.robot.command.HandoffCommand;
 import frc.robot.command.IntakeSourceCommand;
 import frc.robot.command.OrchestraCommand;
 import frc.robot.command.TeleopDriveCommand;
+import frc.robot.command.arm.MoveArmCommand;
 import frc.robot.command.arm.TeleopArmCommand;
 import frc.robot.command.arm.WaitForArmSetpointCommand;
 import frc.robot.command.calibration.CalibrateSwerveDriveCommand;
@@ -28,7 +30,10 @@ import frc.robot.command.calibration.CalibrateSwerveTurnCommand;
 import frc.robot.command.calibration.CoastSwerveDriveCommand;
 import frc.robot.command.climb.TeleopClimbCommand;
 import frc.robot.command.climb.ZeroClimbersCommand;
+import frc.robot.command.intake.MoveIntakeCommand;
+import frc.robot.command.intake.RunIntakeUntilNoteCommand;
 import frc.robot.command.intake.TeleopIntakeCommand;
+import frc.robot.command.intake.WaitForIntakeSetpointCommand;
 import frc.robot.command.intake.ZeroIntakeCommand;
 import frc.robot.command.shooter.BackoffShooterCommand;
 import frc.robot.command.shooter.IdleShooterCommand;
@@ -36,6 +41,7 @@ import frc.robot.command.shooter.ShootAmpCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.command.shooter.SpinupShooterCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
+import frc.robot.component.IntakeSetpointManager.IntakeSetpoint;
 import frc.robot.input.DualControllerInput;
 import frc.robot.input.JoystickDualControllerInput;
 import frc.robot.input.MoInput;
@@ -60,7 +66,7 @@ public class RobotContainer {
     private ShooterSubsystem shooter = new ShooterSubsystem();
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
-    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, arm, shooter);
+    private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, drive);
 
     // Commands
     private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
@@ -88,6 +94,9 @@ public class RobotContainer {
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
     private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
+
+    private Command autoStowArmCommand = MoveArmCommand.forSetpoint(arm, ArmSetpoint.STOW)
+            .raceWith(new WaitForArmSetpointCommand(arm, ArmSetpoint.STOW));
 
     private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
@@ -159,15 +168,57 @@ public class RobotContainer {
         intakeSourceTrigger =
                 new Trigger(() -> getInput().getArmSetpoint().orElse(ArmSetpoint.STOW) == ArmSetpoint.SOURCE);
 
+        configureCommands();
+
+        CameraServer.startAutomaticCapture();
+
+        configureBindings();
+    }
+
+    private void configureCommands() {
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
         intake.setDefaultCommand(intakeCommand);
         shooter.setDefaultCommand(idleShooterCommand);
         climb.setDefaultCommand(climbCommand);
 
-        CameraServer.startAutomaticCapture();
+        NamedCommands.registerCommand(
+                "shootSpeaker",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.SPEAKER)
+                        .raceWith(shootSpeakerCommand.andThen(
+                                Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED))))
+                        .andThen(autoStowArmCommand));
 
-        configureBindings();
+        NamedCommands.registerCommand(
+                "shootShuttle",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.SHUTTLE)
+                        .raceWith(shootShuttleCommand.andThen(
+                                Commands.runOnce(() -> shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED))))
+                        .andThen(autoStowArmCommand));
+
+        NamedCommands.registerCommand(
+                "intakeGround",
+                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.INTAKE)
+                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.INTAKE)
+                                .andThen(new RunIntakeUntilNoteCommand(intake))));
+
+        NamedCommands.registerCommand(
+                "intakeToHandoff",
+                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.HANDOFF)
+                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.HANDOFF)));
+
+        NamedCommands.registerCommand(
+                "handoff",
+                MoveArmCommand.forSetpoint(arm, ArmSetpoint.HANDOFF)
+                        .raceWith(handoffCommand)
+                        .andThen(autoStowArmCommand.alongWith(
+                                backoffShooterCommand,
+                                MoveIntakeCommand.forSetpoint(intake, IntakeSetpoint.STOW)
+                                        .raceWith(new WaitForIntakeSetpointCommand(intake, IntakeSetpoint.STOW)),
+                                Commands.runOnce(() -> intake.setIsHoldingNote(false), intake))));
+
+        NamedCommands.registerCommand(
+                "resetFwd", Commands.runOnce(() -> positioning.resetFieldOrientedFwd(), positioning));
     }
 
     private void configureBindings() {
@@ -216,6 +267,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return autoBuilder.getAutonomousCommand(drive);
+        return autoBuilder.getAutonomousCommand(positioning);
     }
 }
