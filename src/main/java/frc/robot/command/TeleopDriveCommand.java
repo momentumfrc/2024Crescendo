@@ -83,6 +83,13 @@ public class TeleopDriveCommand extends Command {
             }
             Rotation2d desiredRotation = absoluteZero.plus(Rotation2d.fromRotations(
                     turnRequest * MoPrefs.absoluteRotationRange.get().in(Units.Rotations)));
+
+            drive.driveCartesianPointAt(fwdRequest, leftRequest, foHeading, desiredRotation);
+        } else if (input.getShouldTargetNote()
+                && positioning.frontLimelight.getCrosshair().isPresent()) {
+            var crosshair = positioning.frontLimelight.getCrosshair().get();
+            Rotation2d desiredRotation = foHeading.plus(Rotation2d.fromDegrees(crosshair.getX()));
+
             drive.driveCartesianPointAt(fwdRequest, leftRequest, foHeading, desiredRotation);
         } else {
             drive.driveCartesian(fwdRequest, leftRequest, turnRequest, foHeading);

@@ -38,21 +38,26 @@ public class Limelight {
     private Optional<Pose3d> lastReportedPose = Optional.empty();
     private Optional<Translation2d> lastReportedCrosshair = Optional.empty();
 
-    private final NetworkTable limelightTable =
-            NetworkTableInstance.getDefault().getTable("limelight");
-    private final DoublePublisher pipelinePublisher =
-            limelightTable.getDoubleTopic("pipeline").publish();
-    private final DoublePublisher ledPublisher =
-            limelightTable.getDoubleTopic("ledMode").publish();
-    private final DoubleSubscriber tvSubscriber =
-            limelightTable.getDoubleTopic("tv").subscribe(0);
-    private final DoubleSubscriber txSubscriber =
-            limelightTable.getDoubleTopic("tx").subscribe(0);
-    private final DoubleSubscriber tySubscriber =
-            limelightTable.getDoubleTopic("ty").subscribe(0);
+    private final NetworkTable limelightTable;
+    private final DoublePublisher pipelinePublisher;
+    private final DoublePublisher ledPublisher;
+    private final DoubleSubscriber tvSubscriber;
+    private final DoubleSubscriber txSubscriber;
+    private final DoubleSubscriber tySubscriber;
 
-    private final DoubleArraySubscriber botposeBlueSubscriber =
-            limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
+    private final DoubleArraySubscriber botposeBlueSubscriber;
+
+    public Limelight(String networkTableName) {
+        limelightTable = NetworkTableInstance.getDefault().getTable(networkTableName);
+        tySubscriber = limelightTable.getDoubleTopic("ty").subscribe(0);
+        txSubscriber = limelightTable.getDoubleTopic("tx").subscribe(0);
+        tvSubscriber = limelightTable.getDoubleTopic("tv").subscribe(0);
+        ledPublisher = limelightTable.getDoubleTopic("ledMode").publish();
+        pipelinePublisher = limelightTable.getDoubleTopic("pipeline").publish();
+
+        botposeBlueSubscriber =
+                limelightTable.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[6]);
+    }
 
     public Optional<Pose3d> getRobotPose() {
         return lastReportedPose;

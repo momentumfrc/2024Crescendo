@@ -144,4 +144,9 @@ public class SingleControllerInput extends MoInput {
     public double getRightClimbRequest() {
         return (controller.getPOV() == 90 ? -1 : 1) * controller.getRightTriggerAxis();
     }
+
+    @Override
+    public boolean getShouldTargetNote() {
+        return false; // Not implemented
+    }
 }
