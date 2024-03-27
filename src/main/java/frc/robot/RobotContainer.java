@@ -56,8 +56,8 @@ public class RobotContainer {
     // Subsystems
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
-    private ArmSubsystem arm = new ArmSubsystem();
     private ShooterSubsystem shooter = new ShooterSubsystem();
+    private ArmSubsystem arm = new ArmSubsystem(shooter);
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
     private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, arm, shooter);

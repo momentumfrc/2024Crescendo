@@ -67,7 +67,7 @@ public class ArmSubsystem extends SubsystemBase {
         }
     }
 
-    public ArmSubsystem() {
+    public ArmSubsystem(ShooterSubsystem shooter) {
         super("Arm");
         shoulderLeftMtr = new CANSparkMax(Constants.SHOULDER_LEFT_MTR.address(), MotorType.kBrushless);
         shoulderRightMtr = new CANSparkMax(Constants.SHOULDER_RIGHT_MTR.address(), MotorType.kBrushless);
@@ -96,8 +96,10 @@ public class ArmSubsystem extends SubsystemBase {
 
         shoulderAbsEncoder.setInverted(true);
 
-        var rawWristAbsEncoder = wristMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-        wristAbsEncoder = MoEncoder.forSparkAbsolute(rawWristAbsEncoder, Units.Rotations);
+        // The absolute encoder for the wrist is plugged into the indexer motor controller, borrow it
+        var rawWristBorrowedAbsEncoder =
+                shooter.roller.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+        wristAbsEncoder = MoEncoder.forSparkAbsolute(rawWristBorrowedAbsEncoder, Units.Rotations);
 
         wristAbsEncoder.setInverted(false);
 

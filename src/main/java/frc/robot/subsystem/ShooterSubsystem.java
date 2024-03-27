@@ -28,7 +28,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(50);
     private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(50);
 
-    private final CANSparkMax roller;
+    public final CANSparkMax roller;
     private final CANSparkFlex flywheelLower;
     private final CANSparkFlex flywheelUpper;
 
