@@ -10,6 +10,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.input.MoInput;
 import frc.robot.subsystem.DriveSubsystem;
+import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.PositioningSubsystem;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoPrefs.Pref;
@@ -18,6 +19,7 @@ import java.util.function.Supplier;
 public class TeleopDriveCommand extends Command {
     private final DriveSubsystem drive;
     private final PositioningSubsystem positioning;
+    private final IntakeSubsystem intake;
     private final Supplier<MoInput> inputSupplier;
 
     private Pref<Double> rampTime = MoPrefs.driveRampTime;
@@ -29,9 +31,14 @@ public class TeleopDriveCommand extends Command {
     private boolean saveZero = true;
     private Rotation2d absoluteZero = null;
 
-    public TeleopDriveCommand(DriveSubsystem drive, PositioningSubsystem positioning, Supplier<MoInput> inputSupplier) {
+    public TeleopDriveCommand(
+            DriveSubsystem drive,
+            PositioningSubsystem positioning,
+            IntakeSubsystem intake,
+            Supplier<MoInput> inputSupplier) {
         this.drive = drive;
         this.positioning = positioning;
+        this.intake = intake;
         this.inputSupplier = inputSupplier;
 
         rampTime.subscribe(
@@ -86,6 +93,7 @@ public class TeleopDriveCommand extends Command {
 
             drive.driveCartesianPointAt(fwdRequest, leftRequest, foHeading, desiredRotation);
         } else if (input.getShouldTargetNote()
+                && intake.atDeploySetpoint()
                 && positioning.frontLimelight.getCrosshair().isPresent()) {
             var crosshair = positioning.frontLimelight.getCrosshair().get();
             Rotation2d desiredRotation = foHeading.plus(Rotation2d.fromDegrees(crosshair.getX()));

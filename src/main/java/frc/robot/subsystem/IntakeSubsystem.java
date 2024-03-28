@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.component.IntakeSetpointManager;
+import frc.robot.component.IntakeSetpointManager.IntakeSetpoint;
 import frc.robot.encoder.MoEncoder;
 import frc.robot.util.MoPrefs;
 import frc.robot.util.MoShuffleboard;
@@ -204,5 +206,12 @@ public class IntakeSubsystem extends SubsystemBase {
                                     .angularVelocity(deployEncoder.getVelocity());
                         },
                         this));
+    }
+
+    public boolean atDeploySetpoint() {
+        Measure<Angle> requestedPos = IntakeSetpointManager.getInstance().getSetpoint(IntakeSetpoint.INTAKE);
+        double tolerance = MoPrefs.intakeSetpointVarianceThreshold.get().in(Units.Value);
+
+        return getDeployPosition().isNear(requestedPos, tolerance);
     }
 }

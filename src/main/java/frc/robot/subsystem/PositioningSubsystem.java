@@ -31,9 +31,9 @@ public class PositioningSubsystem extends SubsystemBase {
     private static final double POSITION_MAX_ACCEPTABLE_UPDATE_DELTA = 5;
 
     /** The limelights. Should be used by auto scoring commands for fine targeting. */
-    public final Limelight rearLimelight = new Limelight("limelightRear");
+    public final Limelight rearLimelight = new Limelight("limelight");
 
-    public final Limelight frontLimelight = new Limelight("limelightFront");
+    public final Limelight frontLimelight = new Limelight("limelight-front");
 
     private Pose2d robotPose = new Pose2d();
 
