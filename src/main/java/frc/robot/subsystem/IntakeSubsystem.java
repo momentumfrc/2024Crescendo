@@ -175,7 +175,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployFallbackDirectPower(double power) {
-        deployMtr.set(power);
+        deployMtr.setVoltage(power * 12);
     }
 
     public void deployVelocity(Measure<Velocity<Angle>> velocity) {
