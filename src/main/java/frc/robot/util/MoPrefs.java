@@ -76,8 +76,6 @@ public class MoPrefs {
     public static final UnitPref<Per<MoUnits.EncoderAngle, Angle>> wristEncoderScale =
             encoderTicksPerRotationPref("Wrist Encoder Scale", MoUnits.EncoderTicksPerRotation.of(1));
 
-    public static final UnitPref<Angle> shoulderZeroOffset = rotationsPref("Shoulder Zero Offset", Units.Rotations.of(1));
-
     // TODO: Determine this
     public static final UnitPref<Per<MoUnits.EncoderAngle, Distance>> climberEncoderScale =
             encoderTicksPerCentimeterPref("Climber Encoder Scale", MoUnits.EncoderTicksPerCentimeter.of(1));
