@@ -42,6 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax deployMtr;
 
     private final MoEncoder<Angle> deployEncoder;
+    private final MoEncoder<Angle> rollerEncoder;
 
     private final MoSparkMaxArmPID deployVelocityPID;
     private final MoSparkMaxArmPID deploySmartmotionPID;
@@ -75,6 +76,7 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.setInverted(false);
 
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
+        rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Rotations);
 
         MoPrefs.intakeDeployScale.subscribe(scale -> deployEncoder.setConversionFactor(scale), true);
 
@@ -112,6 +114,10 @@ public class IntakeSubsystem extends SubsystemBase {
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
 
+        MoShuffleboard.getInstance().intakeTab.addDouble("Intake Roller Velocity", () -> rollerEncoder
+                .getVelocity()
+                .in(Units.RotationsPerSecond));
+
         setpointPublisher = MoShuffleboard.getInstance()
                 .intakeTab
                 .add("Setpoint", "UNKNOWN")
@@ -138,6 +144,10 @@ public class IntakeSubsystem extends SubsystemBase {
         group.addDouble("Deploy (A)", deployMtr::getOutputCurrent);
 
         MoShuffleboard.getInstance().intakeTab.add(this);
+    }
+
+    public Measure<Velocity<Angle>> getRollerVelocity() {
+        return rollerEncoder.getVelocity();
     }
 
     public void enableDeploySoftLimitReverse(boolean enable) {
