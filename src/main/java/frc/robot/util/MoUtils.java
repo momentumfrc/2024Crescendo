@@ -18,6 +18,15 @@ public class MoUtils {
             Measure<Angle> absPos,
             Measure<Angle> absZero,
             Measure<Per<MoUnits.EncoderAngle, Angle>> ratio) {
+        setupRelativeEncoder(encoder, absPos, absZero, ratio, Units.Rotations.of(0));
+    }
+
+    public static void setupRelativeEncoder(
+            MoEncoder<Angle> encoder,
+            Measure<Angle> absPos,
+            Measure<Angle> absZero,
+            Measure<Per<MoUnits.EncoderAngle, Angle>> ratio,
+            Measure<Angle> absZeroOffset) {
         encoder.setConversionFactor(ratio);
 
         double pos = absPos.in(Units.Rotations);
@@ -25,7 +34,7 @@ public class MoUtils {
         if (pos > (1 - ENCODER_ZERO_ZONE)) {
             pos -= 1;
         }
-        encoder.setPosition(Units.Rotations.of(pos));
+        encoder.setPosition(Units.Rotations.of(pos + absZeroOffset.in(Units.Rotations)));
     }
 
     public static double rotToRad(double rot) {

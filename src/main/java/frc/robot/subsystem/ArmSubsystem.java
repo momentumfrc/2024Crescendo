@@ -5,6 +5,8 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
@@ -53,6 +55,8 @@ public class ArmSubsystem extends SubsystemBase {
     private final MoSparkMaxArmPID wristSmartMotionPid;
 
     public final SendableChooser<ArmControlMode> controlMode;
+
+    private final GenericEntry coastArmEntry;
 
     public static record ArmPosition(Measure<Angle> shoulderAngle, Measure<Angle> wristAngle) {}
 
@@ -108,14 +112,28 @@ public class ArmSubsystem extends SubsystemBase {
 
         // Setup listeners for encoder scales and absolute zeros. Use notifyImmediately on zero listeners to set the
         // values now.
+        MoPrefs.shoulderZeroOffset.subscribe(offset -> MoUtils.setupRelativeEncoder(
+                shoulderRelEncoder,
+                shoulderAbsEncoder.getPosition(),
+                MoPrefs.shoulderAbsZero.get(),
+                MoPrefs.shoulderEncoderScale.get(),
+                offset));
         MoPrefs.shoulderEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
-                shoulderRelEncoder, shoulderAbsEncoder.getPosition(), MoPrefs.shoulderAbsZero.get(), scale));
+                shoulderRelEncoder,
+                shoulderAbsEncoder.getPosition(),
+                MoPrefs.shoulderAbsZero.get(),
+                scale,
+                MoPrefs.shoulderZeroOffset.get()));
         MoPrefs.shoulderAbsEncoderScale.subscribe(shoulderAbsEncoder::setConversionFactor, true);
         MoPrefs.wristEncoderScale.subscribe(scale -> MoUtils.setupRelativeEncoder(
                 wristRelEncoder, wristAbsEncoder.getPosition(), MoPrefs.wristAbsZero.get(), scale));
         MoPrefs.shoulderAbsZero.subscribe(
                 zero -> MoUtils.setupRelativeEncoder(
-                        shoulderRelEncoder, shoulderAbsEncoder.getPosition(), zero, MoPrefs.shoulderEncoderScale.get()),
+                        shoulderRelEncoder,
+                        shoulderAbsEncoder.getPosition(),
+                        zero,
+                        MoPrefs.shoulderEncoderScale.get(),
+                        MoPrefs.shoulderZeroOffset.get()),
                 true);
         MoPrefs.wristAbsZero.subscribe(
                 zero -> MoUtils.setupRelativeEncoder(
@@ -185,10 +203,16 @@ public class ArmSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
 
         MoShuffleboard.getInstance().armTab.add(this);
+
+        coastArmEntry = MoShuffleboard.getInstance().settingsTab.add("Coast Arm", false).getEntry();
     }
 
     public void setShoulderReverseLimitEnabled(boolean enabled) {
         shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kReverse, enabled);
+    }
+
+    public void setShoulderForwardLimitEnabled(boolean enabled) {
+        shoulderLeftMtr.enableSoftLimit(SoftLimitDirection.kForward, enabled);
     }
 
     public void reZeroArm() {
@@ -196,7 +220,8 @@ public class ArmSubsystem extends SubsystemBase {
                 shoulderRelEncoder,
                 shoulderAbsEncoder.getPosition(),
                 MoPrefs.shoulderAbsZero.get(),
-                MoPrefs.shoulderEncoderScale.get());
+                MoPrefs.shoulderEncoderScale.get(),
+                MoPrefs.shoulderZeroOffset.get());
         MoUtils.setupRelativeEncoder(
                 wristRelEncoder,
                 wristAbsEncoder.getPosition(),
@@ -316,5 +341,27 @@ public class ArmSubsystem extends SubsystemBase {
                                     .angularVelocity(wristRelEncoder.getVelocity());
                         },
                         this));
+    }
+
+    boolean lastCoast = false;
+
+    @Override
+    public void periodic() {
+        boolean coast = coastArmEntry.getBoolean(false);
+
+        if(coast) {
+            if(!lastCoast) {
+                shoulderLeftMtr.setIdleMode(IdleMode.kCoast);
+                shoulderRightMtr.setIdleMode(IdleMode.kCoast);
+            }
+            lastCoast = true;
+        } else {
+            if(lastCoast) {
+                shoulderLeftMtr.setIdleMode(IdleMode.kBrake);
+                shoulderRightMtr.setIdleMode(IdleMode.kBrake);
+                reZeroArm();
+            }
+            lastCoast = false;
+        }
     }
 }

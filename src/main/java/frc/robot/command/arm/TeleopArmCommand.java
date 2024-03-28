@@ -111,12 +111,12 @@ public class TeleopArmCommand extends Command {
             if (shoulderHardStopOverrideTimer.hasElapsed(SHOULDER_HARD_STOP_OVERRIDE_TIMEOUT)) {
                 if (!shoulderLimitOverride) {
                     shoulderLimitOverride = true;
-                    arms.setShoulderReverseLimitEnabled(false);
+                    arms.setShoulderForwardLimitEnabled(false);
                 }
             }
         } else {
             if (zeroArmPressed) {
-                arms.setShoulderReverseLimitEnabled(true);
+                arms.setShoulderForwardLimitEnabled(true);
                 shoulderLimitOverride = false;
                 arms.reZeroArm();
             }
