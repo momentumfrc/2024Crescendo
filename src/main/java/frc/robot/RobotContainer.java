@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -56,14 +57,14 @@ public class RobotContainer {
     // Subsystems
     private DriveSubsystem drive = new DriveSubsystem(gyro);
     private PositioningSubsystem positioning = new PositioningSubsystem(gyro, drive);
-    private ArmSubsystem arm = new ArmSubsystem();
     private ShooterSubsystem shooter = new ShooterSubsystem();
+    private ArmSubsystem arm = new ArmSubsystem(shooter);
     private IntakeSubsystem intake = new IntakeSubsystem();
     private ClimbSubsystem climb = new ClimbSubsystem();
     private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, arm, shooter);
 
     // Commands
-    private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
+    private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, intake, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
@@ -87,7 +88,7 @@ public class RobotContainer {
 
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
-    private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
+    private Command backoffShooterCommand = new WaitCommand(0.7).andThen(new BackoffShooterCommand(shooter));
 
     private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
@@ -194,7 +195,7 @@ public class RobotContainer {
         reZeroClimbTrigger.onTrue(reZeroClimbers);
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
-                .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(arm::getShoulderRoutine, arm)));
 
         RobotModeTriggers.autonomous()
                 .or(RobotModeTriggers.teleop())

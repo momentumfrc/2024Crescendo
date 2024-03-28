@@ -44,6 +44,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax deployMtr;
 
     private final MoEncoder<Angle> deployEncoder;
+    private final MoEncoder<Angle> rollerEncoder;
 
     private final MoSparkMaxArmPID deployVelocityPID;
     private final MoSparkMaxArmPID deploySmartmotionPID;
@@ -61,7 +62,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         super("Intake");
 
-        rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushed);
+        rollerMtr = new CANSparkMax(Constants.INTAKE_ROLLER.address(), MotorType.kBrushless);
         deployMtr = new CANSparkMax(Constants.INTAKE_DEPLOY.address(), MotorType.kBrushless);
 
         rollerMtr.restoreFactoryDefaults();
@@ -77,6 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
         deployMtr.setInverted(false);
 
         deployEncoder = MoEncoder.forSparkRelative(deployMtr.getEncoder(), Units.Rotations);
+        rollerEncoder = MoEncoder.forSparkRelative(rollerMtr.getEncoder(), Units.Rotations);
 
         MoPrefs.intakeDeployScale.subscribe(scale -> deployEncoder.setConversionFactor(scale), true);
 
@@ -114,6 +116,10 @@ public class IntakeSubsystem extends SubsystemBase {
         controlMode = MoShuffleboard.enumToChooser(IntakeControlMode.class);
         MoShuffleboard.getInstance().settingsTab.add("Intake Control Mode", controlMode);
 
+        MoShuffleboard.getInstance().intakeTab.addDouble("Intake Roller Velocity", () -> rollerEncoder
+                .getVelocity()
+                .in(Units.RotationsPerSecond));
+
         setpointPublisher = MoShuffleboard.getInstance()
                 .intakeTab
                 .add("Setpoint", "UNKNOWN")
@@ -142,6 +148,10 @@ public class IntakeSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().intakeTab.add(this);
     }
 
+    public Measure<Velocity<Angle>> getRollerVelocity() {
+        return rollerEncoder.getVelocity();
+    }
+
     public void enableDeploySoftLimitReverse(boolean enable) {
         deployMtr.enableSoftLimit(SoftLimitDirection.kReverse, enable);
     }
@@ -167,7 +177,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deployFallbackDirectPower(double power) {
-        deployMtr.set(power);
+        deployMtr.setVoltage(power * 12);
     }
 
     public void deployVelocity(Measure<Velocity<Angle>> velocity) {
