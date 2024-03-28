@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -87,7 +88,7 @@ public class RobotContainer {
 
     private OrchestraCommand startupOrchestraCommand = new OrchestraCommand(drive, this::getInput, "windows-xp.chrp");
 
-    private Command backoffShooterCommand = new BackoffShooterCommand(shooter);
+    private Command backoffShooterCommand = new WaitCommand(0.7).andThen(new BackoffShooterCommand(shooter));
 
     private ZeroIntakeCommand reZeroIntake = new ZeroIntakeCommand(intake);
     private ZeroClimbersCommand reZeroClimbers = new ZeroClimbersCommand(climb);
