@@ -89,7 +89,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
         startPosChooser = MoShuffleboard.enumToChooser(StartPos.class);
 
         var autoPathTypeLayout = MoShuffleboard.getInstance()
-                .climberTab
+                .autoTab
                 .getLayout("Auto Path Settings", BuiltInLayouts.kList)
                 .withSize(1, 2);
 
@@ -101,7 +101,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                 .add("Assume Robot at Start Pos?", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .withSize(2, 1)
-                .withPosition(1, 1)
+                .withPosition(5, 1)
                 .getEntry();
 
         pathMap = new EnumMap<>(TaskType.class);
