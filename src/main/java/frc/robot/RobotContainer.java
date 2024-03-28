@@ -195,7 +195,7 @@ public class RobotContainer {
         reZeroClimbTrigger.onTrue(reZeroClimbers);
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
-                .andThen(MoShuffleboard.getInstance().getSysidCommand(intake::getDeployRoutine, intake)));
+                .andThen(MoShuffleboard.getInstance().getSysidCommand(arm::getShoulderRoutine, arm)));
 
         RobotModeTriggers.autonomous()
                 .or(RobotModeTriggers.teleop())

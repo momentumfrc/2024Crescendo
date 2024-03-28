@@ -88,8 +88,7 @@ public class JoystickDualControllerInput extends MoInput {
 
     @Override
     public boolean getRunSysId() {
-        // No sysid in comp
-        return false;
+        return joystick.getRawButton(12);
     }
 
     @Override
