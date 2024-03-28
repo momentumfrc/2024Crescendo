@@ -87,14 +87,14 @@ public class ArmSubsystem extends SubsystemBase {
 
         wristMtr.setInverted(true);
 
-        shoulderLeftMtr.setInverted(false);
+        shoulderLeftMtr.setInverted(true);
         shoulderRightMtr.follow(shoulderLeftMtr, true);
 
         // TODO: Ensure the shoulder abs encoder is wired to the left spark
         shoulderAbsEncoder = MoEncoder.forSparkAbsolute(
                 shoulderLeftMtr.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle), Units.Rotations);
 
-        shoulderAbsEncoder.setInverted(true);
+        shoulderAbsEncoder.setInverted(false);
 
         // The absolute encoder for the wrist is plugged into the indexer motor controller, borrow it
         var rawWristBorrowedAbsEncoder =
