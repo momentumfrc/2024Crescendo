@@ -47,7 +47,7 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     @Override
-    public boolean getUseAbsoluteRotation() {
+    public boolean driveRobotOriented() {
         return joystick.getRawButton(2);
     }
 

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.command.arm.MoveArmCommand;
+import frc.robot.command.arm.WaitForArmSetpointCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.util.MoShuffleboard;
@@ -38,9 +39,15 @@ public class AutoBuilderSubsystem extends SubsystemBase {
     };
 
     private enum TaskType {
-        LEAVE((s, c) -> c),
-        SHOOT((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER)
-                .andThen(new ShootSpeakerCommand(s.shooter).andThen(c)));
+        LEAVE((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.STOW).raceWith(c)),
+        SHOOT((s, c) -> new WaitForArmSetpointCommand(s.arm, ArmSetpoint.SPEAKER)
+                .withTimeout(2)
+                .andThen(
+                        new ShootSpeakerCommand(s.shooter),
+                        Commands.runOnce(() -> s.shooter.setFlywheelSpeed(Units.MetersPerSecond.zero())))
+                .deadlineWith(MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER))
+                .withTimeout(7.5)
+                .andThen(c, Commands.runOnce(() -> s.positioning.resetFieldOrientedFwd())));
 
         BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
 
@@ -89,7 +96,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
         startPosChooser = MoShuffleboard.enumToChooser(StartPos.class);
 
         var autoPathTypeLayout = MoShuffleboard.getInstance()
-                .climberTab
+                .autoTab
                 .getLayout("Auto Path Settings", BuiltInLayouts.kList)
                 .withSize(1, 2);
 
@@ -101,7 +108,7 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                 .add("Assume Robot at Start Pos?", false)
                 .withWidget(BuiltInWidgets.kToggleSwitch)
                 .withSize(2, 1)
-                .withPosition(1, 1)
+                .withPosition(5, 1)
                 .getEntry();
 
         pathMap = new EnumMap<>(TaskType.class);
