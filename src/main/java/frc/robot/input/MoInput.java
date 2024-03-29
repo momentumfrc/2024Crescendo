@@ -69,6 +69,8 @@ public abstract class MoInput {
         return false;
     }
 
+    public abstract boolean getShouldTargetNote();
+
     public abstract boolean getShouldUseSlowSpeed();
 
     public abstract boolean getReZeroGyro();

@@ -63,7 +63,7 @@ public class RobotContainer {
     private AutoBuilderSubsystem autoBuilder = new AutoBuilderSubsystem(positioning, arm, shooter);
 
     // Commands
-    private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, this::getInput);
+    private TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, positioning, intake, this::getInput);
     private TeleopArmCommand armCommand = new TeleopArmCommand(arm, this::getInput);
     private TeleopClimbCommand climbCommand = new TeleopClimbCommand(climb, this::getInput);
     private TeleopIntakeCommand intakeCommand = new TeleopIntakeCommand(intake, this::getInput);
