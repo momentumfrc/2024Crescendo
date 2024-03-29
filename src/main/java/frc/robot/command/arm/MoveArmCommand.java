@@ -21,6 +21,10 @@ public class MoveArmCommand extends Command {
         return new MoveArmCommand(arm, ArmSetpointManager.getInstance().getSetpoint(setpoint));
     }
 
+    public static Command goToSetpointAndEnd(ArmSubsystem arm, ArmSetpoint setpoint) {
+        return forSetpoint(arm, setpoint).raceWith(new WaitForArmSetpointCommand(arm, setpoint));
+    }
+
     @Override
     public void execute() {
         arm.adjustSmartPosition(position);
