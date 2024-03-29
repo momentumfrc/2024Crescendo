@@ -65,7 +65,7 @@ public abstract class MoInput {
 
     public abstract double getTurnRequest();
 
-    public boolean getUseAbsoluteRotation() {
+    public boolean driveRobotOriented() {
         return false;
     }
 

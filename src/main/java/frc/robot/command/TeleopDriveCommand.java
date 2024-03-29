@@ -6,7 +6,6 @@ package frc.robot.command;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.input.MoInput;
 import frc.robot.subsystem.DriveSubsystem;
@@ -26,9 +25,6 @@ public class TeleopDriveCommand extends Command {
     private SlewRateLimiter leftLimiter;
     private SlewRateLimiter turnLimiter;
 
-    private boolean saveZero = true;
-    private Rotation2d absoluteZero = null;
-
     public TeleopDriveCommand(DriveSubsystem drive, PositioningSubsystem positioning, Supplier<MoInput> inputSupplier) {
         this.drive = drive;
         this.positioning = positioning;
@@ -45,12 +41,6 @@ public class TeleopDriveCommand extends Command {
                 true);
 
         addRequirements(drive);
-    }
-
-    @Override
-    public void initialize() {
-        saveZero = true;
-        absoluteZero = null;
     }
 
     @Override
@@ -76,17 +66,10 @@ public class TeleopDriveCommand extends Command {
 
         var foHeading = positioning.getFieldOrientedDriveHeading();
 
-        if (input.getUseAbsoluteRotation()) {
-            if (saveZero) {
-                saveZero = false;
-                absoluteZero = foHeading;
-            }
-            Rotation2d desiredRotation = absoluteZero.plus(Rotation2d.fromRotations(
-                    turnRequest * MoPrefs.absoluteRotationRange.get().in(Units.Rotations)));
-            drive.driveCartesianPointAt(fwdRequest, leftRequest, foHeading, desiredRotation);
+        if (input.driveRobotOriented()) {
+            drive.driveCartesian(fwdRequest, leftRequest, turnRequest, Rotation2d.fromRotations(0.5));
         } else {
             drive.driveCartesian(fwdRequest, leftRequest, turnRequest, foHeading);
-            saveZero = true;
         }
 
         if (input.getReZeroGyro()) {
