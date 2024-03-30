@@ -58,6 +58,11 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     @Override
+    public boolean reconfigureMotors() {
+        return joystick.getRawButton(14);
+    }
+
+    @Override
     public boolean getReZeroGyro() {
         return joystick.getRawButton(7);
     }

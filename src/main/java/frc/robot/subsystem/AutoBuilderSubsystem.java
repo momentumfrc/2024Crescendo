@@ -54,7 +54,8 @@ public class AutoBuilderSubsystem extends SubsystemBase {
                                         () -> {
                                             s.shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED);
                                             s.shooter.setRollerVelocity(Units.MetersPerSecond.zero());
-                                        }, s.shooter))));
+                                        },
+                                        s.shooter))));
         // .andThen(c, Commands.runOnce(() -> s.positioning.resetFieldOrientedFwd())));
         // new SpinupShooterCommand(s.shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get())
 

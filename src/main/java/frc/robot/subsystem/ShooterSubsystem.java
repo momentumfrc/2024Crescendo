@@ -1,5 +1,8 @@
 package frc.robot.subsystem;
 
+import com.momentum4999.motune.PIDTuner;
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -12,6 +15,7 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -41,6 +45,11 @@ public class ShooterSubsystem extends SubsystemBase {
     private final MoSparkMaxPID<Distance> flywheelUpperVelocityPid;
     private final MoSparkMaxPID<Distance> flywheelLowerVelocityPid;
 
+    private final PIDTuner rollerVelTuner;
+    private final PIDTuner rollerPosTuner;
+    private final PIDTuner flywheelUpperVelTuner;
+    private final PIDTuner flywheelLowerVelTuner;
+
     private final MutableMeasure<Distance> mut_flywheelPos = MutableMeasure.zero(Units.Centimeters);
     private final MutableMeasure<Velocity<Distance>> mut_flywheelVel = MutableMeasure.zero(MoUnits.CentimetersPerSec);
 
@@ -53,13 +62,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private Timer burnFlashDebounce = new Timer();
 
-    public ShooterSubsystem() {
-        super("Shooter");
-
-        roller = new CANSparkMax(Constants.SHOOTER_ROLLER_MTR.address(), MotorType.kBrushless);
-        flywheelUpper = new CANSparkFlex(Constants.SHOOTER_FLYWHEEL_MTR_UPPER.address(), MotorType.kBrushless);
-        flywheelLower = new CANSparkFlex(Constants.SHOOTER_FLYWHEEL_MTR_LOWER.address(), MotorType.kBrushless);
-
+    public void configureMotors() {
+        System.out.println("CONFIGURE SHOOTER MOTORS");
         roller.setSmartCurrentLimit((int) ROLLER_CURRENT_LIMIT.in(Units.Amps));
         flywheelUpper.setSmartCurrentLimit((int) FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
         flywheelLower.setSmartCurrentLimit((int) FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
@@ -72,6 +76,23 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelUpper.setInverted(false);
         flywheelLower.setInverted(false);
 
+        rollerEncoder.setConversionFactor(MoPrefs.shooterRollerScale.get());
+        flywheelUpperEncoder.setConversionFactor(MoPrefs.shooterFlywheelScale.get());
+        flywheelLowerEncoder.setConversionFactor(MoPrefs.shooterFlywheelScale.get());
+
+        rollerPosTuner.populatePIDValues();
+        rollerVelTuner.populatePIDValues();
+        flywheelLowerVelTuner.populatePIDValues();
+        flywheelUpperVelTuner.populatePIDValues();
+    }
+
+    public ShooterSubsystem() {
+        super("Shooter");
+
+        roller = new CANSparkMax(Constants.SHOOTER_ROLLER_MTR.address(), MotorType.kBrushless);
+        flywheelUpper = new CANSparkFlex(Constants.SHOOTER_FLYWHEEL_MTR_UPPER.address(), MotorType.kBrushless);
+        flywheelLower = new CANSparkFlex(Constants.SHOOTER_FLYWHEEL_MTR_LOWER.address(), MotorType.kBrushless);
+
         rollerEncoder = MoEncoder.forSparkRelative(roller.getEncoder(), Units.Centimeter);
         flywheelUpperEncoder = MoEncoder.forSparkRelative(flywheelUpper.getEncoder(), Units.Meter);
         flywheelLowerEncoder = MoEncoder.forSparkRelative(flywheelLower.getEncoder(), Units.Meter);
@@ -79,12 +100,10 @@ public class ShooterSubsystem extends SubsystemBase {
         burnFlashDebounce.restart();
 
         MoPrefs.shooterRollerScale.subscribe(scale -> rollerEncoder.setConversionFactor(scale), true);
-        MoPrefs.shooterFlywheelScale.subscribe(
-                scale -> {
-                    flywheelUpperEncoder.setConversionFactor(scale);
-                    flywheelLowerEncoder.setConversionFactor(scale);
-                },
-                true);
+        MoPrefs.shooterFlywheelScale.subscribe(scale -> {
+            flywheelUpperEncoder.setConversionFactor(scale);
+            flywheelLowerEncoder.setConversionFactor(scale);
+        });
 
         MoPrefs.flywheelSpindownRate.subscribe(
                 rate -> {
@@ -115,18 +134,17 @@ public class ShooterSubsystem extends SubsystemBase {
 
         rollerVelPid = new MoSparkMaxPID<>(Type.VELOCITY, roller, 1, rollerEncoder);
         rollerPosPid = new MoSparkMaxPID<>(Type.SMARTMOTION, roller, 0, rollerEncoder);
-        TunerUtils.forMoSparkMax(rollerVelPid, "Shooter Roller Vel.");
-        TunerUtils.forMoSparkMax(rollerPosPid, "Shooter Roller Pos.");
+        rollerVelTuner = TunerUtils.forMoSparkMax(rollerVelPid, "Shooter Roller Vel.");
+        rollerPosTuner = TunerUtils.forMoSparkMax(rollerPosPid, "Shooter Roller Pos.");
 
         flywheelUpperVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelUpper, 0, flywheelUpperEncoder);
         flywheelLowerVelocityPid = new MoSparkMaxPID<>(Type.VELOCITY, flywheelLower, 0, flywheelLowerEncoder);
-        TunerUtils.forMoSparkMax(flywheelUpperVelocityPid, "Shooter Upper Flywheel Vel.");
-        TunerUtils.forMoSparkMax(flywheelLowerVelocityPid, "Shooter Lower Flywheel Vel.");
+        flywheelUpperVelTuner = TunerUtils.forMoSparkMax(flywheelUpperVelocityPid, "Shooter Upper Flywheel Vel.");
+        flywheelLowerVelTuner = TunerUtils.forMoSparkMax(flywheelLowerVelocityPid, "Shooter Lower Flywheel Vel.");
 
         MoShuffleboard.getInstance().shooterTab.add(this);
-    }
 
-    private void addFlexDebugWidget() {
+        configureMotors();
     }
 
     public Measure<Distance> getRollerPosition() {
@@ -279,5 +297,26 @@ public class ShooterSubsystem extends SubsystemBase {
                                     .linearVelocity(rollerEncoder.getVelocity());
                         },
                         this));
+    }
+
+    @Override
+    public void periodic() {
+        CANSparkBase motors[] = {flywheelUpper, flywheelLower, roller};
+        boolean hasBrownout = false;
+        for (CANSparkBase motor : motors) {
+            if (motor.getStickyFault(FaultID.kBrownout) || motor.getStickyFault(FaultID.kHasReset)) {
+                hasBrownout = true;
+                break;
+            }
+        }
+
+        if (hasBrownout) {
+            DriverStation.reportWarning("Shooter brownout!!", false);
+            System.out.println("Shooter Brownout!!");
+            configureMotors();
+            for (CANSparkBase motor : motors) {
+                motor.clearFaults();
+            }
+        }
     }
 }

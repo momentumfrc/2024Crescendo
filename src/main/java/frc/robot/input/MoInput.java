@@ -69,6 +69,10 @@ public abstract class MoInput {
         return false;
     }
 
+    public boolean reconfigureMotors() {
+        return false;
+    }
+
     public abstract boolean getShouldUseSlowSpeed();
 
     public abstract boolean getReZeroGyro();

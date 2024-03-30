@@ -110,6 +110,7 @@ public class RobotContainer {
     private final Trigger reZeroClimbTrigger;
     private final Trigger handoffTrigger;
     private final Trigger intakeSourceTrigger;
+    private final Trigger reconfigureMotorsTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -161,6 +162,7 @@ public class RobotContainer {
         handoffTrigger = new Trigger(() -> getInput().getHandoff());
         intakeSourceTrigger =
                 new Trigger(() -> getInput().getArmSetpoint().orElse(ArmSetpoint.STOW) == ArmSetpoint.SOURCE);
+        reconfigureMotorsTrigger = new Trigger(() -> getInput().reconfigureMotors());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -193,6 +195,11 @@ public class RobotContainer {
         intakeSourceTrigger.onFalse(backoffShooterCommand);
 
         reZeroClimbTrigger.onTrue(reZeroClimbers);
+
+        reconfigureMotorsTrigger.onTrue(Commands.runOnce(() -> {
+            arm.configureMotors();
+            shooter.configureMotors();
+        }));
 
         runSysidTrigger.whileTrue(Commands.print("STARTING SYSID...")
                 .andThen(MoShuffleboard.getInstance().getSysidCommand(arm::getShoulderRoutine, arm)));
