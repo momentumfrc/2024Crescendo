@@ -106,8 +106,8 @@ public class MoPrefs {
             encoderTicksPerCentimeterPref(
                     "Shooter Flywheel Scale", MoUnits.EncoderTicksPerCentimeter.of(0.04699456981059901));
 
-    public static final UnitPref<Dimensionless> shooterSetpointVarianceThreshold = getInstance()
-    .new UnitPref<Dimensionless>("Shooter Setpoint Variance Threshold", Units.Percent, Units.Percent.of(5));
+    public static final UnitPref<Velocity<Distance>> shooterSetpointThreshold =
+            metersPerSecPref("Shooter Setpoint Threshold", Units.MetersPerSecond.of(0.75));
 
     public static final UnitPref<Dimensionless> armSetpointVarianceThreshold = getInstance()
     .new UnitPref<Dimensionless>("Arm Setpoint Variance Threshold", Units.Percent, Units.Percent.of(3));

@@ -48,7 +48,7 @@ public class JoystickDualControllerInput extends MoInput {
 
     @Override
     public boolean driveRobotOriented() {
-        return joystick.getRawButton(2);
+        return joystick.getRawButton(3);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class JoystickDualControllerInput extends MoInput {
     }
 
     public boolean getReverseIntake() {
-        return joystick.getRawButton(3);
+        return joystick.getRawButton(2);
     }
 
     @Override

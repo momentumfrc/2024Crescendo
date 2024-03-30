@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.command.arm.MoveArmCommand;
 import frc.robot.command.arm.WaitForArmSetpointCommand;
+import frc.robot.command.shooter.IdleShooterCommand;
 import frc.robot.command.shooter.ShootSpeakerCommand;
 import frc.robot.component.ArmSetpointManager.ArmSetpoint;
 import frc.robot.util.MoShuffleboard;
@@ -40,14 +41,22 @@ public class AutoBuilderSubsystem extends SubsystemBase {
 
     private enum TaskType {
         LEAVE((s, c) -> MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.STOW).raceWith(c)),
-        SHOOT((s, c) -> new WaitForArmSetpointCommand(s.arm, ArmSetpoint.SPEAKER)
-                .withTimeout(2)
+        SHOOT((s, c) -> MoveArmCommand.goToSetpointAndEnd(s.arm, ArmSetpoint.STOW)
+                .withTimeout(1.65)
                 .andThen(
-                        new ShootSpeakerCommand(s.shooter),
-                        Commands.runOnce(() -> s.shooter.setFlywheelSpeed(Units.MetersPerSecond.zero())))
-                .deadlineWith(MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER))
-                .withTimeout(7.5)
-                .andThen(c, Commands.runOnce(() -> s.positioning.resetFieldOrientedFwd())));
+                        new WaitForArmSetpointCommand(s.arm, ArmSetpoint.SPEAKER)
+                                .withTimeout(1)
+                                .andThen(new ShootSpeakerCommand(s.shooter).withTimeout(3))
+                                .deadlineWith(MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.SPEAKER)),
+                        c.deadlineWith(
+                                MoveArmCommand.forSetpoint(s.arm, ArmSetpoint.STOW),
+                                Commands.run(
+                                        () -> {
+                                            s.shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED);
+                                            s.shooter.setRollerVelocity(Units.MetersPerSecond.zero());
+                                        }, s.shooter))));
+        // .andThen(c, Commands.runOnce(() -> s.positioning.resetFieldOrientedFwd())));
+        // new SpinupShooterCommand(s.shooter, () -> MoPrefs.flywheelSpeakerSetpoint.get())
 
         BiFunction<AutoBuilderSubsystem, Command, Command> commandModifier;
 

@@ -13,7 +13,7 @@ import frc.robot.util.MoUnits;
 import java.util.function.Supplier;
 
 public class IdleShooterCommand extends Command {
-    private static final Measure<Velocity<Distance>> IDLE_SPEED = MoUnits.CentimetersPerSec.zero();
+    public static final Measure<Velocity<Distance>> IDLE_SPEED = MoUnits.CentimetersPerSec.zero();
 
     private final ShooterSubsystem shooter;
     private final Supplier<MoInput> inputSupplier;

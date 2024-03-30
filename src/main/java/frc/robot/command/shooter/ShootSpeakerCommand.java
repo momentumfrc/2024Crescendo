@@ -36,8 +36,7 @@ public class ShootSpeakerCommand extends Command {
         var flywheelSpeed = MoPrefs.flywheelSpeakerSetpoint.get();
         shooter.setFlywheelSpeed(flywheelSpeed);
 
-        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
-        if (shooter.getAvgFlywheelVelocity().isNear(flywheelSpeed, thresh)) {
+        if (shooter.getAvgFlywheelVelocity().gte(flywheelSpeed.minus(MoPrefs.shooterSetpointThreshold.get()))) {
             upToSpeed = true;
         }
 
@@ -47,6 +46,11 @@ public class ShootSpeakerCommand extends Command {
             shooter.setRollerPosition(startRollerPos);
             timer.restart();
         }
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        shooter.setFlywheelSpeed(IdleShooterCommand.IDLE_SPEED);
     }
 
     @Override

@@ -126,6 +126,9 @@ public class ShooterSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().shooterTab.add(this);
     }
 
+    private void addFlexDebugWidget() {
+    }
+
     public Measure<Distance> getRollerPosition() {
         return rollerEncoder.getPosition();
     }
@@ -221,9 +224,13 @@ public class ShooterSubsystem extends SubsystemBase {
             System.out.println("SHOULD NOT BURN FLASH THIS FREQUENLTY");
             return;
         }
-        flywheelLower.burnFlash();
-        flywheelUpper.burnFlash();
-        roller.burnFlash();
+        var rFlyLow = flywheelLower.burnFlash();
+        var rFlyUp = flywheelUpper.burnFlash();
+        var rRoll = roller.burnFlash();
+
+        System.out.printf("flywL:%s, flywU:%s, roll%s", rFlyLow, rFlyUp, rRoll);
+        System.out.println();
+
         burnFlashDebounce.restart();
     }
 

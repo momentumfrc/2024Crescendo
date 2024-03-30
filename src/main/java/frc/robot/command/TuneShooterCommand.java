@@ -45,7 +45,7 @@ public class TuneShooterCommand extends Command {
 
     @Override
     public void execute() {
-        double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
+        // double thresh = MoPrefs.shooterSetpointVarianceThreshold.get().in(Units.Value);
 
         ArmPosition position = ArmSetpointManager.getInstance().getSetpoint(ArmSetpoint.SPEAKER);
         position = new ArmPosition(
@@ -64,7 +64,7 @@ public class TuneShooterCommand extends Command {
         var flywheelSetpoint = MoPrefs.flywheelSpeakerSetpoint.get();
         shooter.setFlywheelSpeed(flywheelSetpoint);
 
-        if (shooter.getAvgFlywheelVelocity().isNear(flywheelSetpoint, thresh)) {
+        if (shooter.getAvgFlywheelVelocity().gte(flywheelSetpoint.minus(MoPrefs.shooterSetpointThreshold.get()))) {
             shooter.setRollerVelocity(flywheelSetpoint);
         } else {
             shooter.setRollerVelocity(MoUnits.CentimetersPerSec.zero());
