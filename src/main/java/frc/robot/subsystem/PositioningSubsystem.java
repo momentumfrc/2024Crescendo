@@ -7,9 +7,10 @@ package frc.robot.subsystem;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -17,7 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.component.Limelight;
+import frc.robot.component.LimelightHelpers;
 import frc.robot.util.MoShuffleboard;
 import java.util.EnumMap;
 import java.util.Map;
@@ -29,9 +30,6 @@ public class PositioningSubsystem extends SubsystemBase {
      * robot's current odometry.
      */
     private static final double POSITION_MAX_ACCEPTABLE_UPDATE_DELTA = 5;
-
-    /** The limelight. Should be used by auto scoring commands for fine targeting. */
-    public final Limelight limelight = new Limelight();
 
     private Pose2d robotPose = new Pose2d();
 
@@ -54,7 +52,7 @@ public class PositioningSubsystem extends SubsystemBase {
     private final AHRS gyro;
     private final DriveSubsystem drive;
 
-    private SwerveDriveOdometry odometry;
+    private SwerveDrivePoseEstimator estimator;
 
     private static enum FieldOrientedDriveMode {
         GYRO,
@@ -73,7 +71,8 @@ public class PositioningSubsystem extends SubsystemBase {
 
         MoShuffleboard.getInstance().settingsTab.add("Field Oriented Mode", fieldOrientedDriveMode);
 
-        odometry = new SwerveDriveOdometry(drive.kinematics, gyro.getRotation2d(), drive.getWheelPositions());
+        estimator = new SwerveDrivePoseEstimator(
+                drive.kinematics, gyro.getRotation2d(), drive.getWheelPositions(), new Pose2d());
 
         resetFieldOrientedFwd();
 
@@ -121,12 +120,12 @@ public class PositioningSubsystem extends SubsystemBase {
 
     public void setRobotPose(Pose2d pose) {
         if (this.didEstablishInitialPosition.getBoolean(false)
-                && this.odometry.getPoseMeters().getTranslation().getDistance(pose.getTranslation())
+                && this.estimator.getEstimatedPosition().getTranslation().getDistance(pose.getTranslation())
                         > POSITION_MAX_ACCEPTABLE_UPDATE_DELTA) {
             return;
         }
         this.didEstablishInitialPosition.setBoolean(true);
-        this.odometry.resetPosition(gyro.getRotation2d(), drive.getWheelPositions(), pose);
+        this.estimator.resetPosition(gyro.getRotation2d(), drive.getWheelPositions(), pose);
     }
 
     public void resetFieldOrientedFwd() {
@@ -135,20 +134,18 @@ public class PositioningSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        limelight.periodic();
+        // See:
+        // https://docs.limelightvision.io/docs/docs-limelight/pipeline-apriltag/apriltag-robot-localization-megatag2#using-wpilibs-pose-estimator
+        LimelightHelpers.SetRobotOrientation(
+                "limelight", estimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        LimelightHelpers.PoseEstimate llPos = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        if (Math.abs(gyro.getRate()) < 720 && llPos.tagCount > 0) {
+            estimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+            estimator.addVisionMeasurement(llPos.pose, llPos.timestampSeconds);
+        }
 
-        limelight.getRobotPose().ifPresent(pose -> {
-            if (!shouldUseAprilTags.getBoolean(true)) {
-                return;
-            }
-            if (drive.isMoving()) {
-                return;
-            }
-            this.setRobotPose(pose.toPose2d());
-        });
-
-        robotPose = odometry.update(gyro.getRotation2d(), drive.getWheelPositions());
-        field.setRobotPose(getRobotPose());
+        robotPose = estimator.update(gyro.getRotation2d(), drive.getWheelPositions());
+        field.setRobotPose(robotPose);
 
         if (fieldOrientedDriveMode.getSelected() != FieldOrientedDriveMode.GYRO) resetFieldOrientedFwd();
     }
