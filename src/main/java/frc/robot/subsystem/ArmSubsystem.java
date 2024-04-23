@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
@@ -62,6 +63,9 @@ public class ArmSubsystem extends SubsystemBase {
     private final PIDTuner wristPosTuner;
 
     public final SendableChooser<ArmControlMode> controlMode;
+
+    private final GenericEntry coastArmsEntry;
+    boolean lastCoastArms = false;
 
     public static record ArmPosition(Measure<Angle> shoulderAngle, Measure<Angle> wristAngle) {}
 
@@ -129,6 +133,12 @@ public class ArmSubsystem extends SubsystemBase {
         wristVelTuner.populatePIDValues();
         shoulderPosTuner.populatePIDValues();
         wristPosTuner.populatePIDValues();
+
+        lastCoastArms = coastArmsEntry.getBoolean(false);
+        IdleMode idleMode = lastCoastArms ? IdleMode.kCoast : IdleMode.kBrake;
+        shoulderLeftMtr.setIdleMode(idleMode);
+        shoulderRightMtr.setIdleMode(idleMode);
+        wristMtr.setIdleMode(idleMode);
     }
 
     public ArmSubsystem(ShooterSubsystem shooter) {
@@ -219,6 +229,9 @@ public class ArmSubsystem extends SubsystemBase {
         MoShuffleboard.getInstance().settingsTab.add("Arm Control Mode", controlMode);
 
         MoShuffleboard.getInstance().armTab.add(this);
+
+        coastArmsEntry =
+                MoShuffleboard.getInstance().armTab.add("Coast Arms", false).getEntry();
 
         configureMotors();
     }
@@ -372,6 +385,15 @@ public class ArmSubsystem extends SubsystemBase {
             for (CANSparkBase motor : motors) {
                 motor.clearFaults();
             }
+        }
+
+        boolean coastArms = coastArmsEntry.getBoolean(false);
+        if (coastArms != lastCoastArms) {
+            lastCoastArms = coastArms;
+            IdleMode idleMode = lastCoastArms ? IdleMode.kCoast : IdleMode.kBrake;
+            shoulderLeftMtr.setIdleMode(idleMode);
+            shoulderRightMtr.setIdleMode(idleMode);
+            wristMtr.setIdleMode(idleMode);
         }
     }
 }
