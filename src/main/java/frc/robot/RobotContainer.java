@@ -111,6 +111,7 @@ public class RobotContainer {
     private final Trigger handoffTrigger;
     private final Trigger intakeSourceTrigger;
     private final Trigger reconfigureMotorsTrigger;
+    private final Trigger backoffTrigger;
 
     private final GenericEntry shouldPlayEnableTone = MoShuffleboard.getInstance()
             .settingsTab
@@ -163,6 +164,7 @@ public class RobotContainer {
         intakeSourceTrigger =
                 new Trigger(() -> getInput().getArmSetpoint().orElse(ArmSetpoint.STOW) == ArmSetpoint.SOURCE);
         reconfigureMotorsTrigger = new Trigger(() -> getInput().reconfigureMotors());
+        backoffTrigger = new Trigger(() -> getInput().getBackoff());
 
         drive.setDefaultCommand(driveCommand);
         arm.setDefaultCommand(armCommand);
@@ -195,6 +197,8 @@ public class RobotContainer {
         intakeSourceTrigger.onFalse(backoffShooterCommand);
 
         reZeroClimbTrigger.onTrue(reZeroClimbers);
+
+        backoffTrigger.onTrue(new BackoffShooterCommand(shooter));
 
         reconfigureMotorsTrigger.onTrue(Commands.runOnce(() -> {
             arm.configureMotors();

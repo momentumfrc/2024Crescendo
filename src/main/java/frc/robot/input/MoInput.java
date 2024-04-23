@@ -100,4 +100,8 @@ public abstract class MoInput {
     public abstract double getLeftClimbRequest();
 
     public abstract double getRightClimbRequest();
+
+    public boolean getBackoff() {
+        return false;
+    }
 }
