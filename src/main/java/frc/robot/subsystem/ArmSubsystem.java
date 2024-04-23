@@ -100,7 +100,7 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderRightMtr.follow(shoulderLeftMtr, true);
 
         shoulderAbsEncoder.setInverted(false);
-        wristAbsEncoder.setInverted(false);
+        wristAbsEncoder.setInverted(true);
 
         MoUtils.setupRelativeEncoder(
                 shoulderRelEncoder,
