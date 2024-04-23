@@ -140,8 +140,12 @@ public class PositioningSubsystem extends SubsystemBase {
                 "limelight", estimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         LimelightHelpers.PoseEstimate llPos = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
         if (Math.abs(gyro.getRate()) < 720 && llPos.tagCount > 0) {
-            estimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-            estimator.addVisionMeasurement(llPos.pose, llPos.timestampSeconds);
+            if (!hasInitialPosition()) {
+                setRobotPose(llPos.pose);
+            } else {
+                estimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+                estimator.addVisionMeasurement(llPos.pose, llPos.timestampSeconds);
+            }
         }
 
         robotPose = estimator.update(gyro.getRotation2d(), drive.getWheelPositions());
