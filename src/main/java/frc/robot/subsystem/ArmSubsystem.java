@@ -13,10 +13,12 @@ import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,6 +36,9 @@ import java.util.Map;
 public class ArmSubsystem extends SubsystemBase {
     private static final Measure<Current> SHOULDER_CURRENT_LIMIT = Units.Amps.of(50);
     private static final Measure<Current> WRIST_CURRENT_LIMIT = Units.Amps.of(50);
+
+    private static final Measure<Time> WRIST_ENCODER_VALID_PERIOD = Units.Seconds.of(5);
+    private static final double WRIST_ENCODER_INVALID_RANGE = 0.01;
 
     public static enum ArmControlMode {
         SMARTMOTION,
@@ -67,6 +72,9 @@ public class ArmSubsystem extends SubsystemBase {
     private final GenericEntry coastArmsEntry;
     boolean lastCoastArms = false;
 
+    boolean trustWristEncoder = false;
+    Timer trustWristEncoderTimer = new Timer();
+
     public static record ArmPosition(Measure<Angle> shoulderAngle, Measure<Angle> wristAngle) {}
 
     public static record ArmMovementRequest(double shoulderPower, double wristPower) {
@@ -81,6 +89,8 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void configureMotors() {
+        trustWristEncoder = false;
+
         System.out.println("CONFIGURE ARM MOTORS");
         shoulderLeftMtr.restoreFactoryDefaults();
         shoulderRightMtr.restoreFactoryDefaults();
@@ -139,6 +149,9 @@ public class ArmSubsystem extends SubsystemBase {
         shoulderLeftMtr.setIdleMode(idleMode);
         shoulderRightMtr.setIdleMode(idleMode);
         wristMtr.setIdleMode(idleMode);
+
+        trustWristEncoderTimer.start();
+        MoShuffleboard.getInstance().armTab.addBoolean("Trust wrist encoder?", () -> trustWristEncoder);
     }
 
     public ArmSubsystem(ShooterSubsystem shooter) {
@@ -311,7 +324,11 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void adjustSmartPosition(ArmPosition position) {
-        shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
+        if (trustWristEncoder) {
+            shoulderSmartMotionPid.setPositionReference(position.shoulderAngle);
+        } else {
+            shoulderVelocityPid.setVelocityReference(Units.RPM.zero());
+        }
         wristSmartMotionPid.setPositionReference(position.wristAngle);
     }
 
@@ -375,6 +392,22 @@ public class ArmSubsystem extends SubsystemBase {
             if (motor.getStickyFault(FaultID.kBrownout) || motor.getStickyFault(FaultID.kHasReset)) {
                 hasBrownout = true;
                 break;
+            }
+        }
+        if (!trustWristEncoder) {
+            boolean encoderValid =
+                    Math.abs(wristAbsEncoder.getPosition().in(Units.Rotations)) >= WRIST_ENCODER_INVALID_RANGE;
+            if (encoderValid) {
+                if (trustWristEncoderTimer.hasElapsed(WRIST_ENCODER_VALID_PERIOD.in(Units.Seconds))) {
+                    trustWristEncoder = true;
+                    MoUtils.setupRelativeEncoder(
+                            wristRelEncoder,
+                            wristAbsEncoder.getPosition(),
+                            MoPrefs.wristAbsZero.get(),
+                            MoPrefs.wristEncoderScale.get());
+                }
+            } else {
+                trustWristEncoderTimer.restart();
             }
         }
 
