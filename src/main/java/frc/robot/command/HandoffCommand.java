@@ -21,7 +21,7 @@ public class HandoffCommand extends Command {
         this.intake = intake;
         this.shooter = shooter;
 
-        addRequirements(shooter);
+        addRequirements(intake, shooter);
     }
 
     @Override
